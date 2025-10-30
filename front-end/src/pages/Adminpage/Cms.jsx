@@ -1,0 +1,1 @@
+//trang quản lý nội dung/ poster
