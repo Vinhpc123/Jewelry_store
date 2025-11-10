@@ -3,7 +3,6 @@ import React from "react";
 
 export default function CurrencyDisplay({
   value,
-  currency = "VND",
   locale,
   maximumFractionDigits = 0,
   className = "",
@@ -20,9 +19,10 @@ export default function CurrencyDisplay({
     return <span className={className}>-</span>;
   }
   try {
-    const formatted = num.toLocaleString(locale || undefined, {
+    const formatted = num.toLocaleString(locale || "vi-VN", {
       style: "currency",
-      currency,
+      currency: "VND",
+      currencyDisplay: "code",
       maximumFractionDigits,
     });
     return <span className={className}>{formatted}</span>;

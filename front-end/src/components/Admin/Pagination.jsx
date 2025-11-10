@@ -1,5 +1,4 @@
-﻿//phân trang
-import React from "react";
+﻿import React from "react";
 
 export default function Pagination({
   page,
@@ -10,7 +9,7 @@ export default function Pagination({
   onPageChange,
   onPageSizeChange,
 }) {
-  const windowSize = 5;
+  const windowSize = 3; 
 
   const normalizedPageSize =
     Number.isFinite(pageSize) && pageSize > 0 ? pageSize : 5;
@@ -42,6 +41,7 @@ export default function Pagination({
     setPage?.(1);
     if (typeof onPageSizeChange === "function") onPageSizeChange(size);
   };
+
 
   return (
     <div className="flex items-center justify-between gap-4">
@@ -76,18 +76,6 @@ export default function Pagination({
             {"<"}
           </button>
 
-          {start > 1 && (
-            <>
-              <button
-                onClick={() => changePage(1)}
-                className="px-3 py-1 rounded-md text-sm border border-zinc-200"
-              >
-                1
-              </button>
-              <div className="px-2">…</div>
-            </>
-          )}
-
           {Array.from({ length: end - start + 1 }, (_, i) => start + i).map((p) => (
             <button
               key={p}
@@ -101,18 +89,6 @@ export default function Pagination({
               {p}
             </button>
           ))}
-
-          {end < normalizedTotalPages && (
-            <>
-              <div className="px-2">…</div>
-              <button
-                onClick={() => changePage(normalizedTotalPages)}
-                className="px-3 py-1 rounded-md text-sm border border-zinc-200"
-              >
-                {normalizedTotalPages}
-              </button>
-            </>
-          )}
 
           <button
             onClick={() => changePage(currentPage + 1)}

@@ -5,13 +5,31 @@ import Jewelry from "../models/jewelry.js";
 //lấy danh sách sản phẩm
 export const getAllJewelry = async (req, res) => {
   try {
-    const jewelry = await Jewelry.find().sort({ createdAt: -1 });
+    const { q, category } = req.query;
+
+    const query = {};
+
+    if (q?.trim()) {
+      const keyword = q.trim();
+      query.$or = [
+        { title: { $regex: keyword, $options: "i" } },
+        { description: { $regex: keyword, $options: "i" } },
+        { category: { $regex: keyword, $options: "i" } },
+      ];
+    }
+
+    if (category?.trim()) {
+      query.category = { $regex: category.trim(), $options: "i" };
+    }
+
+    const jewelry = await Jewelry.find(query).sort({ createdAt: -1 });
     res.status(200).json(jewelry);
   } catch (error) {
     console.error("Lỗi khi lấy sản phẩm:", error);
     res.status(500).json({ message: "Lỗi hệ thống" });
   }
 };
+
 
 //tạo sản phẩm
 export const createJewelry = async(req, res) => {

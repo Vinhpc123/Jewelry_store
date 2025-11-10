@@ -1,3 +1,4 @@
+//dùng để phân trang client-side
 import { useMemo } from "react";
 
 /**
@@ -7,7 +8,7 @@ import { useMemo } from "react";
  * @param {number} pageSize
  * @returns {object} { paginated, totalItems, totalPages, offset }
  */
-export default function usePagination(items = [], page = 1, pageSize = 5) {
+export default function usePagination(items = [], page = 1, pageSize = 2) {
   const totalItems = Array.isArray(items) ? items.length : 0;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const offset = Math.max(0, (page - 1) * pageSize);
@@ -19,3 +20,5 @@ export default function usePagination(items = [], page = 1, pageSize = 5) {
 
   return { paginated, totalItems, totalPages, offset };
 }
+
+

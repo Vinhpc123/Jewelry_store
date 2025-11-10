@@ -35,7 +35,7 @@ export const registerPublic = async (req, res) => {
       return res.status(400).json({ message: "Email đã tồn tại" });
     }
 
-    // Force role to 'customer' for public signups
+    // để role mặc định là "customer"
     const newUser = await User.create({ name, email, password, role: "customer" });
     const token = generateToken({ userId: newUser._id, role: newUser.role });
     res.status(201).json({
