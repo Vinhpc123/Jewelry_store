@@ -11,6 +11,7 @@ export default function Pagination({
 }) {
   const windowSize = 3; 
 
+    
   const normalizedPageSize =
     Number.isFinite(pageSize) && pageSize > 0 ? pageSize : 5;
   const normalizedTotalPages = Math.max(

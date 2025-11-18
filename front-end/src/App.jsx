@@ -8,8 +8,6 @@ import RegisterPage from "./pages/LogPage/RegisterPage";
 import Products from "./pages/Adminpage/Products";
 import User from "./pages/Adminpage/User";
 
-
-
 export default function App() {
   return (
     <BrowserRouter>

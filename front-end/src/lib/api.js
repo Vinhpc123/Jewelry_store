@@ -1,4 +1,4 @@
-import axios from "axios";
+﻿import axios from "axios";
 
 const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
@@ -15,7 +15,7 @@ export function setAuthToken(token) {
     try {
       localStorage.setItem("token", token);
     } catch (err) {
-      // ignore storage errors in some envs but log for debugging
+      // báo lỗi nhưng không làm gián đoạn ứng dụng
         console.warn("localStorage.setItem failed:", err);
     }
   } else {
@@ -64,5 +64,26 @@ export function login(payload) {
   return instance.post("/api/auth/login", payload);
 }
 
+export function fetchUserById(id) {
+  return instance.get(`/api/users/${id}`);
+}
+
+export function updateUserById(id, payload) {
+  return instance.put(`/api/users/${id}`, payload);
+}
+
 export default instance;
 
+// Thiết lập interceptor để xử lý lỗi 401 Unauthorized
+instance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error?.response?.status;
+    if (status === 401) {
+      setAuthToken(null);   // gỡ header Authorization và xóa token lưu trong localStorage
+      setUser(null);        // xóa thông tin user cache
+      window.location.href = "/login?expired=1"; // hoặc dùng router navigate
+    }
+    return Promise.reject(error);
+  }
+);

@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import AdminLayout from "../../components/Admin/AdminLayout";
 import AdminRoute from "../../components/Admin/AdminRoute";
 import useAdminData from "../../lib/hooks/useAdminData";
@@ -6,11 +6,33 @@ import useSearchPage from "../../lib/hooks/useSearchPage";
 import usePagination from "../../lib/hooks/usePagination";
 import Pagination from "../../components/Admin/Pagination";
 import formatDateTime from "../../components/Admin/FormatDateTime";
+import instance, { getUser, fetchUserById, updateUserById } from "../../lib/api";
+
+const ROLE_LABELS = {
+  admin: "Quản trị viên",
+  staff: "Nhân viên",
+  customer: "Khách hàng",
+};
+
+const getRoleLabel = (role) => ROLE_LABELS[role] || role;
+
+
 export default function Users() {
   const { loading, error, users = [], refresh } = useAdminData();
-  const [page, setPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState(8);
+  const currentUser = getUser();
+  const [page, setPage] = React.useState(5);
+  const [pageSize, setPageSize] = React.useState(5);
   const [roleFilter, setRoleFilter] = React.useState("all");
+  const [editModalOpen, setEditModalOpen] = React.useState(false);
+  const [editForm, setEditForm] = React.useState({
+    name: "",
+    email: "",
+    role: "staff",
+  });
+  const [editMeta, setEditMeta] = React.useState({});
+  const [editLoading, setEditLoading] = React.useState(false);
+  const [editError, setEditError] = React.useState(null);
+  const [editSaving, setEditSaving] = React.useState(false);
   const {
     searchTerm,
     setSearchTerm,
@@ -23,15 +45,49 @@ export default function Users() {
   const searchActive = Boolean(trimmedSearch);
   const shouldUseSearchResults = searchActive && !searchError;
   const rawSource = shouldUseSearchResults ? searchResults : users;
+
+  //lọc bỏ user hiện tại (admin)
+  const filteredSource = React.useMemo(() => {
+    if (!currentUser) return rawSource;
+    return rawSource.filter((user) => user._id !== currentUser._id); // hoặc user.role !== "admin"
+  }, [rawSource, currentUser]);
+
+  //lọc theo vai trò
   const dataSource = React.useMemo(() => {
-    if (roleFilter === "all") return rawSource;
-    return rawSource.filter((user) => user.role === roleFilter);
-  }, [rawSource, roleFilter]);
+    if (roleFilter === "all") return filteredSource;
+    return filteredSource.filter((user) => user.role === roleFilter);
+  }, [filteredSource, roleFilter]);
+
+  //dùng để hiển thị trạng thái khi xóa, khóa user
+  const [deletingId, setDeletingId] = React.useState(null);
+  const handleDeleteUser = async (user) => {
+    if (!window.confirm(`Xóa ${user.email}?`)) return;
+    setDeletingId(user._id);
+    try {
+      await instance.delete(`/api/users/${user._id}`);
+      await refreshWithSearch();
+    } finally {
+      setDeletingId(null);
+    }
+  };
+  const handleToggleLock = async (user) => {
+    const actionLabel = user.isActive ? "Khóa" : "Mở khóa";
+    if (!window.confirm(`${actionLabel} ${user.email}?`)) return;
+
+    await instance.patch(`/api/users/${user._id}/status`, {
+      isActive: !user.isActive,
+    });
+    await refreshWithSearch();
+  };
+
+
+  //chọn loading, error hiển thị
   const listLoading = shouldUseSearchResults ? searchLoading : loading;
   const listError = shouldUseSearchResults ? searchError : error;
   React.useEffect(() => {
-    setPage(1); // reset pagination when search/filter changes
+    setPage(1); // cài lại trang khi thay đổi bộ lọc
   }, [trimmedSearch, roleFilter]);
+  // phân trang
   const { paginated, totalItems, totalPages, offset } = usePagination(
     dataSource,
     page,
@@ -40,6 +96,7 @@ export default function Users() {
   React.useEffect(() => {
     if (page > totalPages) setPage(1);
   }, [page, pageSize, totalPages]);
+  // thống kê vai trò
   const totalUsers = users.length;
   const roleStats = React.useMemo(() => {
     return users.reduce(
@@ -51,13 +108,15 @@ export default function Users() {
       { admin: 0, staff: 0, customer: 0, active: 0 }
     );
   }, [users]);
+  // trạng thái tìm kiếm
   const searchStatusText = React.useMemo(() => {
     if (!searchActive) return "";
-    if (listLoading) return "Dang tim...";
+    if (listLoading) return "Đang tìm...";
     if (listError) return String(listError);
-    if (totalItems === 0) return "Khong tim thay nguoi dung phu hop.";
-    return `Tim thay ${totalItems} nguoi dung`;
+    if (totalItems === 0) return "Không tìm thấy người dùng phù hợp.";
+    return `Tìm thấy ${totalItems} người dùng phù hợp.`;
   }, [searchActive, listLoading, listError, totalItems]);
+  // xử lý thay đổi ô tìm kiếm
   const handleSearchChange = React.useCallback(
     (event) => setSearchTerm(event.target.value),
     [setSearchTerm]
@@ -68,6 +127,75 @@ export default function Users() {
       await refetchSearch();
     }
   }, [refresh, refetchSearch, searchActive]);
+  const handleEditUser = async (user) => {
+    if (!user || !user._id) return;
+    setEditModalOpen(true);
+    setEditError(null);
+    setEditSaving(false);
+    setEditForm({
+      name: user.name || "",
+      email: user.email || "",
+      role: user.role || "staff",
+    });
+    setEditMeta({
+      id: user._id,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+    });
+    setEditLoading(true);
+    try {
+      const response = await fetchUserById(user._id);
+      const data = response.data;
+      setEditForm({
+        name: data.name || "",
+        email: data.email || "",
+        role: data.role || "staff",
+      });
+      setEditMeta({
+        id: data._id,
+        isActive: data.isActive,
+        createdAt: data.createdAt,
+      });
+    } catch (err) {
+      setEditError(
+        err?.response?.data?.message || err.message || "Không tải được người dùng."
+      );
+    } finally {
+      setEditLoading(false);
+    }
+  };
+  const handleEditFieldChange = (field) => (event) => {
+    const value = event.target.value;
+    setEditForm((prev) => ({ ...prev, [field]: value }));
+  };
+  const closeEditModal = () => {
+    setEditModalOpen(false);
+    setEditError(null);
+    setEditMeta({});
+    setEditForm({
+      name: "",
+      email: "",
+      role: "staff",
+    });
+    setEditLoading(false);
+  };
+  const handleUpdateUser = async (event) => {
+    event.preventDefault();
+    if (!editMeta.id) return;
+    setEditSaving(true);
+    setEditError(null);
+    try {
+      await updateUserById(editMeta.id, editForm);
+      await refreshWithSearch();
+      closeEditModal();
+    } catch (err) {
+      setEditError(
+        err?.response?.data?.message || err.message || "Không thể cập nhật người dùng."
+      );
+    } finally {
+      setEditSaving(false);
+    }
+  };
   return (
     <AdminRoute>
       <AdminLayout>
@@ -106,6 +234,21 @@ export default function Users() {
             error={listError}
             searchActive={searchActive}
             totalItems={totalItems}
+            onEdit={handleEditUser}
+            onDelete={handleDeleteUser}
+            onToggleLock={handleToggleLock}
+            deletingId={deletingId}
+          />
+          <EditUserModal
+            open={editModalOpen}
+            onClose={closeEditModal}
+            formValues={editForm}
+            onFieldChange={handleEditFieldChange}
+            onSubmit={handleUpdateUser}
+            loading={editLoading}
+            error={editError}
+            saving={editSaving}
+            meta={editMeta}
           />
         </div>
       </AdminLayout>
@@ -171,7 +314,6 @@ function UserToolbar({
 
   const roleOptions = [
     { value: "all", label: "Tất cả" },
-    { value: "admin", label: "Admin" },
     { value: "staff", label: "Nhân viên" },
     { value: "customer", label: "Khách hàng" },
   ];
@@ -221,7 +363,17 @@ function UserToolbar({
     </div>
   );
 }
-function UserTable({ items, startIndex, loading, error, searchActive, totalItems }) {
+function UserTable({ 
+  items,
+  startIndex,
+  loading,
+  error,
+  searchActive,
+  totalItems,
+  onEdit = () => {},
+  onDelete = () => {},
+  onToggleLock = () => {},
+  deletingId, }) {
   if (loading) {
     return <div>Đang tải danh sách người dùng...</div>;
   }
@@ -262,13 +414,39 @@ function UserTable({ items, startIndex, loading, error, searchActive, totalItems
                 <p className="text-xs text-zinc-500">ID: {user._id || "-"}</p>
               </td>
               <td className="px-3 py-2 text-sm text-zinc-700">{user.email}</td>
-              <td className="px-3 py-2 text-center capitalize text-zinc-700">{user.role}</td>
+              <td className="px-3 py-2 text-center capitalize text-zinc-700">
+                {getRoleLabel(user.role)}
+              </td>
               <td className="px-3 py-2 text-center">
                 <UserStatusBadge active={user.isActive} />
               </td>
               <td className="px-3 py-2 text-center text-zinc-600">
                 {formatDateTime(user.createdAt)}
               </td>
+              <td className="px-2 py-3 text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <button
+                    className="rounded border border-blue-500 px-2 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50"
+                    onClick={() => onEdit(user)}
+                  >
+                    Sửa
+                  </button>
+                  <button
+                    className="rounded border border-red-500 px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                    onClick={() => onDelete(user)}
+                    disabled={deletingId === user._id}
+                  >
+                    {deletingId === user._id ? "Đang xóa..." : "Xóa"}
+                  </button>
+                  <button
+                    className="rounded border border-amber-500 px-2 py-1 text-xs font-semibold text-amber-600 hover:bg-amber-50"
+                    onClick={() => onToggleLock(user)}
+                  >
+                    {user.isActive ? "Khóa" : "Mở khóa"}
+                  </button>
+                </div>
+              </td>
+
             </tr>
           ))}
         </tbody>
@@ -289,3 +467,109 @@ function UserStatusBadge({ active }) {
     </span>
   );
 }
+function EditUserModal({
+  open,
+  onClose,
+  formValues,
+  onFieldChange,
+  onSubmit,
+  loading,
+  error,
+  saving,
+  meta = {},
+}) {
+  if (!open) return null;
+  const statusBadge =
+    typeof meta.isActive === "boolean" ? <UserStatusBadge active={meta.isActive} /> : null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-sm text-zinc-500">Cập nhật thông tin tài khoản</p>
+            <h2 className="text-xl font-semibold text-zinc-900">Chỉnh sửa người dùng</h2>
+            {meta.createdAt || statusBadge ? (
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                {meta.createdAt ? `Tạo lúc: ${formatDateTime(meta.createdAt)}` : null}
+                {statusBadge}
+              </div>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            className="text-zinc-500 transition hover:text-zinc-700"
+            onClick={onClose}
+            aria-label="��ng"
+          >
+            ?
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="mt-6 rounded border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600">
+            Đang tải thông tin người dùng...
+          </div>
+        ) : (
+          <form onSubmit={onSubmit} className="mt-6 space-y-4">
+            {error ? (
+              <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                {error}
+              </div>
+            ) : null}
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="space-y-1 text-sm text-zinc-600">
+                <span className="font-medium text-zinc-800">Tên</span>
+                <input
+                  type="text"
+                  className="w-full rounded border border-zinc-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-0"
+                  value={formValues.name}
+                  onChange={onFieldChange("name")}
+                  required
+                />
+              </label>
+              <label className="space-y-1 text-sm text-zinc-600">
+                <span className="font-medium text-zinc-800">Email</span>
+                <input
+                  type="email"
+                  className="w-full rounded border border-zinc-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-0"
+                  value={formValues.email}
+                  onChange={onFieldChange("email")}
+                  required
+                />
+              </label>
+            </div>
+            <label className="space-y-1 text-sm text-zinc-600">
+              <span className="font-medium text-zinc-800">Vai trò</span>
+              <select
+                className="w-full rounded border border-zinc-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-0 md:w-64 ml-2"
+                value={formValues.role}
+                onChange={onFieldChange("role")}
+              >
+                <option value="staff">Nhân viên</option>
+                <option value="customer">Khách hàng</option>
+              </select>
+            </label>
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                className="rounded border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
+                onClick={onClose}
+                disabled={saving}
+              >
+                Huỷ
+              </button>
+              <button
+                type="submit"
+                className="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                disabled={saving}
+              >
+                {saving ? "Đang lưu..." : "Lưu thay đổi"}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+

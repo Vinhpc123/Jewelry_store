@@ -23,10 +23,10 @@ export default function Sidebar() {
       </div>
 
       <nav className="space-y-1">
-        <LinkItem to="/admin">Dashboard</LinkItem>
-        <LinkItem to="/admin/users">Users</LinkItem>
-        <LinkItem to="/admin/products">Products</LinkItem>
-        <LinkItem to="/admin/settings">Settings</LinkItem>
+        <LinkItem to="/admin">Trang chủ</LinkItem>
+        <LinkItem to="/admin/users">Quản lý người dùng</LinkItem>
+        <LinkItem to="/admin/products">Sản phẩm</LinkItem>
+        <LinkItem to="/admin/settings">Cài đặt</LinkItem>
       </nav>
     </div>
   );

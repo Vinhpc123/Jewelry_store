@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import AdminLayout from "../../components/Admin/AdminLayout";
 import AdminRoute from "../../components/Admin/AdminRoute";
 import useAdminData from "../../lib/hooks/useAdminData";
@@ -72,10 +72,10 @@ export default function Products() {
 
   const searchStatusText = React.useMemo(() => {
     if (!searchActive) return "";
-    if (listLoading) return "Dang tim...";
+    if (listLoading) return "Đang tìm kiếm...";
     if (listError) return String(listError);
-    if (totalItems === 0) return "Khong tim thay san pham phu hop.";
-    return `Tim thay ${totalItems} san pham`;
+    if (totalItems === 0) return "Không tìm thấy sản phẩm phù hợp.";
+    return `Tìm thấy ${totalItems} sản phẩm phù hợp.`;
   }, [searchActive, listLoading, listError, totalItems]);
 
   const handleSearchChange = React.useCallback(
@@ -243,23 +243,32 @@ export default function Products() {
     <AdminRoute>
       <AdminLayout>
         <div className="space-y-6">
-          <ProductHeader onAdd={openAddModal} onRefresh={refreshWithSearch} refreshing={loading} />
-          <ProductToolbar
-            totalProducts={totalProducts}
-            paginationProps={{
-              page,
-              setPage,
-              pageSize,
-              setPageSize,
-              totalPages,
-              totalItems,
-              offset,
-            }}
-            searchTerm={searchTerm}
-            onSearchChange={handleSearchChange}
-            searchStatus={searchStatusText}
-            searchActive={searchActive}
-          />
+          {/* Khối header + toolbar với style bạn yêu cầu */}
+          <div className="space-y-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+            <ProductHeader
+              onAdd={openAddModal}
+              onRefresh={refreshWithSearch}
+              refreshing={loading}
+            />
+            <ProductToolbar
+              totalProducts={totalProducts}
+              paginationProps={{
+                page,
+                setPage,
+                pageSize,
+                setPageSize,
+                totalPages,
+                totalItems,
+                offset,
+              }}
+              searchTerm={searchTerm}
+              onSearchChange={handleSearchChange}
+              searchStatus={searchStatusText}
+              searchActive={searchActive}
+            />
+          </div>
+
+          {/* Bảng sản phẩm */}
           <ProductTable
             items={paginated}
             startIndex={startIndex}
@@ -272,6 +281,8 @@ export default function Products() {
             totalItems={totalItems}
           />
         </div>
+
+        {/* Modal thêm/sửa sản phẩm */}
         <ProductModal
           visible={showModal}
           formMode={formMode}
@@ -286,13 +297,19 @@ export default function Products() {
         />
       </AdminLayout>
     </AdminRoute>
+
   );
 }
 
 function ProductHeader({ onAdd, onRefresh, refreshing }) {
   return (
     <div className="flex items-center justify-between">
-      <h1 className="text-2xl font-bold">Quản lý sản phẩm</h1>
+      <div>
+        <h1 className="text-2xl font-bold">Quản lý sản phẩm</h1>
+        <p className="text-sm text-zinc-500">
+          Thêm, sửa, xóa và quản lý sản phẩm trong cửa hàng của bạn.
+        </p>
+      </div>
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -331,6 +348,17 @@ function ProductToolbar({
         <span>
           Tổng số sản phẩm: <strong>{totalProducts}</strong>
         </span>
+        <div className="flex flex-1 items-center justify-start gap-2 sm:ml-35">
+          <input
+            value={searchTerm}
+            onChange={onSearchChange}
+            placeholder="Tìm sản phẩm..."
+            className="w-full sm:w-64 rounded border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none focus:ring-0"
+          />
+          {searchActive && searchStatus ? (
+            <span className="text-xs text-zinc-500">{searchStatus}</span>
+          ) : null}
+        </div>
         <Pagination
           page={page}
           setPage={setPage}
@@ -339,18 +367,7 @@ function ProductToolbar({
           totalPages={totalPages}
           totalItems={totalItems}
           offset={offset}
-        />
-      </div>
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
-        <input
-          value={searchTerm}
-          onChange={onSearchChange}
-          placeholder="Tìm sản phẩm..."
-          className="w-full rounded border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none focus:ring-0 sm:max-w-xs"
-        />
-        {searchActive && searchStatus ? (
-          <span className="text-xs text-zinc-500">{searchStatus}</span>
-        ) : null}
+        /> 
       </div>
     </div>
   );
