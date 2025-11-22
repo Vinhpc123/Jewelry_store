@@ -6,7 +6,7 @@ export default function AdminLayout({ children }) {
   return (
     <div className="min-h-screen bg-zinc-50">
       <div className="flex">
-        <aside className="w-64 bg-white border-r">
+        <aside className="sticky top-0 h-screen w-64 overflow-y-auto bg-white border-r">
           <Sidebar />
         </aside>
 

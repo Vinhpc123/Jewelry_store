@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
+// User Schema
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
@@ -18,10 +19,13 @@ const userSchema = new mongoose.Schema(
       default: "staff",
     },
     isActive: { type: Boolean, default: true },
+    loginAttempts: { type: Number, default: 0 },
+    lockUntil: { type: Date, default: null },
   },
   { timestamps: true }
 );
 
+// Hash mat khau truoc khi luu
 userSchema.pre("save", async function hashPassword(next) {
   if (!this.isModified("password")) return next();
   try {
@@ -33,6 +37,7 @@ userSchema.pre("save", async function hashPassword(next) {
   }
 });
 
+// So sanh mat khau
 userSchema.methods.matchPassword = function matchPassword(candidate) {
   return bcrypt.compare(candidate, this.password);
 };

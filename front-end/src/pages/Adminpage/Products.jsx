@@ -136,7 +136,7 @@ export default function Products() {
 
       if (imageFile) {
         const uploadedUrl = await uploadFileToServer(imageFile);
-        if (!uploadedUrl) throw new Error("Khong lay duoc URL anh sau khi upload");
+        if (!uploadedUrl) throw new Error("Không thể tải ảnh lên");
         productPayload.image = uploadedUrl;
       } else {
         productPayload.image = newProduct.image || "";
@@ -144,11 +144,11 @@ export default function Products() {
 
       if (formMode === "create") {
         await createProduct(productPayload);
-        alert("Them san pham thanh cong!");
+        alert("Thêm sản phẩm thành công!");
       } else {
         if (!editingId) return;
         await updateProduct(editingId, productPayload);
-        alert("Cap nhat san pham thanh cong!");
+        alert("Cập nhật sản phẩm thành công!");
       }
 
       await refreshWithSearch();
@@ -158,7 +158,7 @@ export default function Products() {
       alert(
         err?.response?.data?.message ||
           err?.message ||
-          (formMode === "create" ? "Loi khi them san pham" : "Loi khi cap nhat san pham")
+          (formMode === "create" ? "Lỗi khi thêm sản phẩm" : "Lỗi khi cập nhật sản phẩm")
       );
     }
   };
@@ -167,7 +167,7 @@ export default function Products() {
     async (product) => {
       if (!product?._id) return;
       const confirmed = window.confirm(
-        `Ban chac chan muon xoa "${product.title || "san pham"}"?`
+        `Bạn chắc chắn muốn xóa "${product.title || "sản phẩm"}"?`
       );
       if (!confirmed) return;
       try {
@@ -175,7 +175,7 @@ export default function Products() {
         await refreshWithSearch();
       } catch (err) {
         console.error("Delete product failed", err);
-        window.alert(err?.response?.data?.message || "Xoa san pham that bai");
+        window.alert(err?.response?.data?.message || "Xóa sản phẩm thất bại");
       }
     },
     [deleteProduct, refreshWithSearch]
@@ -305,7 +305,7 @@ function ProductHeader({ onAdd, onRefresh, refreshing }) {
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-2xl font-bold">Quản lý sản phẩm</h1>
+        <h1 className="text-2xl font-bold text-zinc-900">Quản lý sản phẩm</h1>
         <p className="text-sm text-zinc-500">
           Thêm, sửa, xóa và quản lý sản phẩm trong cửa hàng của bạn.
         </p>

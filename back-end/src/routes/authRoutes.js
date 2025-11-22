@@ -11,7 +11,7 @@ import { protect, authorize } from "../../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// public signup for customers
+// dang ky cong khai (public register)
 router.post("/signup", registerPublic);
 
 // chỉ admin tạo tài khoản mới (admin-only register)

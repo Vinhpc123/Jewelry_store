@@ -1,10 +1,11 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 
-function LinkItem({ to, children }) {
+function LinkItem({ to, end = false, children }) {
   return (
     <NavLink
       to={to}
+      end={end}
       className={({ isActive }) =>
         `block px-4 py-3 hover:bg-zinc-100 ${isActive ? 'bg-zinc-100 font-semibold' : ''}`
       }
@@ -23,11 +24,17 @@ export default function Sidebar() {
       </div>
 
       <nav className="space-y-1">
-        <LinkItem to="/admin">Trang chủ</LinkItem>
+        <LinkItem to="/admin" end>Trang chủ</LinkItem>
         <LinkItem to="/admin/users">Quản lý người dùng</LinkItem>
-        <LinkItem to="/admin/products">Sản phẩm</LinkItem>
+        <LinkItem to="/admin/products">Quản lý sản phẩm</LinkItem>
+        <LinkItem to="/admin/orders">Đơn hàng</LinkItem>
+        <LinkItem to="/admin/messages">Tin nhắn</LinkItem>
+        <LinkItem to="">Quản lý nội dung</LinkItem>
+        <LinkItem to="">Thanh toán</LinkItem>
         <LinkItem to="/admin/settings">Cài đặt</LinkItem>
+
       </nav>
     </div>
   );
 }
+

@@ -1,9 +1,9 @@
-// Aut and User Management Controller
+// Auth and User Management Controller
 
 import User from "../models/user.js";
 import { generateToken } from "../../utils/generateToken.js";
 
-//tao nguoi dung moi
+// Tao nguoi dung moi (admin)
 export const register = async (req, res) => {
   try {
     const { name, email, password, role = "staff" } = req.body;
@@ -25,7 +25,7 @@ export const register = async (req, res) => {
   }
 };
 
-// công khai cho người dùng đăng ký
+// Cho phep khach hang tu dang ky
 export const registerPublic = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -35,7 +35,6 @@ export const registerPublic = async (req, res) => {
       return res.status(400).json({ message: "Email đã tồn tại" });
     }
 
-    // để role mặc định là "customer"
     const newUser = await User.create({ name, email, password, role: "customer" });
     const token = generateToken({ userId: newUser._id, role: newUser.role });
     res.status(201).json({
@@ -52,19 +51,47 @@ export const registerPublic = async (req, res) => {
   }
 };
 
-// xác thực user và trả token + user info.
+// Xac thuc user va tra token + thong tin user
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    if (!user || !(await user.matchPassword(password))) {
-      return res.status(401).json({ message: "Email hoặc mật khẩu không đúng" });
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy tài khoản" });
+    }
+
+    const now = Date.now();
+    const MAX_ATTEMPTS = 5;
+
+    if (user.lockUntil && user.lockUntil > now) {
+      return res.status(403).json({ message: "Tài khoản đang bị khóa, vui lòng liên hệ admin" });
     }
 
     if (!user.isActive) {
       return res.status(403).json({ message: "Tài khoản đã bị khóa" });
     }
+
+    const passwordOk = await user.matchPassword(password);
+
+    if (!passwordOk) {
+      user.loginAttempts = (user.loginAttempts || 0) + 1;
+      if (user.loginAttempts >= MAX_ATTEMPTS) {
+        user.isActive = false;
+        user.lockUntil = new Date(now + 60 * 60 * 1000); // lock 1h, admin co the mo khoa som hon
+      }
+      await user.save();
+      const locked = !user.isActive;
+      const message = locked
+        ? "Tài khoản đã bị khóa do nhập sai quá nhiều lần, vui lòng liên hệ admin"
+        : "Email hoặc mật khẩu không đúng";
+      const status = locked ? 403 : 401;
+      return res.status(status).json({ message });
+    }
+
+    user.loginAttempts = 0;
+    user.lockUntil = null;
+    await user.save();
 
     const token = generateToken({ userId: user._id, role: user.role });
     res.status(200).json({
@@ -81,9 +108,8 @@ export const login = async (req, res) => {
   }
 };
 
-// trả thông tin user hiện tại.
+// Tra thong tin user hien tai
 export const logout = async (_req, res) => {
-  // Nếu dùng refresh-token => lưu token vào blacklist ở DB/Redis trước khi phản hồi.
   res.status(200).json({ message: "Đăng xuất thành công" });
 };
 
@@ -91,8 +117,7 @@ export const getProfile = (req, res) => {
   res.status(200).json(req.user);
 };
 
-
-// cập nhật tên hoặc mật khẩu của user đang đăng nhập.
+// Cap nhat ten hoac mat khau cua user dang dang nhap
 export const updateProfile = async (req, res) => {
   try {
     const { name, password } = req.body;
@@ -106,7 +131,7 @@ export const updateProfile = async (req, res) => {
     }
 
     if (name) user.name = name;
-    if (password) user.password = password; // được hash ở hook save
+    if (password) user.password = password; // được hash bởi hook save
     await user.save();
 
     res.status(200).json({

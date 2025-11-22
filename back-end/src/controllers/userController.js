@@ -1,7 +1,7 @@
-﻿//trang xử lý các yêu cầu liên quan đến người dùng
+// Xu ly cac yeu cau lien quan den nguoi dung
 import User from "../models/user.js";
 
-// Lấy danh sách người dùng với các bộ lọc tùy chọn
+// Lay danh sach nguoi dung voi bo loc tuy chon
 export const getUsers = async (req, res) => {
   try {
     const { q = "", role } = req.query;
@@ -23,58 +23,63 @@ export const getUsers = async (req, res) => {
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Không thể lấy danh sách người dùng", error: error.message });
+      .json({ message: "Khong the lay danh sach nguoi dung", error: error.message });
   }
 };
 
-// Lấy thông tin chi tiết của một người dùng theo ID
+// Lay thong tin chi tiet cua mot nguoi dung theo ID
 export const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select("-password");
     if (!user) {
-      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+      return res.status(404).json({ message: "Khong tim thay nguoi dung" });
     }
     res.status(200).json(user);
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Không thể lấy thông tin người dùng", error: error.message });
+      .json({ message: "Khong the lay thong tin nguoi dung", error: error.message });
   }
 };
 
-// Cập nhật trạng thái hoạt động của người dùng
+// Cap nhat trang thai hoat dong cua nguoi dung
 export const updateUserStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { isActive } = req.body;
 
     if (typeof isActive !== "boolean") {
-      return res.status(400).json({ message: "Trạng thái không hợp lệ" });
+      return res.status(400).json({ message: "Trang thai khong hop le" });
     }
 
     if (String(req.user._id) === id) {
-      return res.status(400).json({ message: "Không thể tự thay đổi trạng thái của bạn" });
+      return res.status(400).json({ message: "Khong the tu thay doi trang thai cua ban" });
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      id,
-      { isActive },
-      { new: true, runValidators: true }
-    ).select("-password");
+    const updatePayload = { isActive };
+    if (isActive === true) {
+      updatePayload.loginAttempts = 0;
+      updatePayload.lockUntil = null;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(id, updatePayload, {
+      new: true,
+      runValidators: true,
+    }).select("-password");
 
     if (!updatedUser) {
-      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+      return res.status(404).json({ message: "Khong tim thay nguoi dung" });
     }
 
     res.status(200).json(updatedUser);
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Không thể cập nhật trạng thái người dùng", error: error.message });
+      .json({ message: "Khong the cap nhat trang thai nguoi dung", error: error.message });
   }
 };
 
-// Cập nhật thông tin người dùng
+// Cap nhat thong tin nguoi dung
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
@@ -82,23 +87,23 @@ export const updateUser = async (req, res) => {
 
     const allowedRoles = ["admin", "staff", "customer"];
     if (role && !allowedRoles.includes(role)) {
-      return res.status(400).json({ message: "Vai trò không hợp lệ" });
+      return res.status(400).json({ message: "Vai tro khong hop le" });
     }
 
     if (typeof name === "string" && name.trim().length === 0) {
-      return res.status(400).json({ message: "Tên không hợp lệ" });
+      return res.status(400).json({ message: "Ten khong hop le" });
     }
 
     const user = await User.findById(id);
     if (!user) {
-      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+      return res.status(404).json({ message: "Khong tim thay nguoi dung" });
     }
 
     if (email && email.toLowerCase().trim() !== user.email) {
       const normalizedEmail = email.toLowerCase().trim();
       const existing = await User.findOne({ email: normalizedEmail });
       if (existing && existing._id.toString() !== id) {
-        return res.status(400).json({ message: "Email đã được sử dụng" });
+        return res.status(400).json({ message: "Email da duoc su dung" });
       }
       user.email = normalizedEmail;
     }
@@ -119,27 +124,27 @@ export const updateUser = async (req, res) => {
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Không thể cập nhật thông tin người dùng", error: error.message });
+      .json({ message: "Khong the cap nhat thong tin nguoi dung", error: error.message });
   }
 };
 
-// Xoá người dùng
+// Xoa nguoi dung
 export const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
 
     if (String(req.user._id) === id) {
-      return res.status(400).json({ message: "Không thể tự xoá tài khoản của bạn" });
+      return res.status(400).json({ message: "Khong the tu xoa tai khoan cua ban" });
     }
 
     const deletedUser = await User.findByIdAndDelete(id);
 
     if (!deletedUser) {
-      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+      return res.status(404).json({ message: "Khong tim thay nguoi dung" });
     }
 
-    res.status(200).json({ message: "Đã xoá người dùng" });
+    res.status(200).json({ message: "Da xoa nguoi dung" });
   } catch (error) {
-    res.status(500).json({ message: "Không thể xoá người dùng", error: error.message });
+    res.status(500).json({ message: "Khong the xoa nguoi dung", error: error.message });
   }
 };
