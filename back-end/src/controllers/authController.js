@@ -69,7 +69,7 @@ export const login = async (req, res) => {
     }
 
     if (!user.isActive) {
-      return res.status(403).json({ message: "Tài khoản đã bị khóa" });
+      return res.status(403).json({ message: "Tài khoản đã bị khóa! Liên hệ với admin để được yêu cầu hỗ trợ." });
     }
 
     const passwordOk = await user.matchPassword(password);

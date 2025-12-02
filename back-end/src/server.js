@@ -3,14 +3,17 @@ import cors from "cors";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import http from "http";
 import { fileURLToPath } from "url";
 
 import jewelryRouters from "./routes/jewelryRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
 import { connectDB } from "./config/db.js";
 import dotenv from "dotenv";
+import { initSocket } from "./socket/index.js";
 
 dotenv.config();
 
@@ -35,6 +38,7 @@ const upload = multer({ storage });
 
 const port = process.env.PORT || 5000;
 const app = express();
+const server = http.createServer(app);
 
 app.use(express.json());
 
@@ -57,9 +61,13 @@ app.use("/api/auth", authRoutes);
 app.use("/api/jewelry", jewelryRouters);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/chat", chatRoutes);
+
+const io = initSocket(server);
+app.set("io", io);
 
 connectDB().then(() => {
-  app.listen(port, () => {
+  server.listen(port, () => {
     console.log(`Server bat dau chay tren cong ${port}`);
   });
 });

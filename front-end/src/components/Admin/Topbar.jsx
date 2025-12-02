@@ -19,7 +19,7 @@ export default function Topbar() {
 
   return (
     <div className="sticky top-0 z-30 flex items-center justify-between border-b bg-white px-6 py-3 shadow-sm">
-      <div className="text-sm text-zinc-600">Welcome back</div>
+      <div className="text-sm text-zinc-600">Welcome back 🎉</div>
       <div className="flex items-center gap-4">
         <div className="text-sm font-medium text-zinc-700">{displayName}</div>
         <button onClick={handleLogout} className="text-sm text-red-600">

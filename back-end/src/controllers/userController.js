@@ -23,7 +23,7 @@ export const getUsers = async (req, res) => {
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Khong the lay danh sach nguoi dung", error: error.message });
+      .json({ message: "Không thể lấy danh sách người dùng", error: error.message });
   }
 };
 
@@ -32,13 +32,13 @@ export const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select("-password");
     if (!user) {
-      return res.status(404).json({ message: "Khong tim thay nguoi dung" });
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
     }
     res.status(200).json(user);
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Khong the lay thong tin nguoi dung", error: error.message });
+      .json({ message: "Không thể lấy thông tin người dùng", error: error.message });
   }
 };
 
@@ -49,11 +49,11 @@ export const updateUserStatus = async (req, res) => {
     const { isActive } = req.body;
 
     if (typeof isActive !== "boolean") {
-      return res.status(400).json({ message: "Trang thai khong hop le" });
+      return res.status(400).json({ message: "Trạng thái không hợp lệ" });
     }
 
     if (String(req.user._id) === id) {
-      return res.status(400).json({ message: "Khong the tu thay doi trang thai cua ban" });
+      return res.status(400).json({ message: "Không thể tự thay đổi trạng thái của bạn" });
     }
 
     const updatePayload = { isActive };
@@ -75,7 +75,7 @@ export const updateUserStatus = async (req, res) => {
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Khong the cap nhat trang thai nguoi dung", error: error.message });
+      .json({ message: "Không thể cập nhật trạng thái người dùng", error: error.message });
   }
 };
 
@@ -87,23 +87,23 @@ export const updateUser = async (req, res) => {
 
     const allowedRoles = ["admin", "staff", "customer"];
     if (role && !allowedRoles.includes(role)) {
-      return res.status(400).json({ message: "Vai tro khong hop le" });
+      return res.status(400).json({ message: "Vai trò không hợp lệ" });
     }
 
     if (typeof name === "string" && name.trim().length === 0) {
-      return res.status(400).json({ message: "Ten khong hop le" });
+      return res.status(400).json({ message: "Tên không hợp lệ" });
     }
 
     const user = await User.findById(id);
     if (!user) {
-      return res.status(404).json({ message: "Khong tim thay nguoi dung" });
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
     }
 
     if (email && email.toLowerCase().trim() !== user.email) {
       const normalizedEmail = email.toLowerCase().trim();
       const existing = await User.findOne({ email: normalizedEmail });
       if (existing && existing._id.toString() !== id) {
-        return res.status(400).json({ message: "Email da duoc su dung" });
+        return res.status(400).json({ message: "Email đã được sử dụng" });
       }
       user.email = normalizedEmail;
     }
@@ -124,7 +124,7 @@ export const updateUser = async (req, res) => {
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Khong the cap nhat thong tin nguoi dung", error: error.message });
+      .json({ message: "Không thể cập nhật thông tin người dùng", error: error.message });
   }
 };
 
@@ -134,17 +134,17 @@ export const deleteUser = async (req, res) => {
     const { id } = req.params;
 
     if (String(req.user._id) === id) {
-      return res.status(400).json({ message: "Khong the tu xoa tai khoan cua ban" });
+      return res.status(400).json({ message: "Không thể tự xóa tài khoản của bạn" });
     }
 
     const deletedUser = await User.findByIdAndDelete(id);
 
     if (!deletedUser) {
-      return res.status(404).json({ message: "Khong tim thay nguoi dung" });
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
     }
 
-    res.status(200).json({ message: "Da xoa nguoi dung" });
+    res.status(200).json({ message: "Đã xóa người dùng" });
   } catch (error) {
-    res.status(500).json({ message: "Khong the xoa nguoi dung", error: error.message });
+    res.status(500).json({ message: "Không thể xóa người dùng", error: error.message });
   }
 };

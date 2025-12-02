@@ -71,6 +71,16 @@ export function updateUserById(id, payload) {
   return instance.put(`/api/users/${id}`, payload);
 }
 
+// Chat APIs
+export function fetchConversations(params = {}) {
+  return instance.get("/api/chat/conversations", { params });
+}
+export function fetchMessages(conversationId, params = {}) {
+  return instance.get(`/api/chat/conversations/${conversationId}/messages`, { params });
+}
+export function sendChatMessage(payload) {
+  return instance.post("/api/chat/messages", payload);
+}
 export default instance;
 
 // Interceptor xử lý 401

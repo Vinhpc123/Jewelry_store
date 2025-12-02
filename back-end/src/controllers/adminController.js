@@ -57,6 +57,6 @@ export const getAdminStats = async (_req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "Khong the lay thong ke", error: error.message });
+    res.status(500).json({ message: "Không thể lấy thống kê", error: error.message });
   }
 };

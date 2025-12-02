@@ -7,6 +7,8 @@ import NotFound from "./pages/NotFoundPage/NotFound";
 import RegisterPage from "./pages/LogPage/RegisterPage";
 import Products from "./pages/Adminpage/Products";
 import User from "./pages/Adminpage/User";
+import Messenger from "./pages/Adminpage/Messenger";
+import Chat from "./pages/Customer/Chat";
 
 export default function App() {
   return (
@@ -20,7 +22,11 @@ export default function App() {
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/admin/products" element={<Products />} />
         <Route path="/admin/users" element={<User />} />
+        <Route path="/admin/messages" element={<Messenger />} />
 
+        //Customer chat
+        <Route path="/chat" element={<Chat />} />
+    
         //NotFound Route
         <Route path="*" element={<NotFound />} />
       </Routes>
