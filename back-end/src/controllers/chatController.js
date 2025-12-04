@@ -104,6 +104,8 @@ export const getMessagesByConversation = async (req, res) => {
     const page = Math.max(Number(req.query.page) || 1, 1);
     const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 100);
     const skip = (page - 1) * limit;
+    const { date, from, to } = req.query;
+    const messageFilter = { conversationId };
 
     const conversation = await Conversation.findById(conversationId);
     if (!conversation) {
@@ -123,7 +125,27 @@ export const getMessagesByConversation = async (req, res) => {
       }
     }
 
-    const messages = await Message.find({ conversationId })
+    if (date) {
+      const dayStart = new Date(date);
+      if (!Number.isNaN(dayStart)) {
+        const dayEnd = new Date(dayStart);
+        dayEnd.setDate(dayEnd.getDate() + 1);
+        messageFilter.createdAt = { $gte: dayStart, $lt: dayEnd };
+      }
+    } else if (from || to) {
+      messageFilter.createdAt = {};
+      if (from && !Number.isNaN(new Date(from))) {
+        messageFilter.createdAt.$gte = new Date(from);
+      }
+      if (to && !Number.isNaN(new Date(to))) {
+        messageFilter.createdAt.$lt = new Date(to);
+      }
+      if (!Object.keys(messageFilter.createdAt).length) {
+        delete messageFilter.createdAt;
+      }
+    }
+
+    const messages = await Message.find(messageFilter)
       .sort({ createdAt: 1 })
       .skip(skip)
       .limit(limit);

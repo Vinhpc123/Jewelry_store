@@ -15,6 +15,12 @@ import {
 
 const SOCKET_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
+function formatDateLabel(value) {
+  const d = new Date(value);
+  if (Number.isNaN(d)) return "";
+  return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
 export default function Messenger() {
   const [conversations, setConversations] = React.useState([]);
   const [selectedId, setSelectedId] = React.useState(null);
@@ -76,7 +82,7 @@ export default function Messenger() {
             ...list[idx],
             lastMessageAt: message.createdAt,
             unreadForAdmin:
-              me?.role === "admin" || me?.role === "staff" 
+              me?.role === "admin" || me?.role === "staff"
                 ? (list[idx].unreadForAdmin || 0) + (message.senderRole === "customer" ? 1 : 0)
                 : list[idx].unreadForAdmin,
             unreadForUser:
@@ -140,7 +146,10 @@ export default function Messenger() {
   const loadMessages = async (conversationId) => {
     try {
       setLoading(true);
-      const res = await fetchMessages(conversationId, { page: 1, limit: 50 });
+      const res = await fetchMessages(conversationId, {
+        page: 1,
+        limit: 50,
+      });
       setMessages(res?.data?.messages || []);
       setConversations((prev) =>
         prev.map((c) =>
@@ -197,25 +206,25 @@ export default function Messenger() {
                     <MessageSquare size={18} />
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Hỗ trợ</p>
-                    <p className="text-sm font-semibold">Cuộc trò chuyện</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Ho tro</p>
+                    <p className="text-sm font-semibold">Cuoc tro chuyen</p>
                   </div>
                 </div>
                 <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600 border border-emerald-100">
-                  {conversations.length} phiên
+                  {conversations.length} phien
                 </span>
               </div>
 
               <div className="max-h-[70vh] divide-y overflow-y-auto">
                 {loading && !conversations.length ? (
                   <div className="flex items-center gap-2 p-4 text-sm text-zinc-500">
-                    <Loader2 className="h-4 w-4 animate-spin" /> Đang tải...
+                    <Loader2 className="h-4 w-4 animate-spin" /> Dang tai...
                   </div>
                 ) : (
                   conversations.map((c) => {
                     const isActive = selectedId === c._id;
                     const userInfo = userMap[c.userId];
-                    const name = userInfo?.name || userInfo?.email || "Khách hàng";
+                    const name = userInfo?.name || userInfo?.email || "Khach hang";
                     const unread = c.unreadForAdmin || 0;
                     return (
                       <button
@@ -242,7 +251,7 @@ export default function Messenger() {
                           </div>
                           {unread > 0 ? (
                             <span className="rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-semibold text-emerald-700">
-                              {unread} mới
+                              {unread} moi
                             </span>
                           ) : null}
                         </div>
@@ -253,7 +262,7 @@ export default function Messenger() {
 
                 {!conversations.length && !loading ? (
                   <div className="p-4 text-center text-sm text-zinc-500">
-                    Chưa có cuộc trò chuyện
+                    Chua co cuoc tro chuyen
                   </div>
                 ) : null}
               </div>
@@ -268,52 +277,62 @@ export default function Messenger() {
                     <Users size={16} />
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Đang chat</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Dang chat</p>
                     <p className="text-sm font-semibold">
-                      {activeUser?.name || activeUser?.email || "Chọn một cuộc trò chuyện"}
+                      {activeUser?.name || activeUser?.email || "Chon mot cuoc tro chuyen"}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-emerald-600">
                   <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  Đang online
+                  Dang online
                 </div>
               </div>
 
               <div className="flex-1 space-y-2 overflow-y-auto bg-gradient-to-br from-indigo-50/60 via-white to-sky-50 px-4 py-4">
                 {loading && !messages.length ? (
                   <div className="flex items-center gap-2 text-sm text-zinc-500">
-                    <Loader2 className="h-4 w-4 animate-spin" /> Đang tải tin nhắn...
+                    <Loader2 className="h-4 w-4 animate-spin" /> Dang tai tin nhan...
                   </div>
                 ) : null}
 
-                {messages.map((m) => {
-                  const isMine = String(m.senderId) === String(me?._id);
-                  return (
-                    <div
-                      key={m._id}
-                      className={`flex ${isMine ? "justify-end" : "justify-start"}`}
-                    >
-                      <div
-                        className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm shadow ${
-                          isMine
-                            ? "bg-gradient-to-r from-indigo-500 to-sky-500 text-white"
-                            : "bg-white text-zinc-800 border border-zinc-200"
-                        }`}
-                      >
-                        <p className="whitespace-pre-wrap break-words">{m.content}</p>
-                        <div
-                          className={`mt-1 flex items-center gap-1 text-[11px] ${
-                            isMine ? "text-indigo-100/90" : "text-zinc-500"
-                          }`}
-                        >
-                          <ClockIcon />
-                          {new Date(m.createdAt).toLocaleTimeString()}
+                {(() => {
+                  let lastDate = "";
+                  return messages.map((m, idx) => {
+                    const isMine = String(m.senderId) === String(me?._id);
+                    const dateLabel = formatDateLabel(m.createdAt);
+                    const showDate = dateLabel && dateLabel !== lastDate;
+                    lastDate = dateLabel || lastDate;
+                    return (
+                      <React.Fragment key={m._id || idx}>
+                        {showDate ? (
+                          <div className="flex justify-center py-1 text-[11px] font-semibold text-zinc-500">
+                            {dateLabel}
+                          </div>
+                        ) : null}
+                        <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+                          <div
+                            className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm shadow ${
+                              isMine
+                                ? "bg-gradient-to-r from-indigo-500 to-sky-500 text-white"
+                                : "bg-white text-zinc-800 border border-zinc-200"
+                            }`}
+                          >
+                            <p className="whitespace-pre-wrap break-words">{m.content}</p>
+                            <div
+                              className={`mt-1 flex items-center gap-1 text-[11px] ${
+                                isMine ? "text-indigo-100/90" : "text-zinc-500"
+                              }`}
+                            >
+                              <ClockIcon />
+                              {new Date(m.createdAt).toLocaleTimeString()}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                      </React.Fragment>
+                    );
+                  });
+                })()}
                 <div ref={bottomRef} />
               </div>
 
@@ -323,7 +342,7 @@ export default function Messenger() {
                   <input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder="Nhập tin nhắn..."
+                    placeholder="Nhap tin nhan..."
                     className="w-full border-none bg-transparent text-sm text-zinc-800 placeholder:text-zinc-400 focus:outline-none"
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
@@ -338,7 +357,7 @@ export default function Messenger() {
                     className="flex items-center gap-1 rounded-full bg-gradient-to-r from-indigo-500 to-sky-500 px-4 py-2 text-sm font-semibold text-white shadow hover:from-indigo-400 hover:to-sky-400 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send size={16} />}
-                    Gửi
+                    Gui
                   </button>
                 </div>
               </div>
