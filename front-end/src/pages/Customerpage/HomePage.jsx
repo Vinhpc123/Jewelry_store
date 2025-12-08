@@ -1,0 +1,413 @@
+﻿import React, { useEffect, useMemo, useState } from "react";
+import Header from "../../components/Customer/Header";
+import Footer from "../../components/Customer/Footer";
+import instance from "../../lib/api";
+
+// Câu chuyện ngắn + ảnh (layout theo mẫu)
+function StorySection({ story }) {
+  return (
+    <section className="mx-auto max-w-6xl px-4 py-12">
+      <div className="grid gap-10 md:grid-cols-[2fr_1.1fr] items-stretch">
+        {/* Ảnh lớn bên trái */}
+        <div className="h-full overflow-hidden bg-slate-100 shadow-sm">
+          <img
+            src={story.largeImage}
+            alt={story.title}
+            className="h-full w-full object-cover"
+          />
+        </div>
+
+        {/* Ảnh nhỏ + text bên phải */}
+        <div className="flex h-full flex-col gap-6 md:items-start">
+          {/* Ảnh nhỏ */}
+          <div className="w-full overflow-hidden bg-slate-100 shadow-sm flex-[0.6]">
+            <img
+              src={story.smallImage}
+              alt={`${story.title} - detail`}
+              className="h-full w-full object-cover"
+            />
+          </div>
+
+          {/* Text */}
+          <div className="w-full flex-[0.4] flex items-center md:items-start">
+            <div className="max-w-sm">
+              <h2 className="text-2xl font-semibold text-amber-800 sm:text-3xl">
+                {story.title}
+              </h2>
+              <p className="mt-3 text-sm text-slate-700 sm:text-base">
+                {story.description}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default function Storefront() {
+  const heroSlides = [
+    {
+      title: "Bộ Sưu Tập Năm 2025: Golden Heritage",
+      description:
+        "Khám phá vẻ đẹp tinh khôi và sức sống động của thiên nhiên trong từng thiết kế trang sức độc đáo.",
+      cta: "Khám Phá Ngay",
+      image: "/banner/banner1.jpg",
+    },
+    {
+      title: "Nét Đẹp Thanh Lịch",
+      description:
+        "Tinh tuyển chất liệu cao cấp, tạo nên những đường nét mềm mại và sang trọng cho mọi khoảnh khắc.",
+      cta: "Xem Bộ Sưu Tập",
+      image: "banner/banner2.jpg",
+    },
+    {
+      title: "Vầng Sáng Ngọc Trai",
+      description:
+        "Những thiết kế đậm chất nghệ thuật, tôn vinh vẻ đẹp dịu dàng và kiêu sa của phái đẹp.",
+      cta: "Khám Phá BST",
+      image: "banner/banner3.png",
+    },
+    {
+      title: "Ánh Kim Hiện Đại",
+      description:
+        "Kết hợp thủ công tinh xảo và phong cách tối giản, mang lại sự tinh tế trong từng chi tiết.",
+      cta: "Đặt Lịch Thử",
+      image: "banner/banner4.jpeg",
+    },
+  ];
+
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [newProducts, setNewProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [productsError, setProductsError] = useState(null);
+
+  const formatCurrency = useMemo(
+    () => (value) => {
+      if (value === null || value === undefined || value === "") return "";
+      const num = typeof value === "number" ? value : Number(String(value).replace(/[^0-9.-]+/g, ""));
+      if (Number.isNaN(num)) return "";
+      return `${num.toLocaleString("vi-VN")} VND`;
+    },
+    []
+  );
+
+  useEffect(() => {
+    const timer = setInterval(
+      () => setActiveSlide((prev) => (prev + 1) % heroSlides.length),
+      8000
+    );
+    return () => clearInterval(timer);
+  }, [heroSlides.length]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    const fetchProducts = async () => {
+      setProductsLoading(true);
+      setProductsError(null);
+      try {
+        const res = await instance.get("/api/jewelry");
+        if (ignore) return;
+        const items = Array.isArray(res.data) ? res.data : [];
+        setNewProducts(items.slice(0, 8));
+      } catch (err) {
+        if (ignore) return;
+        setProductsError(
+          err?.response?.data?.message || err.message || "Không thể tải sản phẩm."
+        );
+      } finally {
+        if (!ignore) setProductsLoading(false);
+      }
+    };
+
+    fetchProducts();
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const currentSlide = heroSlides[activeSlide];
+
+  const story = {
+    title: "Đeo trang sức là cách thể hiện bạn mà không cần một lời nói nào.",
+    description:
+      "Cuộc sống có bao lâu mà chần chờ, hãy cứ đeo trang sức như chưa từng được đeo nhé.",
+    largeImage:
+      "story/story1.png",
+    smallImage:
+      "story/story2.webp",
+  };
+
+  const featuredCollections = [
+    {
+      title: "Nhẫn",
+      image:
+        "bosuutap/nhẫn.webp",
+    },
+    {
+      title: "Dây Chuyền",
+      image:
+        "bosuutap/daychuyen.png",
+    },
+    {
+      title: "Vòng Tay",
+      image:
+        "bosuutap/vongtay.png",
+    },
+    {
+      title: "Bông Tai",
+      image:
+        "bosuutap/bongtai.png",
+    },
+  ];
+
+  const blogTips = [
+    {
+      title: "Bí quyết chọn nhẫn đính hôn vừa vặn",
+      excerpt:
+        "Đo size chuẩn, chọn kiểu dáng phù hợp bàn tay và cách bảo quản kim loại quý.",
+      image:
+        "blog/blog1.webp",
+    },
+    {
+      title: "Cách phối trang sức ngọc trai hiện đại",
+      excerpt:
+        "Layer nhẹ nhàng, kết hợp vàng hồng và ngọc trai cho phong cách thanh lịch.",
+      image:
+        "blog/blog2.jpg",
+    },
+    {
+      title: "Bảo quản đá quý để luôn sáng bền",
+      excerpt:
+        "Tránh hóa chất mạnh, cất trong hộp lót nhung và vệ sinh định kỳ đúng cách.",
+      image:
+        "blog/blog3.webp",
+    },
+  ];
+
+  return (
+    <>
+      <Header />
+      <main className="bg-white text-slate-900">
+        {/* Hero Slider */}
+        <section className="relative isolate overflow-hidden bg-white">
+          <div className="absolute inset-0 overflow-hidden">
+            {heroSlides.map((slide, idx) => (
+              <img
+                key={`${slide.title}-${idx}`}
+                src={slide.image}
+                alt={slide.title}
+                className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
+                  idx === activeSlide ? "opacity-100" : "opacity-0"
+                }`}
+              />
+            ))}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/10" />
+          </div>
+          <div className="relative flex min-h-[100vh] flex-col items-center justify-center px-4 py-24 text-center sm:px-10">
+            <h1 className="text-3xl font-bold text-white sm:text-4xl md:text-5xl">
+              {currentSlide.title}
+            </h1>
+            <p className="mt-3 max-w-3xl text-sm text-white/90 sm:text-base">
+              {currentSlide.description}
+            </p>
+            <button className="mt-6 rounded-full bg-white/85 px-6 py-2 text-sm font-semibold text-amber-800 shadow-md transition hover:bg-white">
+              {currentSlide.cta}
+            </button>
+            <div className="mt-6 flex items-center gap-2">
+              {heroSlides.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setActiveSlide(idx)}
+                  className={`h-2.5 w-2.5 rounded-full transition ${
+                    idx === activeSlide
+                      ? "bg-white"
+                      : "bg-white/50 hover:bg-white/80"
+                  }`}
+                  aria-label={`Chuyển đến banner ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Câu chuyện ngắn + ảnh */}
+        <StorySection story={story} />
+
+        {/* Bộ sưu tập nổi bật */}
+        <section className="mx-auto max-w-7xl px-6 sm:px-5 lg:px-10 pb-28 pt-10">
+          <div className="space-y-2 text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-amber-700">
+              Bộ Sưu Tập Nổi Bật
+            </p>
+            <h2 className="text-3xl font-bold sm:text-4xl">
+              Tôn Vinh Vẻ Đẹp Tinh Xảo
+            </h2>
+          </div>
+          <div className="mt-10 grid gap-10 md:grid-cols-4">
+            {featuredCollections.map((item) => (
+              <div
+                key={item.title}
+                className="group relative h-[450px] overflow-hidden shadow-lg ring-1 ring-slate-100 transition duration-500 hover:-translate-y-1 hover:shadow-2xl "
+              >
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-black/5 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-5">
+                  <p className="text-lg font-semibold text-white">{item.title}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Sản phẩm mới */}
+        <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-6 lg:px-8">
+          <div className="space-y-2 text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-amber-700">
+              Sản Phẩm Mới Nhất
+            </p>
+            <h2 className="text-3xl font-bold sm:text-4xl">
+              Nâng Tầm Phong Cách Của Bạn
+            </h2>
+          </div>
+
+          {productsError ? (
+            <p className="mt-4 text-center text-sm text-red-600">{productsError}</p>
+          ) : null}
+
+          {productsLoading ? (
+            <p className="mt-6 text-center text-sm text-slate-500">
+              Đang tải sản phẩm...
+            </p>
+          ) : null}
+
+          {!productsLoading && !productsError && newProducts.length === 0 ? (
+            <p className="mt-6 text-center text-sm text-slate-500">
+              Chưa có sản phẩm nào.
+            </p>
+          ) : null}
+
+          <div className="mt-10 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+            {newProducts.map((product) => {
+              const name = product.title || product.name || "Sản phẩm không tên";
+              const priceText =
+                product.price || product.price === 0
+                  ? formatCurrency(product.price)
+                  : "";
+
+              return (
+                <article
+                  key={product._id || product.id || name}
+                  className="group flex flex-col items-center rounded-3xl bg-white/90 p-6 shadow-sm ring-1 ring-slate-100 transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+                >
+                  {/* Khung ảnh kiểu lookbook, nền trắng, sp nằm giữa */}
+                  <div className="relative w-full aspect-square overflow-hidden rounded-2xl flex items-center justify-center">
+                    {product.image ? (
+                      <img
+                        src={product.image}
+                        alt={name}
+                        className="max-h-[90%] max-w-[90%] object-contain transition duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">
+                        Chưa có ảnh
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Tên & giá canh giữa, giống layout trong ảnh */}
+                  <div className="mt-5 space-y-1 text-center">
+                    <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-700">
+                      {name}
+                    </p>
+                    {priceText ? (
+                      <p className="text-sm font-semibold text-slate-900">
+                        {priceText}
+                      </p>
+                    ) : null}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+
+        {/* Blog & Tips */}
+        <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 lg:px-8">
+          <div className="space-y-2 text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-amber-700">
+              Blog & Tips
+            </p>
+            <h2 className="text-3xl font-bold sm:text-4xl">
+              Cảm Hứng & Kiến Thức Trang Sức
+            </h2>
+          </div>
+          <div className="mt-8 grid gap-6 md:grid-cols-3">
+            {blogTips.map((post) => (
+              <article
+                key={post.title}
+                className="flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100 transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+              >
+                <div className="aspect-[4/3] overflow-hidden bg-slate-100">
+                  <img
+                    src={post.image}
+                    alt={post.title}
+                    className="h-full w-full object-cover transition duration-500 hover:scale-105"
+                  />
+                </div>
+                <div className="flex flex-1 flex-col gap-2 px-4 py-4">
+                  <h3 className="text-lg font-semibold text-slate-900">
+                    {post.title}
+                  </h3>
+                  <p className="text-sm text-slate-600">{post.excerpt}</p>
+                  <button className="mt-auto w-fit text-sm font-semibold text-amber-700 hover:text-amber-800">
+                    Đọc thêm →
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {/* Nghệ thuật chế tác */}
+        <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 lg:px-8">
+          <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-100">
+            <div className="grid gap-0 md:grid-cols-2">
+              <div className="h-full">
+                <img
+                  src="chetacthucong/chetac1.jpg"
+                  alt="Chế tác thủ công"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="flex flex-col justify-center gap-4 px-8 py-10 sm:px-12">
+                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-amber-700">
+                  Nghệ Thuật Chế Tác Thủ Công
+                </p>
+                <h3 className="text-3xl font-bold leading-tight sm:text-4xl">
+                  Tỉ Mỉ Trong Từng Đường Nét
+                </h3>
+                <p className="text-base leading-relaxed text-slate-600">
+                  Mỗi thiết kế đều được chế tác bởi bàn tay tinh xảo của nghệ nhân, kết hợp giữa kỹ
+                  thuật truyền thống và cảm hứng hiện đại. Chúng tôi cam kết chất lượng và sự độc đáo trong
+                  từng sản phẩm, mang đến cho bạn những tuyệt tác mang dấu ấn riêng.
+                </p>
+                <button className="w-fit rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2">
+                  Tìm Hiểu Thêm
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </>
+  );
+}

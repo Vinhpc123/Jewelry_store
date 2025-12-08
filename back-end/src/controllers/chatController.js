@@ -7,7 +7,7 @@ export const sendMessageInternal = async (user, payload) => {
   const { conversationId, toUserId, content } = payload || {};
 
   if (!content || !content.trim()) {
-    throw new Error("Noi dung tin nhan khong hop le");
+    throw new Error("Nội dung tin nhắn không hợp lệ ");
   }
 
   let conversation = null;
@@ -15,10 +15,10 @@ export const sendMessageInternal = async (user, payload) => {
   if (conversationId) {
     conversation = await Conversation.findById(conversationId);
     if (!conversation) {
-      throw new Error("Khong tim thay cuoc tro chuyen");
+      throw new Error("Không tìm thấy cuộc trò chuyện");
     }
     if (user.role === "customer" && String(conversation.userId) !== String(user._id)) {
-      throw new Error("Khong co quyen truy cap cuoc tro chuyen nay");
+      throw new Error("Không có quyền truy cập cuộc trò chuyện này");
     }
   } else if (user.role === "customer") {
     conversation =
@@ -29,7 +29,7 @@ export const sendMessageInternal = async (user, payload) => {
       (await Conversation.findOne({ userId: toUserId })) ||
       (await Conversation.create({ userId: toUserId, assignedAdminId: user._id }));
   } else {
-    throw new Error("Can conversationId hoac toUserId de gui tin nhan");
+    throw new Error("Cần conversationId hoặc toUserId để gửi tin nhắn");
   }
 
   conversation.status = "open";
@@ -75,7 +75,7 @@ export const sendMessage = async (req, res) => {
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Khong the gui tin nhan", error: error.message || error.toString() });
+      .json({ message: "Không thể gửi tin nhắn", error: error.message || error.toString() });
   }
 };
 
@@ -94,7 +94,7 @@ export const listConversations = async (req, res) => {
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Khong the lay danh sach cuoc tro chuyen", error: error.message });
+      .json({ message: "Không thể lấy danh sách cuộc trò chuyện", error: error.message });
   }
 };
 
@@ -109,19 +109,19 @@ export const getMessagesByConversation = async (req, res) => {
 
     const conversation = await Conversation.findById(conversationId);
     if (!conversation) {
-      return res.status(404).json({ message: "Khong tim thay cuoc tro chuyen" });
+      return res.status(404).json({ message: "Không tìm thấy cuộc trò chuyện" });
     }
 
     if (
       req.user.role === "customer" &&
       String(conversation.userId) !== String(req.user._id)
     ) {
-      return res.status(403).json({ message: "Khong co quyen xem cuoc tro chuyen nay" });
+      return res.status(403).json({ message: "Không có quyền xem cuộc trò chuyện này" });
     }
 
     if (ALLOWED_STAFF_ROLES.has(req.user.role) && req.query.userId) {
       if (String(conversation.userId) !== String(req.query.userId)) {
-        return res.status(403).json({ message: "Cuoc tro chuyen khong thuoc ve user nay" });
+        return res.status(403).json({ message: "Cuộc trò chuyện không thuộc về user này" });
       }
     }
 
@@ -172,6 +172,6 @@ export const getMessagesByConversation = async (req, res) => {
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Khong the lay tin nhan", error: error.message || error.toString() });
+      .json({ message: "Không thể lấy tin nhắn", error: error.message || error.toString() });
   }
 };

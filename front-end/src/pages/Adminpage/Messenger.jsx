@@ -206,19 +206,19 @@ export default function Messenger() {
                     <MessageSquare size={18} />
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Ho tro</p>
-                    <p className="text-sm font-semibold">Cuoc tro chuyen</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">HỖ TRỢ</p>
+                    <p className="text-sm font-semibold">Cuộc trò chuyện</p>
                   </div>
                 </div>
                 <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600 border border-emerald-100">
-                  {conversations.length} phien
+                  {conversations.length} phiên
                 </span>
               </div>
 
               <div className="max-h-[70vh] divide-y overflow-y-auto">
                 {loading && !conversations.length ? (
                   <div className="flex items-center gap-2 p-4 text-sm text-zinc-500">
-                    <Loader2 className="h-4 w-4 animate-spin" /> Dang tai...
+                    <Loader2 className="h-4 w-4 animate-spin" /> Đang tải...
                   </div>
                 ) : (
                   conversations.map((c) => {
@@ -251,7 +251,7 @@ export default function Messenger() {
                           </div>
                           {unread > 0 ? (
                             <span className="rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-semibold text-emerald-700">
-                              {unread} moi
+                              {unread} mới
                             </span>
                           ) : null}
                         </div>
@@ -262,7 +262,7 @@ export default function Messenger() {
 
                 {!conversations.length && !loading ? (
                   <div className="p-4 text-center text-sm text-zinc-500">
-                    Chua co cuoc tro chuyen
+                    Chưa có cuộc trò chuyện
                   </div>
                 ) : null}
               </div>
@@ -277,9 +277,9 @@ export default function Messenger() {
                     <Users size={16} />
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Dang chat</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Đang chat</p>
                     <p className="text-sm font-semibold">
-                      {activeUser?.name || activeUser?.email || "Chon mot cuoc tro chuyen"}
+                      {activeUser?.name || activeUser?.email || "Chọn một cuộc trò chuyện"}
                     </p>
                   </div>
                 </div>
@@ -292,7 +292,7 @@ export default function Messenger() {
               <div className="flex-1 space-y-2 overflow-y-auto bg-gradient-to-br from-indigo-50/60 via-white to-sky-50 px-4 py-4">
                 {loading && !messages.length ? (
                   <div className="flex items-center gap-2 text-sm text-zinc-500">
-                    <Loader2 className="h-4 w-4 animate-spin" /> Dang tai tin nhan...
+                    <Loader2 className="h-4 w-4 animate-spin" /> Đang tải tin nhắn...
                   </div>
                 ) : null}
 
@@ -342,7 +342,7 @@ export default function Messenger() {
                   <input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder="Nhap tin nhan..."
+                    placeholder="Nhập tin nhắn..."
                     className="w-full border-none bg-transparent text-sm text-zinc-800 placeholder:text-zinc-400 focus:outline-none"
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {

@@ -15,7 +15,7 @@ export default function LoginForm() {
 
   function onSubmit(e) {
     e.preventDefault();
-    // keep old behavior for quick debug
+    // giữ nguyên hàm onSubmit để tránh reload trang
   }
 
   const navigate = useNavigate();
@@ -26,16 +26,16 @@ export default function LoginForm() {
       const { data } = await login({ email, password });
       if (data.token) {
         setAuthToken(data.token);
-        // store basic user info for client-side role checks
+        // lưu thông tin người dùng cơ bản để kiểm tra vai trò phía client
         if (data.user) setUser(data.user);
       }
       alert("Đăng nhập thành công");
-      // Redirect admin users to admin area, others to home
+      // Chuyển hướng người dùng admin đến khu vực quản trị, người dùng khác đến trang chủ
       const role = data?.user?.role;
       if (role === "admin") {
         navigate("/admin");
       } else {
-        navigate("/");
+        navigate("/shop");
       }
     } catch (err) {
       const message = err?.response?.data?.message || err.message || "Lỗi đăng nhập";
