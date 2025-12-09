@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import Header from "../../components/Customer/Header";
 import Footer from "../../components/Customer/Footer";
 import instance from "../../lib/api";
@@ -144,21 +145,26 @@ export default function Storefront() {
       title: "Nhẫn",
       image:
         "bosuutap/nhẫn.webp",
+      path: "/Nhan",
+      
     },
     {
       title: "Dây Chuyền",
       image:
         "bosuutap/daychuyen.png",
+      path: "/Daychuyen",
     },
     {
       title: "Vòng Tay",
       image:
         "bosuutap/vongtay.png",
+      path: "/Vongtay",
     },
     {
       title: "Bông Tai",
       image:
         "bosuutap/bongtai.png",
+      path: "/Bongtai",
     },
   ];
 
@@ -248,9 +254,10 @@ export default function Storefront() {
           </div>
           <div className="mt-10 grid gap-10 md:grid-cols-4">
             {featuredCollections.map((item) => (
-              <div
+              <Link
+                to={item.path}
                 key={item.title}
-                className="group relative h-[450px] overflow-hidden shadow-lg ring-1 ring-slate-100 transition duration-500 hover:-translate-y-1 hover:shadow-2xl "
+                className="group relative block h-[450px] overflow-hidden shadow-lg ring-1 ring-slate-100 transition duration-500 hover:-translate-y-1 hover:shadow-2xl "
               >
                 <img
                   src={item.image}
@@ -261,83 +268,89 @@ export default function Storefront() {
                 <div className="absolute bottom-0 left-0 right-0 p-5">
                   <p className="text-lg font-semibold text-white">{item.title}</p>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>
 
         {/* Sản phẩm mới */}
-        <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-6 lg:px-8">
+        <section className="mx-auto max-w-7xl px-6 sm:px-5 lg:px-10 pb-16">
           <div className="space-y-2 text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-amber-700">
-              Sản Phẩm Mới Nhất
-            </p>
-            <h2 className="text-3xl font-bold sm:text-4xl">
-              Nâng Tầm Phong Cách Của Bạn
-            </h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-amber-700">Sản phẩm mới</p>
+            <h2 className="text-3xl font-bold sm:text-4xl">Những sản phẩm nổi bật</h2>
           </div>
 
           {productsError ? (
-            <p className="mt-4 text-center text-sm text-red-600">{productsError}</p>
+            <p className="mt-6 text-center text-sm text-red-600">{productsError}</p>
           ) : null}
 
           {productsLoading ? (
-            <p className="mt-6 text-center text-sm text-slate-500">
-              Đang tải sản phẩm...
-            </p>
+            <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="animate-pulse rounded-3xl bg-white/80 p-5 shadow-sm ring-1 ring-[#eadfce]"
+                >
+                  <div className="aspect-square rounded-2xl bg-[#f2e6d7]" />
+                  <div className="mt-4 h-3 w-3/4 rounded bg-[#f2e6d7]" />
+                  <div className="mt-2 h-3 w-1/2 rounded bg-[#f2e6d7]" />
+                </div>
+              ))}
+            </div>
           ) : null}
 
           {!productsLoading && !productsError && newProducts.length === 0 ? (
-            <p className="mt-6 text-center text-sm text-slate-500">
-              Chưa có sản phẩm nào.
-            </p>
+            <div className="mt-12 flex flex-col items-center rounded-3xl bg-white p-8 text-center shadow-sm ring-1 ring-[#eadfce]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f2e6d7] text-[#9c7c61]">:)</div>
+              <p className="mt-4 text-sm font-semibold text-[#2f241a]">Chưa có sản phẩm để hiển thị.</p>
+              <p className="mt-1 text-xs text-[#7b6654]">Quay lại sau để xem các mẫu mới nhất.</p>
+            </div>
           ) : null}
 
-          <div className="mt-10 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-            {newProducts.map((product) => {
-              const name = product.title || product.name || "Sản phẩm không tên";
-              const priceText =
-                product.price || product.price === 0
-                  ? formatCurrency(product.price)
-                  : "";
-
-              return (
-                <article
-                  key={product._id || product.id || name}
-                  className="group flex flex-col items-center rounded-3xl bg-white/90 p-6 shadow-sm ring-1 ring-slate-100 transition duration-300 hover:-translate-y-1 hover:shadow-lg"
-                >
-                  {/* Khung ảnh kiểu lookbook, nền trắng, sp nằm giữa */}
-                  <div className="relative w-full aspect-square overflow-hidden rounded-2xl flex items-center justify-center">
-                    {product.image ? (
-                      <img
-                        src={product.image}
-                        alt={name}
-                        className="max-h-[90%] max-w-[90%] object-contain transition duration-500 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">
-                        Chưa có ảnh
+          {!productsLoading && !productsError && newProducts.length > 0 ? (
+            <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+              {newProducts.map((item) => {
+                const name = item.title || item.name || "Nhan chưa đặt tên";
+                const priceText = item.price || item.price === 0 ? formatCurrency(item.price) : "";
+                return (
+                  <article
+                    key={item._id || item.id || name}
+                    className="group flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfce] transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+                  >
+                    <div className="relative overflow-hidden bg-[#fff]">
+                      <div className="aspect-square w-full">
+                        {item.image ? (
+                          <img
+                            src={item.image}
+                            alt={name}
+                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-xs text-[#7b6654]">Chưa có ảnh</div>
+                        )}
                       </div>
-                    )}
-                  </div>
-
-                  {/* Tên & giá canh giữa, giống layout trong ảnh */}
-                  <div className="mt-5 space-y-1 text-center">
-                    <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-700">
-                      {name}
-                    </p>
-                    {priceText ? (
-                      <p className="text-sm font-semibold text-slate-900">
-                        {priceText}
-                      </p>
-                    ) : null}
-                  </div>
-                </article>
-              );
-            })}
-          </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 transition duration-300 group-hover:opacity-100" />
+                    </div>
+                    <div className="flex flex-1 flex-col gap-2 px-5 py-4">
+                      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#2f241a]">{name}</p>
+                      {priceText ? <p className="text-base font-semibold text-[#9a785d]">{priceText}</p> : null}
+                      <p className="text-xs text-[#7b6654] line-clamp-2">{item.description || "Thiet ke tinh xao, phu hop nhieu phong cach."}</p>
+                      <div className="mt-auto flex items-center justify-between">
+                        <div className="rounded-full bg-[#f8f1e7] px-3 py-1 text-[11px] font-semibold text-[#9c7c61]">{item.material || "Alloy / Gold"}</div>
+                        <Link
+                          to={`/detail/${item._id || item.id}`}
+                          className="rounded-full border border-[#2f241a] px-4 py-2 text-[11px] font-semibold text-[#2f241a] transition hover:bg-[#2f241a] hover:text-white"
+                        >
+                          Xem chi tiet
+                        </Link>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : null}
         </section>
-
 
         {/* Blog & Tips */}
         <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 lg:px-8">
@@ -399,7 +412,8 @@ export default function Storefront() {
                   thuật truyền thống và cảm hứng hiện đại. Chúng tôi cam kết chất lượng và sự độc đáo trong
                   từng sản phẩm, mang đến cho bạn những tuyệt tác mang dấu ấn riêng.
                 </p>
-                <button className="w-fit rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2">
+                <button 
+                className="w-fit rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2 path:/about.jsx">
                   Tìm Hiểu Thêm
                 </button>
               </div>
@@ -411,3 +425,5 @@ export default function Storefront() {
     </>
   );
 }
+
+

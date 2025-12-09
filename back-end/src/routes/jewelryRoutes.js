@@ -3,6 +3,7 @@ import { protect, authorize } from "../../middleware/authMiddleware.js";
 
 import {
   getAllJewelry,
+  getJewelryById,
   createJewelry,
   updateJewelry,
   deleteJewelry,
@@ -11,6 +12,7 @@ import {
 const router = express.Router();
 
 router.get("/", protect, getAllJewelry);
+router.get("/:id", protect, getJewelryById);
 router.post("/", protect, authorize("admin"), createJewelry);
 router.put("/:id", protect, authorize("admin"), updateJewelry);
 router.delete("/:id", protect, authorize("admin"), deleteJewelry);

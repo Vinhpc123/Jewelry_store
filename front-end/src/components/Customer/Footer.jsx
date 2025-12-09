@@ -2,11 +2,12 @@
 import { Diamond, Facebook, Instagram, Mail, Phone } from "lucide-react";
 
 const navLinks = [
-  { href: "#collections", label: "Bộ Sưu Tập" },
-  { href: "#rings", label: "Nhẫn" },
-  { href: "#necklaces", label: "Dây Chuyền" },
-  { href: "#bracelets", label: "Vòng Tay" },
-  { href: "#about", label: "Về Chúng Tôi" },
+  { href: "/shop", label: "Bộ Sưu Tập" },
+  { href: "/Nhan", label: "Nhẫn" },
+  { href: "/Daychuyen", label: "Dây Chuyền" },
+  { href: "/Vongtay", label: "Vòng Tay" },
+  { href: "/Bongtai", label: "Bông Tai" },
+  { href: "/about", label: "Về Chúng Tôi" },
   { href: "/chat", label: "Liên Hệ" },
 ];
 

@@ -1,4 +1,6 @@
 import React from "react";
+import Header from "../../components/Customer/Header";
+import Footer from "../../components/Customer/Footer";
 import { io } from "socket.io-client";
 import {
   fetchConversations,
@@ -24,9 +26,10 @@ export default function Chat() {
   const [loading, setLoading] = React.useState(false);
   const [sending, setSending] = React.useState(false);
   const socketRef = React.useRef(null);
-  const bottomRef = React.useRef(null);
+  const messagesRef = React.useRef(null);
   const conversationRef = React.useRef(null);
   const readyRef = React.useRef(false);
+  const prevCountRef = React.useRef(0);
   const me = getUser();
 
   React.useEffect(() => {
@@ -52,7 +55,7 @@ export default function Chat() {
           setMessages(msgRes?.data?.messages || []);
         }
       } catch (error) {
-        console.error("Tai cuoc tro chuyen that bai", error);
+        console.error("Tải cuộc trò chuyện thất bại", error);
       } finally {
         setLoading(false);
       }
@@ -81,9 +84,12 @@ export default function Chat() {
   }, []);
 
   React.useEffect(() => {
-    if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    if (!messagesRef.current) return;
+    const prev = prevCountRef.current;
+    const current = messages.length;
+    prevCountRef.current = current;
+    if (prev === 0) return; // bỏ qua lần đầu tải
+    messagesRef.current.scrollTo({ top: messagesRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
   React.useEffect(() => {
@@ -98,7 +104,7 @@ export default function Chat() {
         });
         setMessages(res?.data?.messages || []);
       } catch (error) {
-        console.error("Tai tin nhan that bai", error);
+        console.error("Tải tin nhắn thất bại", error);
       } finally {
         setLoading(false);
       }
@@ -116,100 +122,106 @@ export default function Chat() {
       if (msg) setMessages((prev) => [...prev, msg]);
       setInput("");
     } catch (error) {
-      console.error("Gui tin nhan that bai", error);
+      console.error("Gửi tin nhắn thất bại", error);
     } finally {
       setSending(false);
     }
   };
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-3xl flex-col bg-gradient-to-br from-sky-50 via-white to-indigo-50 px-4 py-6">
-      <header className="mb-4 flex items-center justify-between rounded-2xl border border-indigo-100 bg-white/90 px-4 py-3 shadow-sm">
-        <div>
-          <p className="text-[11px] uppercase tracking-[0.2em] text-indigo-500">Ho tro</p>
-          <h1 className="text-lg font-semibold text-zinc-900">Chat voi Admin</h1>
-          <p className="text-sm text-zinc-500">Nhan phan hoi nhanh tu doi ngu ho tro.</p>
-        </div>
-        <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-100">
-          {me?.email || "Ban"}
-        </div>
-      </header>
+    <>
+      <Header />
+      <div className="mx-auto flex min-h-screen max-w-3xl flex-col bg-gradient-to-br from-sky-50 via-white to-indigo-5 px-2 py-6">
+        <header className="mb-4 flex items-center justify-between rounded-2xl border border-indigo-100 bg-white/90 px-4 py-2 shadow-sm">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.2em] text-indigo-500">Hỗ trợ</p>
+            <h1 className="text-lg font-semibold text-zinc-900">Chat với Admin</h1>
+            <p className="text-sm text-zinc-500">Nhận phản hồi nhanh từ đội ngũ hỗ trợ.</p>
+          </div>
+          <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-100">
+            {me?.email || "Khách"} 
+          </div>
+        </header>
 
-      <div className="flex-1 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
-        <div className="h-[65vh] space-y-3 overflow-y-auto bg-gradient-to-br from-indigo-50/50 via-white to-sky-50 px-4 py-4">
-          {loading && !messages.length ? (
-            <div className="text-sm text-zinc-500">Dang tai tin nhan...</div>
-          ) : null}
+        <div className="flex-1 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+          <div
+            ref={messagesRef}
+            className="h-[65vh] space-y-3 overflow-y-auto bg-gradient-to-br from-indigo-50/50 via-white to-sky-50 px-4 py-4"
+          >
+            {loading && !messages.length ? (
+              <div className="text-sm text-zinc-500">Đang tải tin nhắn...</div>
+            ) : null}
 
-          {(() => {
-            let lastDate = "";
-            return messages.map((m, idx) => {
-              const isMe = String(m.senderId) === String(me?._id);
-              const dateLabel = formatDateLabel(m.createdAt);
-              const showDate = dateLabel && dateLabel !== lastDate;
-              lastDate = dateLabel || lastDate;
-              return (
-                <React.Fragment key={m._id || idx}>
-                  {showDate ? (
-                    <div className="flex justify-center py-1 text-[11px] font-semibold text-zinc-500">
-                      {dateLabel}
-                    </div>
-                  ) : null}
-                  <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                    <div
-                      className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm shadow ${
-                        isMe
-                          ? "bg-gradient-to-r from-indigo-500 to-sky-500 text-white"
-                          : "bg-white text-zinc-800 border border-zinc-200"
-                      }`}
-                    >
-                      <p className="whitespace-pre-wrap break-words">{m.content}</p>
+            {(() => {
+              let lastDate = "";
+              return messages.map((m, idx) => {
+                const isMe = String(m.senderId) === String(me?._id);
+                const dateLabel = formatDateLabel(m.createdAt);
+                const showDate = dateLabel && dateLabel !== lastDate;
+                lastDate = dateLabel || lastDate;
+                return (
+                  <React.Fragment key={m._id || idx}>
+                    {showDate ? (
+                      <div className="flex justify-center py-1 text-[11px] font-semibold text-zinc-500">
+                        {dateLabel}
+                      </div>
+                    ) : null}
+                    <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                       <div
-                        className={`mt-1 text-[11px] ${
-                          isMe ? "text-indigo-100/90" : "text-zinc-500"
+                        className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm shadow ${
+                          isMe
+                            ? "bg-gradient-to-r from-indigo-500 to-sky-500 text-white"
+                            : "bg-white text-zinc-800 border border-zinc-200"
                         }`}
                       >
-                        {new Date(m.createdAt).toLocaleTimeString()}
+                        <p className="whitespace-pre-wrap break-words">{m.content}</p>
+                        <div
+                          className={`mt-1 text-[11px] ${
+                            isMe ? "text-indigo-100/90" : "text-zinc-500"
+                          }`}
+                        >
+                          {new Date(m.createdAt).toLocaleTimeString()}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </React.Fragment>
-              );
-            });
-          })()}
-          <div ref={bottomRef} />
-          {!messages.length && !loading ? (
-            <div className="text-center text-sm text-zinc-500">Bat dau tro chuyen voi chung toi.</div>
-          ) : null}
-        </div>
+                  </React.Fragment>
+                );
+              });
+            })()}
+            {!messages.length && !loading ? (
+              <div className="text-center text-sm text-zinc-500">Bắt đầu trò chuyện với chúng tôi.</div>
+            ) : null}
+          </div>
 
-        <div className="border-t bg-white/90 p-4 backdrop-blur">
-          <div className="flex items-center gap-3 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-2 shadow-sm focus-within:border-indigo-200 focus-within:ring-2 focus-within:ring-indigo-100">
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Nhap tin nhan..."
-              className="w-full border-none bg-transparent text-sm text-zinc-800 placeholder:text-zinc-400 focus:outline-none"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
-            />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || sending}
-              className="flex items-center gap-1 rounded-full bg-gradient-to-r from-indigo-500 to-sky-500 px-4 py-2 text-sm font-semibold text-white shadow hover:from-indigo-400 hover:to-sky-400 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {sending ? (
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-transparent" />
-              ) : null}
-              Gui
-            </button>
+          <div className="border-t bg-white/90 p-4 backdrop-blur">
+            <div className="flex items-center gap-3 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-2 shadow-sm focus-within:border-indigo-200 focus-within:ring-2 focus-within:ring-indigo-100">
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Nhập tin nhắn..."
+                className="w-full border-none bg-transparent text-sm text-zinc-800 placeholder:text-zinc-400 focus:outline-none"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+              />
+              <button
+                onClick={handleSend}
+                disabled={!input.trim() || sending}
+                className="flex items-center gap-1 rounded-full bg-gradient-to-r from-indigo-500 to-sky-500 px-4 py-2 text-sm font-semibold text-white shadow hover:from-indigo-400 hover:to-sky-400 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {sending ? (
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-transparent" />
+                ) : null}
+                Gửi
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 }

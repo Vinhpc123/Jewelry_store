@@ -518,10 +518,10 @@ function ProductModal({
               className="w-full rounded border border-zinc-300 bg-white p-2"
             >
               <option value="">-- Chọn danh mục --</option>
-              <option value="Nhan">Nhẫn</option>
-              <option value="Vong tay">Vòng tay</option>
-              <option value="Day chuyen">Dây chuyền</option>
-              <option value="Bong tai">Bông tai</option>
+              <option value="Nhẫn">Nhẫn</option>
+              <option value="Vòng tay">Vòng tay</option>
+              <option value="Dây chuyền">Dây chuyền</option>
+              <option value="Bông tai">Bông tai</option>
             </select>
           </div>
 

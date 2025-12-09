@@ -29,6 +29,20 @@ export const getAllJewelry = async (req, res) => {
   }
 };
 
+// Lay chi tiet san pham
+export const getJewelryById = async (req, res) => {
+  try {
+    const item = await Jewelry.findById(req.params.id);
+    if (!item) {
+      return res.status(404).json({ message: "Khong ton tai" });
+    }
+    res.status(200).json(item);
+  } catch (error) {
+    console.error("Loi khi lay chi tiet san pham:", error);
+    res.status(500).json({ message: "Loi he thong" });
+  }
+};
+
 // Tao san pham
 export const createJewelry = async (req, res) => {
   try {
