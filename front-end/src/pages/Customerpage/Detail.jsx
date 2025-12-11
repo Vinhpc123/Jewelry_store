@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
+import { useCart } from "../../context/CartContext";
 import { Link, useParams } from "react-router-dom";
 import Header from "../../components/Customer/Header";
 import Footer from "../../components/Customer/Footer";
@@ -6,6 +7,7 @@ import instance from "../../lib/api";
 
 export default function DetailPage() {
   const { id } = useParams();
+  const { addToCart } = useCart();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -136,7 +138,10 @@ export default function DetailPage() {
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-3">
-                  <button className="rounded-full bg-[#2f241a] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                  <button
+                    className="rounded-full bg-[#2f241a] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                    onClick={() => addToCart(product, 1)}
+                  >
                     Thêm vào giỏ
                   </button>
                   <Link
@@ -155,4 +160,23 @@ export default function DetailPage() {
     </>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

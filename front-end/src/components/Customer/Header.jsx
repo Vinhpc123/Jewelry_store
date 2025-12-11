@@ -1,11 +1,12 @@
-﻿import React from "react";
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Diamond, Search, ShoppingBag, User } from "lucide-react";
 import { getUser, setAuthToken, setUser } from "../../lib/api";
 import useSearchPage from "../../lib/hooks/useSearchPage";
+import { useCart } from "../../context/CartContext";
 
 const navLinks = [
-  { href: "/shop", label: "Bộ Sưu Tập" },
+  { href: "/shop", label: "Trang chủ" },
   { href: "/Nhan", label: "Nhẫn" },
   { href: "/Daychuyen", label: "Dây Chuyền" },
   { href: "/Vongtay", label: "Vòng Tay" },
@@ -20,6 +21,7 @@ export default function Header() {
   const [openSearch, setOpenSearch] = React.useState(false);
   const [openAccount, setOpenAccount] = React.useState(false);
   const accountRef = React.useRef(null);
+  const { itemCount } = useCart();
   const { searchTerm, setSearchTerm, results, loading } = useSearchPage({
     endpoint: "/api/jewelry",
     minLength: 2,
@@ -94,13 +96,18 @@ export default function Header() {
             >
               <Search className="h-5 w-5" />
             </button>
-            <button
-              type="button"
+            <Link
+              to="/cart"
               aria-label="Giỏ hàng"
-              className="rounded-full p-2 transition hover:bg-zinc-100"
+              className="relative rounded-full p-2 transition hover:bg-zinc-100"
             >
               <ShoppingBag className="h-5 w-5" />
-            </button>
+              {itemCount > 0 ? (
+                <span className="absolute -right-1 -top-1 grid min-h-[18px] min-w-[18px] place-items-center rounded-full bg-[#2f241a] px-1 text-[11px] font-semibold text-white">
+                  {itemCount}
+                </span>
+              ) : null}
+            </Link>
             {me ? (
               <div className="relative" ref={accountRef}>
                 <button
@@ -137,7 +144,7 @@ export default function Header() {
                         Hồ sơ của tôi
                       </Link>
                       <Link
-                        to="/customer/orders"
+                        to="/orders"
                         className="block px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 border-t border-zinc-100"
                       >
                         Đơn hàng của tôi
@@ -156,7 +163,7 @@ export default function Header() {
             ) : (
               <Link
                 to="/"
-                aria-label="Đăng nhập"
+                aria-label="Dang nh?p"
                 className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800"
               >
                 Đăng nhập
@@ -183,7 +190,7 @@ function SearchPanel({ open, onClose, searchTerm, setSearchTerm, results, loadin
     if (value === null || value === undefined || value === "") return "";
     const num = typeof value === "number" ? value : Number(String(value).replace(/[^0-9.-]+/g, ""));
     if (Number.isNaN(num)) return "";
-    return `${num.toLocaleString("vi-VN")} VNĐ`;
+    return `${num.toLocaleString("vi-VN")} VND`;
   };
 
   return (
@@ -223,25 +230,48 @@ function SearchPanel({ open, onClose, searchTerm, setSearchTerm, results, loadin
           ) : null}
           {!loading && results.length > 0 ? (
             <ul className="divide-y divide-zinc-100">
-              {results.map((item) => (
-                <li key={item._id || item.id || item.name} className="py-2">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="font-medium text-zinc-900">{item.name || item.title || "Không tên"}</p>
-                      {item.price ? (
-                        <p className="text-xs text-zinc-500">{formatCurrency(item.price)}</p>
-                      ) : null}
-                    </div>
-                    {item.image ? (
-                      <img
-                        src={item.image}
-                        alt={item.name || item.title || "Item"}
-                        className="h-12 w-12 rounded-md object-cover"
-                      />
-                    ) : null}
-                  </div>
-                </li>
-              ))}
+              {results.map((item) => {
+                const id = item._id || item.id || item.productId;
+                return (
+                  <li key={id || item.name} className="py-2">
+                    {id ? (
+                      <Link
+                        to={`/detail/${id}`}
+                        onClick={onClose}
+                        className="flex items-center justify-between gap-3 rounded-md px-2 py-1 transition hover:bg-zinc-50"
+                      >
+                        <div>
+                          <p className="font-medium text-zinc-900">{item.name || item.title || "Không có tên"}</p>
+                          {item.price ? <p className="text-xs text-zinc-500">{formatCurrency(item.price)}</p> : null}
+                        </div>
+                        {item.image ? (
+                          <img
+                            src={item.image}
+                            alt={item.name || item.title || "Item"}
+                            className="h-12 w-12 rounded-md object-cover"
+                          />
+                        ) : null}
+                      </Link>
+                    ) : (
+                      <div className="flex items-center justify-between gap-3 rounded-md px-2 py-1">
+                        <div>
+                          <p className="font-medium text-zinc-900">{item.name || item.title || "Không có tên"}</p>
+                          {item.price ? (
+                            <p className="text-xs text-zinc-500">{formatCurrency(item.price)}</p>
+                          ) : null}
+                        </div>
+                        {item.image ? (
+                          <img
+                            src={item.image}
+                            alt={item.name || item.title || "Item"}
+                            className="h-12 w-12 rounded-md object-cover"
+                          />
+                        ) : null}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           ) : null}
           {searchTerm.trim().length < 2 ? (

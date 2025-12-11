@@ -11,6 +11,8 @@ import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
+import cartRoutes from "./routes/cartRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
 import { connectDB } from "./config/db.js";
 import dotenv from "dotenv";
 import { initSocket } from "./socket/index.js";
@@ -62,6 +64,8 @@ app.use("/api/jewelry", jewelryRouters);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/orders", orderRoutes);
 
 const io = initSocket(server);
 app.set("io", io);
