@@ -23,7 +23,7 @@ export default function OrderDetailPage() {
 
   useEffect(() => {
     if (!id) {
-      setError("Khong tim thay don hang.");
+      setError("Không tìm thấy đơn hàng.");
       setLoading(false);
       return;
     }
@@ -34,7 +34,7 @@ export default function OrderDetailPage() {
         const res = await instance.get(`/api/orders/${id}`);
         setOrder(res?.data || null);
       } catch (err) {
-        setError(err?.response?.data?.message || err.message || "Khong the tai don hang.");
+        setError(err?.response?.data?.message || err.message || "Không thể tải đơn hàng.");
       } finally {
         setLoading(false);
       }
@@ -50,10 +50,10 @@ export default function OrderDetailPage() {
   };
 
   const statusLabel = {
-    pending: "Dang xu ly",
-    paid: "Da thanh toan",
-    shipped: "Da giao",
-    cancelled: "Da huy",
+    pending: "Đang xử lý",
+    paid: "Đã thanh toán",
+    shipped: "Đã giao hàng",
+    cancelled: "Đã hủy",
   };
 
   const subtotal = (order?.items || []).reduce(
@@ -69,14 +69,14 @@ export default function OrderDetailPage() {
           <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 sm:px-6 lg:px-10">
             <nav className="text-xs uppercase tracking-[0.2em] text-[#7b6654]">
               <Link to="/shop" className="hover:text-[#2f241a]">
-                Trang chu
+                Trang chủ
               </Link>
               <span className="mx-2">/</span>
               <Link to="/orders" className="hover:text-[#2f241a]">
-                Don hang
+                Đơn hàng
               </Link>
               <span className="mx-2">/</span>
-              <span className="text-[#2f241a] font-semibold">Chi tiet</span>
+              <span className="text-[#2f241a] font-semibold">Chi tiết</span>
             </nav>
             <div className="flex items-center gap-3">
               <button
@@ -84,9 +84,9 @@ export default function OrderDetailPage() {
                 onClick={() => navigate(-1)}
                 className="rounded-full border border-[#2f241a] px-3 py-1 text-xs font-semibold text-[#2f241a] transition hover:bg-[#2f241a] hover:text-white"
               >
-                Quay lai
+                Quay lại
               </button>
-              <h1 className="text-3xl font-bold text-[#2f241a]">Don {id}</h1>
+              <h1 className="text-3xl font-bold text-[#2f241a]">Đơn {id}</h1>
             </div>
           </div>
         </section>
@@ -109,23 +109,23 @@ export default function OrderDetailPage() {
               <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-[#eadfce]">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm text-[#7b6654]">Ma don</p>
+                    <p className="text-sm text-[#7b6654]">Mã đơn</p>
                     <p className="text-lg font-semibold text-[#2f241a]">{order._id}</p>
                     <p className="text-xs text-[#7b6654]">
-                      Ngay: {order.createdAt ? new Date(order.createdAt).toLocaleString() : "Chua cap nhat"}
+                      Ngày: {order.createdAt ? new Date(order.createdAt).toLocaleString() : "Chưa cập nhật"}
                     </p>
                   </div>
                   <div
                     className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold ring-1 ${statusStyle[order.status] || "bg-zinc-50 text-zinc-700 ring-zinc-100"}`}
                   >
-                    {statusLabel[order.status] || order.status || "Chua cap nhat"}
+                    {statusLabel[order.status] || order.status || "Chưa cập nhật"}
                   </div>
                 </div>
               </div>
 
               <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
                 <div className="space-y-4 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-[#eadfce]">
-                  <h2 className="text-lg font-semibold text-[#2f241a]">San pham</h2>
+                  <h2 className="text-lg font-semibold text-[#2f241a]">Sản phẩm</h2>
                   <ul className="divide-y divide-[#eadfce]">
                     {order.items?.map((item, idx) => (
                       <li key={`${item.productId || idx}-${idx}`} className="flex gap-4 py-4">
@@ -134,7 +134,7 @@ export default function OrderDetailPage() {
                             <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center text-[11px] text-[#7b6654]">
-                              Khong anh
+                              Không ảnh
                             </div>
                           )}
                         </div>
@@ -151,31 +151,31 @@ export default function OrderDetailPage() {
                 </div>
 
                 <div className="space-y-4 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-[#eadfce]">
-                  <h2 className="text-lg font-semibold text-[#2f241a]">Thong tin giao hang</h2>
+                  <h2 className="text-lg font-semibold text-[#2f241a]">Thông tin giao hàng</h2>
                   <div className="space-y-2 text-sm text-[#4b3d30]">
-                    <p className="font-semibold text-[#2f241a]">{order.shipping?.fullName || "Chua co ten"}</p>
-                    <p>{order.shipping?.phone || "Chua co so dien thoai"}</p>
-                    <p>{order.shipping?.address || "Chua co dia chi"}</p>
-                    {order.shipping?.note ? <p className="text-[#7b6654]">Ghi chu: {order.shipping.note}</p> : null}
+                    <p className="font-semibold text-[#2f241a]">{order.shipping?.fullName || "Chưa có tên"}</p>
+                    <p>{order.shipping?.phone || "Chưa có số điện thoại"}</p>
+                    <p>{order.shipping?.address || "Chưa có địa chỉ"}</p>
+                    {order.shipping?.note ? <p className="text-[#7b6654]">Ghi chú: {order.shipping.note}</p> : null}
                   </div>
 
                   <div className="space-y-2 border-t border-[#eadfce] pt-4 text-sm text-[#4b3d30]">
                     <div className="flex justify-between">
-                      <span>Tam tinh</span>
+                      <span>Tạm tính</span>
                       <span className="font-semibold text-[#9a785d]">{formatCurrency(subtotal)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Phi van chuyen</span>
+                      <span>Phí vận chuyển</span>
                       <span className="font-semibold text-[#9a785d]">
                         {formatCurrency(order.shippingFee || 0)}
                       </span>
                     </div>
                     <div className="flex justify-between text-base font-semibold text-[#2f241a]">
-                      <span>Tong cong</span>
+                      <span>Tổng cộng</span>
                       <span>{formatCurrency(order.total)}</span>
                     </div>
                     <p className="text-xs text-[#7b6654]">
-                      Phuong thuc: {order.paymentMethod === "online" ? "Online" : "COD"}
+                      Phương thức: {order.paymentMethod === "online" ? "Online" : "COD"}
                     </p>
                   </div>
                 </div>

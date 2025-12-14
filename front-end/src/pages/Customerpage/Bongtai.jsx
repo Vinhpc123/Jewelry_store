@@ -205,14 +205,13 @@ export default function EarringsPage() {
                     key={item._id || item.id || name}
                     className="group flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfce] transition duration-300 hover:-translate-y-1 hover:shadow-lg"
                   >
-                    <div className="relative overflow-hidden bg-[#fff]">
+                    <Link
+                      to={`/detail/${item._id || item.id}`}
+                      className="relative block overflow-hidden bg-[#fff]"
+                    >
                       <div className="aspect-square w-full">
                         {item.image ? (
-                          <img
-                            src={item.image}
-                            alt={name}
-                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                          />
+                          <img src={item.image} alt={name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center text-xs text-[#7b6654]">
                             Chưa có ảnh
@@ -220,7 +219,8 @@ export default function EarringsPage() {
                         )}
                       </div>
                       <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 transition duration-300 group-hover:opacity-100" />
-                    </div>
+                    </Link>
+
                     <div className="flex flex-1 flex-col gap-2 px-5 py-4">
                       <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#2f241a]">
                         {name}

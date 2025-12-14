@@ -28,7 +28,7 @@ export default function OrdersPage() {
         const res = await instance.get("/api/orders/my");
         setOrders(Array.isArray(res?.data) ? res.data : []);
       } catch (err) {
-        setError(err?.response?.data?.message || err.message || "Khong the lay danh sach don hang.");
+        setError(err?.response?.data?.message || err.message || "Không thể lấy danh sách đơn hàng.");
       } finally {
         setLoading(false);
       }
@@ -44,10 +44,10 @@ export default function OrdersPage() {
   };
 
   const statusLabel = {
-    pending: "Dang xu ly",
-    paid: "Da thanh toan",
-    shipped: "Da giao",
-    cancelled: "Da huy",
+    pending: "Đang xử lý",
+    paid: "Đã thanh toán",
+    shipped: "Đã giao hàng",
+    cancelled: "Đã hủy",
   };
 
   return (
@@ -58,12 +58,12 @@ export default function OrdersPage() {
           <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 sm:px-6 lg:px-10">
             <nav className="text-xs uppercase tracking-[0.2em] text-[#7b6654]">
               <Link to="/shop" className="hover:text-[#2f241a]">
-                Trang chu
+                Trang chủ
               </Link>
               <span className="mx-2">/</span>
-              <span className="text-[#2f241a] font-semibold">Don hang cua toi</span>
+              <span className="text-[#2f241a] font-semibold">Đơn hàng của tôi</span>
             </nav>
-            <h1 className="text-3xl font-bold text-[#2f241a]">Don hang</h1>
+            <h1 className="text-3xl font-bold text-[#2f241a]">Đơn hàng</h1>
           </div>
         </section>
 
@@ -82,9 +82,9 @@ export default function OrdersPage() {
 
           {!loading && orders.length === 0 ? (
             <div className="rounded-2xl border border-[#eadfce] bg-white p-6 text-sm text-[#7b6654]">
-              Chua co don hang nao.{" "}
+              Chưa có đơn hàng nào.{" "}
               <Link to="/shop" className="font-semibold text-[#2f241a] hover:underline">
-                Tiep tuc mua sam.
+                Tiếp tục mua sắm.
               </Link>
             </div>
           ) : null}
@@ -96,18 +96,18 @@ export default function OrdersPage() {
                 className="flex flex-col gap-3 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#eadfce] sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="space-y-2">
-                  <p className="text-sm font-semibold text-[#2f241a]">Ma don: {order._id}</p>
+                  <p className="text-sm font-semibold text-[#2f241a]">Mã đơn: {order._id}</p>
                   <p className="text-xs text-[#7b6654]">
-                    Ngay: {order.createdAt ? new Date(order.createdAt).toLocaleString() : "Chua cap nhat"}
+                    Ngày: {order.createdAt ? new Date(order.createdAt).toLocaleString() : "Chưa cập nhật"}
                   </p>
                   <p className="text-sm text-[#4b3d30]">
-                    {order.items?.length || 0} san pham · Tong:{" "}
+                    {order.items?.length || 0} sản phẩm · Tổng:{" "}
                     <span className="font-semibold text-[#9a785d]">{formatCurrency(order.total)}</span>
                   </p>
                   <div
                     className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ${statusStyle[order.status] || "bg-zinc-50 text-zinc-700 ring-zinc-100"}`}
                   >
-                    {statusLabel[order.status] || order.status || "Chua cap nhat"}
+                    {statusLabel[order.status] || order.status || "Chưa cập nhật"}
                   </div>
                 </div>
                 <div className="flex gap-3">
@@ -116,7 +116,7 @@ export default function OrdersPage() {
                     className="rounded-full border border-[#2f241a] px-4 py-2 text-sm font-semibold text-[#2f241a] transition hover:bg-[#2f241a] hover:text-white"
                     onClick={() => navigate(`/orders/${order._id}`)}
                   >
-                    Xem chi tiet
+                    Xem chi tiết
                   </button>
                 </div>
               </div>

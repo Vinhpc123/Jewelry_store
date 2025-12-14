@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import instance, { getStoredToken } from "../lib/api";
+import instance, { getStoredToken, setAuthToken, setUser } from "../lib/api";
+
 
 const defaultCartValue = {
   items: [],
@@ -46,25 +47,36 @@ export function CartProvider({ children }) {
     fetchCart();
   }, [fetchCart]);
 
+  // front-end/src/context/CartContext.jsx
   const addToCart = useCallback(async (product, quantity = 1) => {
     const token = getStoredToken();
-    if (!token) {
-      window.location.href = "/"; // yêu cầu đăng nhập
-      return;
+    if (!token) return (window.location.href = "/login");
+
+    try {
+      const res = await instance.post("/api/cart/items", {
+        productId: product?._id || product?.id || product?.productId,
+        quantity,
+      });
+      setItems(res?.data?.items || []);
+      return res?.data;
+    } catch (err) {
+      if (err?.response?.status === 401) {
+        // phiên hết hạn hoặc token sai
+        setAuthToken(null);
+        setUser(null);
+        alert("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.");
+        window.location.href = "/login";
+        return;
+      }
+      throw err;
     }
-    const payload = {
-      productId: product?._id || product?.id || product?.productId,
-      quantity,
-    };
-    const res = await instance.post("/api/cart/items", payload);
-    setItems(res?.data?.items || []);
-    return res?.data;
   }, []);
+
 
   const updateQuantity = useCallback(async (productId, quantity) => {
     const token = getStoredToken();
     if (!token) {
-      window.location.href = "/";
+      window.location.href = "/login";
       return;
     }
     const res = await instance.post("/api/cart/items", { productId, quantity });
@@ -75,7 +87,7 @@ export function CartProvider({ children }) {
   const removeItem = useCallback(async (productId) => {
     const token = getStoredToken();
     if (!token) {
-      window.location.href = "/";
+      window.location.href = "/login";
       return;
     }
     const res = await instance.delete(`/api/cart/items/${productId}`);

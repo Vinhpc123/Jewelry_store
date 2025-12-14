@@ -46,7 +46,7 @@ export const getJewelryById = async (req, res) => {
 // Tao san pham
 export const createJewelry = async (req, res) => {
   try {
-    const { title, category, description, price, image, status, completedAt } = req.body;
+    const { title, category, description, price, image, status, completedAt, quantity } = req.body;
 
     if (!title || typeof title !== "string") {
       return res.status(400).json({ message: "Ten san pham khong hop le!" });
@@ -62,6 +62,7 @@ export const createJewelry = async (req, res) => {
       category,
       description,
       price: normalizedPrice,
+      quantity: Number.isFinite(Number(quantity)) ? Math.max(Number(quantity), 0) : 0,
       image,
       status,
       completedAt,
@@ -78,7 +79,7 @@ export const createJewelry = async (req, res) => {
 // Cap nhat san pham
 export const updateJewelry = async (req, res) => {
   try {
-    const { title, category, description, price, image, status, completedAt } = req.body;
+    const { title, category, description, price, image, status, completedAt, quantity } = req.body;
 
     const updatePayload = {};
     if (typeof title === "string") updatePayload.title = title.trim();
@@ -87,6 +88,13 @@ export const updateJewelry = async (req, res) => {
     if (typeof image === "string") updatePayload.image = image;
     if (typeof status === "string") updatePayload.status = status;
     if (completedAt !== undefined) updatePayload.completedAt = completedAt;
+    if (quantity !== undefined) {
+      const normalizedQty = Number(quantity);
+      if (Number.isNaN(normalizedQty) || normalizedQty < 0) {
+        return res.status(400).json({ message: "So luong khong hop le" });
+      }
+      updatePayload.quantity = normalizedQty;
+    }
 
     if (price !== undefined) {
       const normalizedPrice = Number(price);

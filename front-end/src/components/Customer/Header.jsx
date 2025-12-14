@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Diamond, Search, ShoppingBag, User } from "lucide-react";
 import { getUser, setAuthToken, setUser } from "../../lib/api";
 import useSearchPage from "../../lib/hooks/useSearchPage";
@@ -17,6 +17,8 @@ const navLinks = [
 
 export default function Header() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const pathname = location.pathname.toLowerCase();
   const [me, setMe] = React.useState(() => getUser());
   const [openSearch, setOpenSearch] = React.useState(false);
   const [openAccount, setOpenAccount] = React.useState(false);
@@ -64,27 +66,36 @@ export default function Header() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-zinc-700">
-            {navLinks.map((link) =>
-              link.href.startsWith("#") ? (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className="group relative transition hover:text-zinc-900"
-                >
-                  {link.label}
-                  <span className="absolute inset-x-0 -bottom-2 h-0.5 origin-center scale-x-0 bg-zinc-900 transition group-hover:scale-x-100" />
-                </a>
-              ) : (
+            {navLinks.map((link) => {
+              if (link.href.startsWith("#")) {
+                return (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    className="group relative transition hover:text-zinc-900"
+                  >
+                    {link.label}
+                    <span className="absolute inset-x-0 -bottom-2 h-0.5 origin-center scale-x-0 bg-zinc-900 transition group-hover:scale-x-100" />
+                  </a>
+                );
+              }
+
+              const active = pathname.startsWith(link.href.toLowerCase());
+              return (
                 <Link
                   key={link.href}
                   to={link.href}
-                  className="group relative transition hover:text-zinc-900"
+                  className={`group relative transition ${active ? "text-zinc-900" : "hover:text-zinc-900"}`}
                 >
                   {link.label}
-                  <span className="absolute inset-x-0 -bottom-2 h-0.5 origin-center scale-x-0 bg-zinc-900 transition group-hover:scale-x-100" />
+                  <span
+                    className={`absolute inset-x-0 -bottom-2 h-0.5 origin-center bg-zinc-900 transition ${
+                      active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+                    }`}
+                  />
                 </Link>
-              )
-            )}
+              );
+            })}
           </nav>
 
           <div className="flex items-center gap-4 text-zinc-800">
@@ -116,9 +127,13 @@ export default function Header() {
                   onClick={() => setOpenAccount((v) => !v)}
                   className="flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1.5 text-sm font-semibold text-zinc-800 shadow-sm transition hover:bg-zinc-200"
                 >
-                  <span className="grid h-8 w-8 place-items-center rounded-full bg-zinc-900 text-white">
-                    {userInitial || <User className="h-4 w-4" />}
-                  </span>
+                  {me?.avatar ? (
+                    <img src={me.avatar} alt="Avatar" className="h-8 w-8 rounded-full object-cover" />
+                  ) : (
+                    <span className="grid h-8 w-8 place-items-center rounded-full bg-zinc-900 text-white">
+                      {userInitial || <User className="h-4 w-4" />}
+                    </span>
+                  )}
                   <span className="hidden sm:inline">
                     {me.name || me.fullName || me.username || me.email || "Tài khoản"}
                   </span>
@@ -126,9 +141,13 @@ export default function Header() {
                 {openAccount ? (
                   <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-zinc-200">
                     <div className="flex items-center gap-3 pb-3 border-b border-zinc-200">
-                      <span className="grid h-10 w-10 place-items-center rounded-full bg-zinc-900 text-white">
-                        {userInitial || <User className="h-5 w-5" />}
-                      </span>
+                      {me?.avatar ? (
+                        <img src={me.avatar} alt="Avatar" className="h-10 w-10 rounded-full object-cover" />
+                      ) : (
+                        <span className="grid h-10 w-10 place-items-center rounded-full bg-zinc-900 text-white">
+                          {userInitial || <User className="h-5 w-5" />}
+                        </span>
+                      )}
                       <div>
                         <p className="text-sm font-semibold text-zinc-900">
                           {me.name || me.fullName || me.username || "Khách hàng"}
@@ -162,8 +181,8 @@ export default function Header() {
               </div>
             ) : (
               <Link
-                to="/"
-                aria-label="Dang nh?p"
+                to="/login"
+                aria-label="Đăng nhập"
                 className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800"
               >
                 Đăng nhập

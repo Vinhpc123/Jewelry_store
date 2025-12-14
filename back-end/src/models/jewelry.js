@@ -6,6 +6,7 @@ const jewelrySchema = new mongoose.Schema(
     category: { type: String, trim: true, default: "" },
     description: { type: String, trim: true, default: "" },
     price: { type: Number, required: true, min: 0 },
+    quantity: { type: Number, default: 0, min: 0 },
     image: { type: String, trim: true, default: "" },
     status: { type: String, enum: ["active", "completed"], default: "active" },
     completedAt: { type: Date, default: null },

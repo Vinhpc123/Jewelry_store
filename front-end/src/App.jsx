@@ -16,43 +16,51 @@ import BraceletsPage from "./pages/Customerpage/Vongtay";
 import EarringsPage from "./pages/Customerpage/Bongtai";
 import AboutPage from "./pages/Customerpage/AboutPage";
 import DetailPage from "./pages/Customerpage/Detail";
-import ScrollToTop from "./components/ScrollToTop";
+import ScrollToTop from "./components/Customer/ScrollToTop";
 import CartPage from "./pages/Customerpage/Cart";
 import OrdersPage from "./pages/Customerpage/Orders";
 import OrderDetailPage from "./pages/Customerpage/OrderDetail";
+import BlogDetail from "./pages/Customerpage/BlogDetail";
+import ProfilePage from "./pages/Customerpage/Profile";
 
 export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
-        {/* Login and Register Routes */}
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+      {/* Customer first */}
+      <Route path="/" element={<Storefront />} />
+      <Route path="/shop" element={<Storefront />} />
 
-        {/* Customer Routes */}
-        <Route path="/shop" element={<Storefront />} />
-        <Route path="/Nhan" element={<RingPage />} />
-        <Route path="/Daychuyen" element={<NecklacesPage />} />
-        <Route path="/Vongtay" element={<BraceletsPage />} />
-        <Route path="/Bongtai" element={<EarringsPage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/detail/:id" element={<DetailPage />} />
-        <Route path="/cart" element={<CartPage />} />
-        <Route path="/orders" element={<OrdersPage />} />
-        <Route path="/orders/:id" element={<OrderDetailPage />} />
+      {/* Login / Register */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
 
-        {/* Admin Routes */}
-        <Route path="/admin" element={<AdminPage />} />
-        <Route path="/admin/products" element={<Products />} />
-        <Route path="/admin/users" element={<User />} />
-        <Route path="/admin/orders" element={<OrdersAdmin />} />
-        <Route path="/admin/messages" element={<Messenger />} />
+      {/* Customer Routes */}
+      <Route path="/Nhan" element={<RingPage />} />
+      <Route path="/Daychuyen" element={<NecklacesPage />} />
+      <Route path="/Vongtay" element={<BraceletsPage />} />
+      <Route path="/Bongtai" element={<EarringsPage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/chat" element={<Chat />} />
+      <Route path="/detail/:id" element={<DetailPage />} />
+      <Route path="/cart" element={<CartPage />} />
+      <Route path="/customer/profile" element={<ProfilePage />} />
+      <Route path="/orders" element={<OrdersPage />} />
+      <Route path="/orders/:id" element={<OrderDetailPage />} />
+      <Route path="/blog/:slug" element={<BlogDetail />} />
 
-        {/* NotFound Route */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      {/* Admin Routes */}
+      <Route path="/admin" element={<AdminPage />} />
+      <Route path="/admin/products" element={<Products />} />
+      <Route path="/admin/users" element={<User />} />
+      <Route path="/admin/orders" element={<OrdersAdmin />} />
+      <Route path="/admin/messages" element={<Messenger />} />
+
+      {/* NotFound */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+
     </BrowserRouter>
   );
 }

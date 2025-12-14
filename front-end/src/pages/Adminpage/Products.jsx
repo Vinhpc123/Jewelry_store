@@ -24,6 +24,7 @@ export default function Products() {
     description: "",
     price: "",
     image: "",
+    quantity: "",
   });
   const [imageFile, setImageFile] = React.useState(null);
   const [imagePreview, setImagePreview] = React.useState(null);
@@ -101,6 +102,7 @@ export default function Products() {
       description: "",
       price: "",
       image: "",
+      quantity: "",
     });
     if (imagePreview) {
       URL.revokeObjectURL(imagePreview);
@@ -133,6 +135,8 @@ export default function Products() {
   const handleSubmit = async () => {
     try {
       let productPayload = { ...newProduct };
+      productPayload.quantity =
+        productPayload.quantity === "" ? 0 : Number(productPayload.quantity);
 
       if (imageFile) {
         const uploadedUrl = await uploadFileToServer(imageFile);
@@ -200,6 +204,10 @@ export default function Products() {
             ? ""
             : String(product.price),
         image: product.image || "",
+        quantity:
+          product.quantity === null || product.quantity === undefined
+            ? ""
+            : String(product.quantity),
       });
 
       if (imagePreview) {
@@ -243,7 +251,7 @@ export default function Products() {
     <AdminRoute>
       <AdminLayout>
         <div className="space-y-6">
-          {/* Khối header + toolbar với style bạn yêu cầu */}
+          {/* Khởi header + toolbar với style bạn yêu cầu */}
           <div className="space-y-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
             <ProductHeader
               onAdd={openAddModal}
@@ -414,6 +422,7 @@ function ProductTable({
             <th className="w-36 text-center px-2 py-3">Sản phẩm</th>
             <th className="w-36 text-center px-2 py-3">Danh mục</th>
             <th className="w-28 text-center px-2 py-3">Đơn giá</th>
+            <th className="w-20 text-center px-2 py-3">Tồn kho</th>
             <th className="w-[300px] text-center px-2 py-3">Mô tả</th>
             <th className="w-44 text-center px-2 py-3">Ngày tạo</th>
             <th className="w-24 text-center px-2 py-3">Thao tác</th>
@@ -427,7 +436,7 @@ function ProductTable({
                 {product.image ? (
                   <img
                     src={product.image}
-                    alt={product.title || "Ảnh sản phẩm"}
+                    alt={product.title || "?nh s?n ph?m"}
                     className="mx-auto h-12 w-12 rounded border border-zinc-200 object-cover"
                   />
                 ) : (
@@ -445,6 +454,7 @@ function ProductTable({
               <td className="px-4 py-3 text-center text-zinc-600">
                 <CurrencyDisplay value={product.price} />
               </td>
+              <td className="px-4 py-3 text-center text-zinc-600">{product.quantity ?? 0}</td>
               <td className="max-w-[300px] px-4 py-3 text-center text-zinc-600 truncate">
                 {product.description || "-"}
               </td>
@@ -511,7 +521,7 @@ function ProductModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium">Danh muc</label>
+            <label className="block text-sm font-medium">Danh mục</label>
             <select
               value={newProduct.category}
               onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
@@ -525,7 +535,7 @@ function ProductModal({
             </select>
           </div>
 
-          <div>
+                    <div>
             <label className="block text-sm font-medium">Giá (VND)</label>
             <input
               type="number"
@@ -534,9 +544,19 @@ function ProductModal({
               onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
               className="w-full rounded border border-zinc-300 p-2"
             />
-            <p className="mt-1 text-xs text-zinc-500">
-              Hiển thị: <CurrencyDisplay value={newProduct.price} />
-            </p>
+            <p className="mt-1 text-xs text-zinc-500">Hiển thị: <CurrencyDisplay value={newProduct.price} /></p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Số lượng tồn kho</label>
+            <input
+              type="number"
+              inputMode="numeric"
+              min="0"
+              value={newProduct.quantity}
+              onChange={(e) => setNewProduct({ ...newProduct, quantity: e.target.value })}
+              className="w-full rounded border border-zinc-300 p-2"
+              placeholder="Nhap so luong (VD: 10)"
+            />
           </div>
 
           <div>
@@ -628,10 +648,14 @@ function ProductModal({
             disabled={submitting}
             className="rounded bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
           >
-            {submitting ? "Đang lưu..." : formMode === "create" ? "Lưu" : "Cập nhật"}
+            {submitting ? "Đang lưu..." : formMode === "create" ? "ưu" : "Cập nhật"}
           </button>
         </div>
       </div>
     </div>
   );
 }
+
+
+
+

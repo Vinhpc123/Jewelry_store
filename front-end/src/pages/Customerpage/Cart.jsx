@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Header from "../../components/Customer/Header";
 import Footer from "../../components/Customer/Footer";
@@ -12,6 +12,8 @@ export default function CartPage() {
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
+  const [stockMap, setStockMap] = useState({});
+  const [quantityNotice, setQuantityNotice] = useState("");
 
   const subtotal = useMemo(
     () => items.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 0), 0),
@@ -19,6 +21,72 @@ export default function CartPage() {
   );
   const shippingFee = 0;
   const total = subtotal + shippingFee;
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await instance.get("/api/auth/profile");
+        const user = res?.data || {};
+        setShipping((prev) => ({
+          ...prev,
+          fullName: user.name || prev.fullName,
+          phone: user.phone || prev.phone,
+          address: user.address || prev.address,
+        }));
+      } catch (err) {
+        // ignore errors; fallback to manual entry
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  useEffect(() => {
+    const idsToFetch = [...new Set(items.map((it) => it.productId).filter(Boolean))];
+    if (!idsToFetch.length) {
+      setStockMap({});
+      return;
+    }
+    let ignore = false;
+    const fetchStocks = async () => {
+      try {
+        const results = await Promise.all(
+          idsToFetch.map(async (pid) => {
+            try {
+              const res = await instance.get(`/api/jewelry/${pid}`);
+              return { pid, data: res?.data };
+            } catch (err) {
+              return { pid, data: null };
+            }
+          })
+        );
+        if (ignore) return;
+        const nextMap = results.reduce((acc, { pid, data }) => {
+          const qty = Number(data?.quantity);
+          if (Number.isFinite(qty)) acc[pid] = Math.max(0, qty);
+          return acc;
+        }, {});
+        setStockMap(nextMap);
+      } catch (err) {
+        // ignore stock fetch errors
+      }
+    };
+    fetchStocks();
+    return () => {
+      ignore = true;
+    };
+  }, [items]);
+
+  const handleQuantityChange = (item, rawValue) => {
+    const parsed = Math.max(1, Math.floor(Number(rawValue) || 1));
+    const max = stockMap[item.productId];
+    if (Number.isFinite(max) && parsed > max) {
+      setQuantityNotice(`Chỉ còn ${max} sản phẩm trong kho cho "${item.name}".`);
+      updateQuantity(item.productId, max);
+      return;
+    }
+    setQuantityNotice("");
+    updateQuantity(item.productId, parsed);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,7 +96,7 @@ export default function CartPage() {
       return;
     }
     if (!shipping.fullName || !shipping.phone || !shipping.address) {
-      setMessage("Vui lòng nhập đủ họ tên, điện thoại và địa chỉ.");
+      setMessage("Vui lòng nhập đủ họ tên, số điện thoại và địa chỉ.");
       return;
     }
     setSubmitting(true);
@@ -65,6 +133,7 @@ export default function CartPage() {
               <div className="border-b border-[#eadfce] px-5 py-4">
                 <h2 className="text-lg font-semibold">Sản phẩm ({itemCount})</h2>
               </div>
+              {quantityNotice ? <p className="px-5 pt-3 text-sm text-red-600">{quantityNotice}</p> : null}
               {items.length === 0 ? (
                 <div className="p-6 text-sm text-[#7b6654]">Giỏ hàng trống.</div>
               ) : (
@@ -88,8 +157,13 @@ export default function CartPage() {
                           <input
                             type="number"
                             min="1"
+                            max={
+                              Number.isFinite(stockMap[item.productId]) && stockMap[item.productId] > 0
+                                ? stockMap[item.productId]
+                                : undefined
+                            }
                             value={item.quantity}
-                            onChange={(e) => updateQuantity(item.productId, Number(e.target.value) || 1)}
+                            onChange={(e) => handleQuantityChange(item, e.target.value)}
                             className="w-16 rounded border border-[#eadfce] px-2 py-1 text-sm"
                           />
                           <button

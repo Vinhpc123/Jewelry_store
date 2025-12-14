@@ -1,15 +1,14 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "../../components/Customer/Header";
 import Footer from "../../components/Customer/Footer";
 import instance from "../../lib/api";
+import { blogPosts } from "../../data/blogPosts";
 
-// Câu chuyện ngắn + ảnh (layout theo mẫu)
 function StorySection({ story }) {
   return (
     <section className="mx-auto max-w-6xl px-4 py-12">
-      <div className="grid gap-10 md:grid-cols-[2fr_1.1fr] items-stretch">
-        {/* Ảnh lớn bên trái */}
+      <div className="grid items-stretch gap-10 md:grid-cols-[2fr_1.1fr]">
         <div className="h-full overflow-hidden bg-slate-100 shadow-sm">
           <img
             src={story.largeImage}
@@ -17,10 +16,7 @@ function StorySection({ story }) {
             className="h-full w-full object-cover"
           />
         </div>
-
-        {/* Ảnh nhỏ + text bên phải */}
         <div className="flex h-full flex-col gap-6 md:items-start">
-          {/* Ảnh nhỏ */}
           <div className="w-full overflow-hidden bg-slate-100 shadow-sm flex-[0.6]">
             <img
               src={story.smallImage}
@@ -28,8 +24,6 @@ function StorySection({ story }) {
               className="h-full w-full object-cover"
             />
           </div>
-
-          {/* Text */}
           <div className="w-full flex-[0.4] flex items-center md:items-start">
             <div className="max-w-sm">
               <h2 className="text-2xl font-semibold text-amber-800 sm:text-3xl">
@@ -63,7 +57,7 @@ export default function Storefront() {
       image: "banner/banner2.jpg",
     },
     {
-      title: "Vầng Sáng Ngọc Trai",
+      title: "Vòng Sáng Ngọc Trai",
       description:
         "Những thiết kế đậm chất nghệ thuật, tôn vinh vẻ đẹp dịu dàng và kiêu sa của phái đẹp.",
       cta: "Khám Phá BST",
@@ -86,7 +80,10 @@ export default function Storefront() {
   const formatCurrency = useMemo(
     () => (value) => {
       if (value === null || value === undefined || value === "") return "";
-      const num = typeof value === "number" ? value : Number(String(value).replace(/[^0-9.-]+/g, ""));
+      const num =
+        typeof value === "number"
+          ? value
+          : Number(String(value).replace(/[^0-9.-]+/g, ""));
       if (Number.isNaN(num)) return "";
       return `${num.toLocaleString("vi-VN")} VND`;
     },
@@ -115,7 +112,9 @@ export default function Storefront() {
       } catch (err) {
         if (ignore) return;
         setProductsError(
-          err?.response?.data?.message || err.message || "Không thể tải sản phẩm."
+          err?.response?.data?.message ||
+            err.message ||
+            "Không thể tải sản phẩm."
         );
       } finally {
         if (!ignore) setProductsLoading(false);
@@ -131,72 +130,42 @@ export default function Storefront() {
   const currentSlide = heroSlides[activeSlide];
 
   const story = {
-    title: "Đeo trang sức là cách thể hiện bạn mà không cần một lời nói nào.",
+    title: "Đeo trang sức là cách thể hiện bản thân không cần một lời nói nào.",
     description:
-      "Cuộc sống có bao lâu mà chần chờ, hãy cứ đeo trang sức như chưa từng được đeo nhé.",
-    largeImage:
-      "story/story1.png",
-    smallImage:
-      "story/story2.webp",
+      "Cuộc sống có bao lâu mà chờ chứ, hãy đeo trang sức như chưa từng được đeo nhé.",
+    largeImage: "story/story1.png",
+    smallImage: "story/story2.webp",
   };
 
   const featuredCollections = [
     {
       title: "Nhẫn",
-      image:
-        "bosuutap/nhẫn.webp",
+      image: "bosuutap/nhẫn.webp",
       path: "/Nhan",
-      
     },
     {
       title: "Dây Chuyền",
-      image:
-        "bosuutap/daychuyen.png",
+      image: "bosuutap/daychuyen.png",
       path: "/Daychuyen",
     },
     {
       title: "Vòng Tay",
-      image:
-        "bosuutap/vongtay.png",
+      image: "bosuutap/vongtay.png",
       path: "/Vongtay",
     },
     {
       title: "Bông Tai",
-      image:
-        "bosuutap/bongtai.png",
+      image: "bosuutap/bongtai.png",
       path: "/Bongtai",
     },
   ];
 
-  const blogTips = [
-    {
-      title: "Bí quyết chọn nhẫn đính hôn vừa vặn",
-      excerpt:
-        "Đo size chuẩn, chọn kiểu dáng phù hợp bàn tay và cách bảo quản kim loại quý.",
-      image:
-        "blog/blog1.webp",
-    },
-    {
-      title: "Cách phối trang sức ngọc trai hiện đại",
-      excerpt:
-        "Layer nhẹ nhàng, kết hợp vàng hồng và ngọc trai cho phong cách thanh lịch.",
-      image:
-        "blog/blog2.jpg",
-    },
-    {
-      title: "Bảo quản đá quý để luôn sáng bền",
-      excerpt:
-        "Tránh hóa chất mạnh, cất trong hộp lót nhung và vệ sinh định kỳ đúng cách.",
-      image:
-        "blog/blog3.webp",
-    },
-  ];
+  const blogTips = blogPosts.slice(0, 3);
 
   return (
     <>
       <Header />
       <main className="bg-white text-slate-900">
-        {/* Hero Slider */}
         <section className="relative isolate overflow-hidden bg-white">
           <div className="absolute inset-0 overflow-hidden">
             {heroSlides.map((slide, idx) => (
@@ -239,11 +208,9 @@ export default function Storefront() {
           </div>
         </section>
 
-        {/* Câu chuyện ngắn + ảnh */}
         <StorySection story={story} />
 
-        {/* Bộ sưu tập nổi bật */}
-        <section className="mx-auto max-w-7xl px-6 sm:px-5 lg:px-10 pb-28 pt-10">
+        <section className="mx-auto max-w-7xl px-6 pb-28 pt-10 sm:px-5 lg:px-10">
           <div className="space-y-2 text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.35em] text-amber-700">
               Bộ Sưu Tập Nổi Bật
@@ -257,7 +224,7 @@ export default function Storefront() {
               <Link
                 to={item.path}
                 key={item.title}
-                className="group relative block h-[450px] overflow-hidden shadow-lg ring-1 ring-slate-100 transition duration-500 hover:-translate-y-1 hover:shadow-2xl "
+                className="group relative block h-[450px] overflow-hidden shadow-lg ring-1 ring-slate-100 transition duration-500 hover:-translate-y-1 hover:shadow-2xl"
               >
                 <img
                   src={item.image}
@@ -273,11 +240,14 @@ export default function Storefront() {
           </div>
         </section>
 
-        {/* Sản phẩm mới */}
-        <section className="mx-auto max-w-7xl px-6 sm:px-5 lg:px-10 pb-16">
+        <section className="mx-auto max-w-7xl px-6 pb-16 sm:px-5 lg:px-10">
           <div className="space-y-2 text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-amber-700">Sản phẩm mới</p>
-            <h2 className="text-3xl font-bold sm:text-4xl">Những sản phẩm nổi bật</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-amber-700">
+              Sản phẩm mới
+            </p>
+            <h2 className="text-3xl font-bold sm:text-4xl">
+              Những sản phẩm nổi bật
+            </h2>
           </div>
 
           {productsError ? (
@@ -301,47 +271,68 @@ export default function Storefront() {
 
           {!productsLoading && !productsError && newProducts.length === 0 ? (
             <div className="mt-12 flex flex-col items-center rounded-3xl bg-white p-8 text-center shadow-sm ring-1 ring-[#eadfce]">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f2e6d7] text-[#9c7c61]">:)</div>
-              <p className="mt-4 text-sm font-semibold text-[#2f241a]">Chưa có sản phẩm để hiển thị.</p>
-              <p className="mt-1 text-xs text-[#7b6654]">Quay lại sau để xem các mẫu mới nhất.</p>
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f2e6d7] text-[#9c7c61]">
+                :)
+              </div>
+              <p className="mt-4 text-sm font-semibold text-[#2f241a]">
+                Chưa có sản phẩm để hiển thị.
+              </p>
+              <p className="mt-1 text-xs text-[#7b6654]">
+                Quay lại sau để xem các mẫu mới nhất.
+              </p>
             </div>
           ) : null}
 
           {!productsLoading && !productsError && newProducts.length > 0 ? (
             <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
               {newProducts.map((item) => {
-                const name = item.title || item.name || "Nhan chưa đặt tên";
-                const priceText = item.price || item.price === 0 ? formatCurrency(item.price) : "";
+                const name = item.title || item.name || "Sản phẩm chưa đặt tên";
+                const priceText =
+                  item.price || item.price === 0
+                    ? formatCurrency(item.price)
+                    : "";
                 return (
                   <article
                     key={item._id || item.id || name}
                     className="group flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfce] transition duration-300 hover:-translate-y-1 hover:shadow-lg"
                   >
-                    <div className="relative overflow-hidden bg-[#fff]">
+                    <Link
+                      to={`/detail/${item._id || item.id}`}
+                      className="relative block overflow-hidden bg-[#fff]"
+                    >
                       <div className="aspect-square w-full">
                         {item.image ? (
-                          <img
-                            src={item.image}
-                            alt={name}
-                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                          />
+                          <img src={item.image} alt={name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center text-xs text-[#7b6654]">Chưa có ảnh</div>
+                          <div className="flex h-full w-full items-center justify-center text-xs text-[#7b6654]">
+                            Chưa có ảnh
+                          </div>
                         )}
                       </div>
                       <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 transition duration-300 group-hover:opacity-100" />
-                    </div>
+                    </Link>                    
                     <div className="flex flex-1 flex-col gap-2 px-5 py-4">
-                      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#2f241a]">{name}</p>
-                      {priceText ? <p className="text-base font-semibold text-[#9a785d]">{priceText}</p> : null}
-                      <p className="text-xs text-[#7b6654] line-clamp-2">{item.description || "Thiet ke tinh xao, phu hop nhieu phong cach."}</p>
+                      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#2f241a]">
+                        {name}
+                      </p>
+                      {priceText ? (
+                        <p className="text-base font-semibold text-[#9a785d]">
+                          {priceText}
+                        </p>
+                      ) : null}
+                      <p className="text-xs text-[#7b6654] line-clamp-2">
+                        {item.description ||
+                          "Thiết kế tinh xảo, phù hợp nhiều phong cách."}
+                      </p>
                       <div className="mt-auto flex items-center justify-between">
-                        <div className="rounded-full bg-[#f8f1e7] px-3 py-1 text-[11px] font-semibold text-[#9c7c61]">{item.material || "Alloy / Gold"}</div>
+                        <div className="rounded-full bg-[#f8f1e7] px-3 py-1 text-[11px] font-semibold text-[#9c7c61]">
+                          {item.material || "Alloy / Gold"}
+                        </div>
                         <Link
                           to={`/detail/${item._id || item.id}`}
                           className="rounded-full border border-[#2f241a] px-4 py-2 text-[11px] font-semibold text-[#2f241a] transition hover:bg-[#2f241a] hover:text-white"
                         >
-                          Xem chi tiet
+                          Xem chi tiết
                         </Link>
                       </div>
                     </div>
@@ -352,44 +343,45 @@ export default function Storefront() {
           ) : null}
         </section>
 
-        {/* Blog & Tips */}
         <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 lg:px-8">
           <div className="space-y-2 text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.35em] text-amber-700">
               Blog & Tips
             </p>
-            <h2 className="text-3xl font-bold sm:text-4xl">
+            <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
               Cảm Hứng & Kiến Thức Trang Sức
             </h2>
           </div>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {blogTips.map((post) => (
               <article
-                key={post.title}
-                className="flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100 transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+                key={post.slug}
+                className="flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200 transition duration-300 hover:-translate-y-1 hover:shadow-lg"
               >
-                <div className="aspect-[4/3] overflow-hidden bg-slate-100">
+                <div className="overflow-hidden bg-slate-100">
                   <img
                     src={post.image}
                     alt={post.title}
-                    className="h-full w-full object-cover transition duration-500 hover:scale-105"
+                    className="h-[250px] w-full object-cover transition duration-500 hover:scale-105"
                   />
                 </div>
-                <div className="flex flex-1 flex-col gap-2 px-4 py-4">
+                <div className="flex flex-1 flex-col gap-2 px-4 py-5">
                   <h3 className="text-lg font-semibold text-slate-900">
                     {post.title}
                   </h3>
                   <p className="text-sm text-slate-600">{post.excerpt}</p>
-                  <button className="mt-auto w-fit text-sm font-semibold text-amber-700 hover:text-amber-800">
+                  <Link
+                    to={`/blog/${post.slug}`}
+                    className="mt-auto w-fit text-sm font-semibold text-amber-700 hover:text-amber-800"
+                  >
                     Đọc thêm →
-                  </button>
+                  </Link>
                 </div>
               </article>
             ))}
           </div>
         </section>
 
-        {/* Nghệ thuật chế tác */}
         <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 lg:px-8">
           <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-100">
             <div className="grid gap-0 md:grid-cols-2">
@@ -408,14 +400,16 @@ export default function Storefront() {
                   Tỉ Mỉ Trong Từng Đường Nét
                 </h3>
                 <p className="text-base leading-relaxed text-slate-600">
-                  Mỗi thiết kế đều được chế tác bởi bàn tay tinh xảo của nghệ nhân, kết hợp giữa kỹ
-                  thuật truyền thống và cảm hứng hiện đại. Chúng tôi cam kết chất lượng và sự độc đáo trong
-                  từng sản phẩm, mang đến cho bạn những tuyệt tác mang dấu ấn riêng.
+                  Mỗi thiết kế đều được chế tác bởi bàn tay tinh xảo của nghệ nhân, kết hợp giữa kỹ thuật truyền
+                  thống và cảm hứng hiện đại. Chúng tôi cam kết chất lượng và sự độc đáo trong từng sản phẩm, mang
+                  đến cho bạn những tuyệt tác mang dấu ấn riêng.
                 </p>
-                <button 
-                className="w-fit rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2 path:/about.jsx">
+                <Link
+                  to="/about"
+                  className="w-fit rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2"
+                >
                   Tìm Hiểu Thêm
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -425,5 +419,3 @@ export default function Storefront() {
     </>
   );
 }
-
-

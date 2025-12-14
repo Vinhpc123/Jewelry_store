@@ -9,6 +9,7 @@ const instance = axios.create({
   },
 });
 
+// lưu và thiết lập token xác thực
 export function setAuthToken(token) {
   if (token) {
     instance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -27,6 +28,7 @@ export function setAuthToken(token) {
   }
 }
 
+// Lấy token từ localStorage
 export function getStoredToken() {
   try {
     return localStorage.getItem("token");
@@ -36,6 +38,7 @@ export function getStoredToken() {
   }
 }
 
+// lưu và lấy thông tin user
 export function setUser(user) {
   try {
     if (user) localStorage.setItem("user", JSON.stringify(user));
@@ -45,6 +48,7 @@ export function setUser(user) {
   }
 }
 
+// Lấy thông tin user từ localStorage
 export function getUser() {
   try {
     const raw = localStorage.getItem("user");
@@ -81,22 +85,43 @@ export function fetchMessages(conversationId, params = {}) {
 export function sendChatMessage(payload) {
   return instance.post("/api/chat/messages", payload);
 }
+
 export default instance;
 
-// Interceptor xử lý 401
+// Interceptor xu ly 401
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error?.response?.status;
     const requestUrl = error?.config?.url || "";
     const isAuthLogin = requestUrl.includes("/api/auth/login");
+    const path = window.location?.pathname || "";
+    const isProtectedPath =
+      path.startsWith("/admin") ||
+      path.startsWith("/orders") ||
+      path.startsWith("/cart") ||
+      path.startsWith("/customer");
+    const isProtectedRequest = [
+      "/api/cart",
+      "/api/orders",
+      "/api/users",
+      "/api/chat",
+      "/api/admin",
+    ].some((segment) => requestUrl.includes(segment));
 
-    // Chỉ redirect khi 401 từ API khác login
     if (status === 401 && !isAuthLogin) {
-      setAuthToken(null);
-      setUser(null);
-      window.location.href = "/"; // điều hướng về trang login/chính
+      const config = error?.config || {};
+
+      // Phục hồi request không cần xác thực
+      if (!isProtectedPath && !isProtectedRequest && !config.__isRetryRequest) {
+        config.__isRetryRequest = true;
+        if (config.headers) delete config.headers.Authorization;
+        return instance(config);
+      }
+
+      // Để tránh tự đăng xuất, không redirect login tự động; chỉ trả lỗi cho component xử lý
     }
+
     return Promise.reject(error);
   }
 );

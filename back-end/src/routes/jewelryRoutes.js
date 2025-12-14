@@ -11,8 +11,9 @@ import {
 
 const router = express.Router();
 
-router.get("/", protect, getAllJewelry);
-router.get("/:id", protect, getJewelryById);
+// Public product listing/detail; admin-only for mutations
+router.get("/", getAllJewelry);
+router.get("/:id", getJewelryById);
 router.post("/", protect, authorize("admin"), createJewelry);
 router.put("/:id", protect, authorize("admin"), updateJewelry);
 router.delete("/:id", protect, authorize("admin"), deleteJewelry);

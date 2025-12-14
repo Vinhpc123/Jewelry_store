@@ -27,7 +27,11 @@ export default function Users() {
   const [editForm, setEditForm] = React.useState({
     name: "",
     email: "",
+    phone: "",
+    address: "",
     role: "staff",
+    password: "",
+    confirmPassword: "",
   });
   const [editMeta, setEditMeta] = React.useState({});
   const [editLoading, setEditLoading] = React.useState(false);
@@ -135,7 +139,11 @@ export default function Users() {
     setEditForm({
       name: user.name || "",
       email: user.email || "",
+      phone: user.phone || "",
+      address: user.address || "",
       role: user.role || "staff",
+      password: "",
+      confirmPassword: "",
     });
     setEditMeta({
       id: user._id,
@@ -149,7 +157,11 @@ export default function Users() {
       setEditForm({
         name: data.name || "",
         email: data.email || "",
+        phone: data.phone || "",
+        address: data.address || "",
         role: data.role || "staff",
+        password: "",
+        confirmPassword: "",
       });
       setEditMeta({
         id: data._id,
@@ -175,17 +187,28 @@ export default function Users() {
     setEditForm({
       name: "",
       email: "",
+      phone: "",
+      address: "",
       role: "staff",
+      password: "",
+      confirmPassword: "",
     });
     setEditLoading(false);
   };
   const handleUpdateUser = async (event) => {
     event.preventDefault();
     if (!editMeta.id) return;
+    if (editForm.password && editForm.password !== editForm.confirmPassword) {
+      setEditError("Mat khau nhap lai khong khop");
+      return;
+    }
     setEditSaving(true);
     setEditError(null);
     try {
-      await updateUserById(editMeta.id, editForm);
+      const payload = { ...editForm };
+      if (!payload.password) delete payload.password;
+      delete payload.confirmPassword;
+      await updateUserById(editMeta.id, payload);
       await refreshWithSearch();
       closeEditModal();
     } catch (err) {
@@ -499,7 +522,7 @@ function EditUserModal({
             type="button"
             className="text-zinc-500 transition hover:text-zinc-700"
             onClick={onClose}
-            aria-label="��ng"
+            aria-label="Đóng"
           >
             ?
           </button>
@@ -538,6 +561,50 @@ function EditUserModal({
                 />
               </label>
             </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="space-y-1 text-sm text-zinc-600">
+                <span className="font-medium text-zinc-800">Số điện thoại</span>
+                <input
+                  type="tel"
+                  className="w-full rounded border border-zinc-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-0"
+                  value={formValues.phone}
+                  onChange={onFieldChange("phone")}
+                  placeholder="Nhập số điện thoại"
+                />
+              </label>
+              <label className="space-y-1 text-sm text-zinc-600">
+                <span className="font-medium text-zinc-800">Địa chỉ</span>
+                <input
+                  type="text"
+                  className="w-full rounded border border-zinc-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-0"
+                  value={formValues.address}
+                  onChange={onFieldChange("address")}
+                  placeholder="Nhập địa chỉ"
+                />
+              </label>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="space-y-1 text-sm text-zinc-600">
+                <span className="font-medium text-zinc-800">Mat khau moi</span>
+                <input
+                  type="password"
+                  className="w-full rounded border border-zinc-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-0"
+                  value={formValues.password}
+                  onChange={onFieldChange("password")}
+                  placeholder="Nhap mat khau moi (bo qua neu khong doi)"
+                />
+              </label>
+              <label className="space-y-1 text-sm text-zinc-600">
+                <span className="font-medium text-zinc-800">Nhap lai moi</span>
+                <input
+                  type="password"
+                  className="w-full rounded border border-zinc-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-0"
+                  value={formValues.confirmPassword}
+                  onChange={onFieldChange("confirmPassword")}
+                  placeholder="Nhap lai mat khau"
+                />
+              </label>
+            </div>
             <label className="space-y-1 text-sm text-zinc-600">
               <span className="font-medium text-zinc-800">Vai trò</span>
               <select
@@ -572,4 +639,3 @@ function EditUserModal({
     </div>
   );
 }
-

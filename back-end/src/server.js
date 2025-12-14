@@ -44,8 +44,12 @@ const server = http.createServer(app);
 
 app.use(express.json());
 
+// Allow frontend dev/prod domains; `origin: true` reflects the request origin to avoid CORS blocks in dev
 app.use(
-  cors({ origin: process.env.FRONTEND_URL || "http://localhost:5173", credentials: true })
+  cors({
+    origin: process.env.FRONTEND_URL || true,
+    credentials: true,
+  })
 );
 
 app.use("/uploads", express.static(uploadsDir));
