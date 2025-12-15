@@ -1,4 +1,5 @@
 ﻿// Auth and User Management Controller
+import crypto from "crypto";
 import User from "../models/user.js";
 import { generateToken } from "../../utils/generateToken.js";
 
@@ -171,5 +172,64 @@ export const updateProfile = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Khong the cap nhat", error: error.message });
+  }
+};
+
+export const googleLogin = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken) return res.status(400).json({ message: "Missing idToken" });
+
+    const auth = getFirebaseAuth();
+    const decoded = await auth.verifyIdToken(idToken);
+
+    const email = decoded?.email;
+    if (!email) return res.status(400).json({ message: "Google account missing email" });
+
+    let user = await User.findOne({ email });
+
+    if (user && user.isActive === false) {
+      return res.status(403).json({ message: "Tai khoan da bi khoa, vui long lien he admin" });
+    }
+
+    if (!user) {
+      const randomPassword = crypto.randomBytes(24).toString("hex");
+      user = await User.create({
+        name: decoded?.name || email,
+        email,
+        password: randomPassword,
+        role: "customer",
+        avatar: decoded?.picture,
+      });
+    } else {
+      // Cập nhật avatar/tên nếu trống
+      let changed = false;
+      if (!user.avatar && decoded?.picture) {
+        user.avatar = decoded.picture;
+        changed = true;
+      }
+      if (!user.name && decoded?.name) {
+        user.name = decoded.name;
+        changed = true;
+      }
+      if (changed) await user.save();
+    }
+
+    const token = generateToken({ userId: user._id, role: user.role });
+    return res.status(200).json({
+      token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        phone: user.phone,
+        address: user.address,
+      },
+    });
+  } catch (error) {
+    console.error("Google login error:", error);
+    return res.status(500).json({ message: "Khong the dang nhap Google", error: error.message });
   }
 };

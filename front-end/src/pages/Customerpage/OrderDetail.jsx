@@ -10,6 +10,8 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [actionError, setActionError] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
 
   const formatCurrency = useMemo(
     () => (value) => {
@@ -42,6 +44,22 @@ export default function OrderDetailPage() {
     fetchOrder();
   }, [id]);
 
+  const handleCancel = async () => {
+    if (!order?._id || actionLoading) return;
+    setActionError("");
+    const confirmCancel = window.confirm("Hủy đơn hàng này? Hàng chưa giao sẽ được trả lại kho.");
+    if (!confirmCancel) return;
+    setActionLoading(true);
+    try {
+      const res = await instance.put(`/api/orders/${order._id}/cancel`);
+      setOrder(res?.data || order);
+    } catch (err) {
+      setActionError(err?.response?.data?.message || err.message || "Hủy đơn thất bại.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const statusStyle = {
     pending: "bg-amber-50 text-amber-700 ring-amber-100",
     paid: "bg-emerald-50 text-emerald-700 ring-emerald-100",
@@ -73,7 +91,7 @@ export default function OrderDetailPage() {
               </Link>
               <span className="mx-2">/</span>
               <Link to="/orders" className="hover:text-[#2f241a]">
-                Đơn hàng
+                Đon hàng
               </Link>
               <span className="mx-2">/</span>
               <span className="text-[#2f241a] font-semibold">Chi tiết</span>
@@ -121,6 +139,19 @@ export default function OrderDetailPage() {
                     {statusLabel[order.status] || order.status || "Chưa cập nhật"}
                   </div>
                 </div>
+                {order.status === "pending" ? (
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={handleCancel}
+                      disabled={actionLoading}
+                      className="rounded-full border border-red-600 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-60"
+                    >
+                      {actionLoading ? "Đang hủy..." : "ủy đơn"}
+                    </button>
+                    {actionError ? <p className="text-sm text-red-600">{actionError}</p> : null}
+                  </div>
+                ) : null}
               </div>
 
               <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
@@ -129,7 +160,7 @@ export default function OrderDetailPage() {
                   <ul className="divide-y divide-[#eadfce]">
                     {order.items?.map((item, idx) => (
                       <li key={`${item.productId || idx}-${idx}`} className="flex gap-4 py-4">
-                        <div className="h-16 w-16 overflow-hidden rounded-2xl bg-[#f8f1e7]">
+                        <div className="h-16 w-16 overflow-hidden rounded-2xl bg-[#f8f1e7 ]">
                           {item.image ? (
                             <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
                           ) : (
@@ -161,7 +192,7 @@ export default function OrderDetailPage() {
 
                   <div className="space-y-2 border-t border-[#eadfce] pt-4 text-sm text-[#4b3d30]">
                     <div className="flex justify-between">
-                      <span>Tạm tính</span>
+                      <span> Tổng tiền</span>
                       <span className="font-semibold text-[#9a785d]">{formatCurrency(subtotal)}</span>
                     </div>
                     <div className="flex justify-between">

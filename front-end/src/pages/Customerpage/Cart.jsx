@@ -33,7 +33,7 @@ export default function CartPage() {
           phone: user.phone || prev.phone,
           address: user.address || prev.address,
         }));
-      } catch (err) {
+      } catch (_err) {
         // ignore errors; fallback to manual entry
       }
     };
@@ -54,7 +54,7 @@ export default function CartPage() {
             try {
               const res = await instance.get(`/api/jewelry/${pid}`);
               return { pid, data: res?.data };
-            } catch (err) {
+            } catch (_err) {
               return { pid, data: null };
             }
           })
@@ -66,7 +66,7 @@ export default function CartPage() {
           return acc;
         }, {});
         setStockMap(nextMap);
-      } catch (err) {
+      } catch (_err) {
         // ignore stock fetch errors
       }
     };
@@ -140,7 +140,7 @@ export default function CartPage() {
                 <ul className="divide-y divide-[#eadfce]">
                   {items.map((item) => (
                     <li key={item.productId} className="flex gap-4 px-5 py-4">
-                      <div className="h-20 w-20 overflow-hidden rounded-2xl bg-[#f8f1e7]">
+                      <div className="h-20 w-20 overflow-hidden rounded-2xl bg-[#f8f1e7 ]">
                         {item.image ? (
                           <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
                         ) : (

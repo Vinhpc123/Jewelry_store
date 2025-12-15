@@ -2,36 +2,70 @@ import Order from "../models/order.js";
 import Cart from "../models/cart.js";
 import Jewelry from "../models/jewelry.js";
 
+const restockItems = async (order) => {
+  for (const it of order.items) {
+    const qty = Number(it.quantity) || 0;
+    if (qty <= 0) continue;
+    const product = await Jewelry.findById(it.productId);
+    if (!product) continue;
+    product.quantity = Math.max(0, Number(product.quantity) + qty);
+    if (product.quantity > 0 && product.status === "completed") {
+      product.status = "active";
+    }
+    await product.save();
+  }
+};
+
 export const createOrder = async (req, res) => {
   try {
     const { shipping, paymentMethod = "cod" } = req.body;
 
     if (!shipping?.fullName || !shipping?.phone || !shipping?.address) {
-      return res.status(400).json({ message: "Thiếu thông tin giao hàng" });
+      return res.status(400).json({ message: "Thieu thong tin giao hang" });
     }
 
     const cart = await Cart.findOne({ user: req.user._id });
     if (!cart || cart.items.length === 0) {
-      return res.status(400).json({ message: "Giỏ hàng trống" });
+      return res.status(400).json({ message: "Gio hang trong" });
     }
 
-    // làm mới thông tin sản phẩm/tính giá
+    // Lam moi thong tin san pham/tinh gia va kiem tra ton kho
     const refreshedItems = [];
+    const productsToUpdate = [];
     for (const it of cart.items) {
       const product = await Jewelry.findById(it.productId);
-      if (!product) continue;
+      if (!product) {
+        return res.status(400).json({ message: "San pham trong gio hang khong con ton tai." });
+      }
+
+      const requestedQty = Number(it.quantity) || 0;
+      if (requestedQty <= 0) {
+        return res.status(400).json({ message: "So luong san pham khong hop le." });
+      }
+
+      if (product.quantity < requestedQty) {
+        return res.status(400).json({
+          message: `San pham "${product.title || product.name || "khong xac dinh"}" chi con ${product.quantity} trong kho.`,
+        });
+      }
+
+      productsToUpdate.push({
+        product,
+        newQty: Math.max(0, product.quantity - requestedQty),
+      });
+
       refreshedItems.push({
         productId: product._id,
-        name: product.title || product.name || "Sản phẩm",
+        name: product.title || product.name || "San pham",
         price: Number(product.price) || 0,
-        quantity: it.quantity,
+        quantity: requestedQty,
         image: product.image,
         material: product.material,
       });
     }
 
     if (refreshedItems.length === 0) {
-      return res.status(400).json({ message: "Giỏ hàng không hợp lệ" });
+      return res.status(400).json({ message: "Gio hang khong hop le" });
     }
 
     const subtotal = refreshedItems.reduce(
@@ -51,14 +85,23 @@ export const createOrder = async (req, res) => {
       total,
     });
 
-    // clear cart sau khi đặt
+    // Tru ton kho sau khi dat hang thanh cong
+    for (const { product, newQty } of productsToUpdate) {
+      product.quantity = newQty;
+      if (newQty <= 0) {
+        product.status = "completed";
+      }
+      await product.save();
+    }
+
+    // clear cart sau khi dat
     cart.items = [];
     await cart.save();
 
     res.status(201).json(order);
   } catch (error) {
-    console.error("Lỗi createOrder:", error);
-    res.status(500).json({ message: "Lỗi hệ thống" });
+    console.error("Loi createOrder:", error);
+    res.status(500).json({ message: "Loi he thong" });
   }
 };
 
@@ -67,8 +110,8 @@ export const getMyOrders = async (req, res) => {
     const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
     res.status(200).json(orders);
   } catch (error) {
-    console.error("Lỗi getMyOrders:", error);
-    res.status(500).json({ message: "Lỗi hệ thống" });
+    console.error("Loi getMyOrders:", error);
+    res.status(500).json({ message: "Loi he thong" });
   }
 };
 
@@ -93,15 +136,38 @@ export const getAllOrders = async (_req, res) => {
 export const getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
-    if (!order) return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
-    // chỉ chủ đơn hoặc admin
+    if (!order) return res.status(404).json({ message: "Khong tim thay don hang" });
+    // chi chu don hoac admin
     if (String(order.user) !== String(req.user._id) && req.user.role !== "admin") {
-      return res.status(403).json({ message: "Không có quyền xem đơn này" });
+      return res.status(403).json({ message: "Khong co quyen xem don nay" });
     }
     res.status(200).json(order);
   } catch (error) {
-    console.error("Lỗi getOrderById:", error);
-    res.status(500).json({ message: "Lỗi hệ thống" });
+    console.error("Loi getOrderById:", error);
+    res.status(500).json({ message: "Loi he thong" });
+  }
+};
+
+export const cancelOrder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: "Khong tim thay don hang" });
+
+    const isOwner = String(order.user) === String(req.user._id);
+    const isAdmin = req.user.role === "admin";
+    if (!isOwner && !isAdmin) return res.status(403).json({ message: "Khong co quyen huy don nay" });
+
+    if (order.status !== "pending") {
+      return res.status(400).json({ message: "Chi huy duoc don dang xu ly" });
+    }
+
+    order.status = "cancelled";
+    await restockItems(order);
+    await order.save();
+    res.status(200).json(order);
+  } catch (error) {
+    console.error("Loi cancelOrder:", error);
+    res.status(500).json({ message: "Loi he thong" });
   }
 };
 
@@ -109,16 +175,26 @@ export const updateStatus = async (req, res) => {
   try {
     const { status } = req.body;
     const allowed = ["pending", "paid", "shipped", "cancelled"];
-    if (!allowed.includes(status)) return res.status(400).json({ message: "Trạng thái không hợp lệ" });
+    if (!allowed.includes(status)) return res.status(400).json({ message: "Trang thai khong hop le" });
 
     const order = await Order.findById(req.params.id);
-    if (!order) return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
+    if (!order) return res.status(404).json({ message: "Khong tim thay don hang" });
+
+    const prevStatus = order.status;
+    if (prevStatus === status) return res.status(200).json(order);
+
+    if (status === "cancelled") {
+      if (prevStatus === "shipped") {
+        return res.status(400).json({ message: "Khong the huy don da giao" });
+      }
+      await restockItems(order);
+    }
 
     order.status = status;
     await order.save();
     res.status(200).json(order);
   } catch (error) {
-    console.error("Lỗi updateStatus:", error);
-    res.status(500).json({ message: "Lỗi hệ thống" });
+    console.error("Loi updateStatus:", error);
+    res.status(500).json({ message: "Loi he thong" });
   }
 };
