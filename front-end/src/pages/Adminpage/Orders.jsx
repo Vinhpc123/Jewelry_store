@@ -4,12 +4,26 @@ import AdminRoute from "../../components/Admin/AdminRoute";
 import formatDateTime from "../../components/Admin/FormatDateTime";
 import instance from "../../lib/api";
 
+const STATUS_LABELS = {
+  processing: "Đang xử lý",
+  paid: "Đã thanh toán",
+  shipped: "Đang giao hàng",
+  completed: "Hoàn tất",
+  cancelled: "Đã hủy",
+};
+
+const SOURCE_LABELS = {
+  pos: "Bán tại quầy",
+  online: "Online",
+};
+
 const STATUS_OPTIONS = [
   { value: "", label: "Tất cả" },
-  { value: "pending", label: "Đang xử lý" },
-  { value: "paid", label: "Đã thanh toán" },
-  { value: "shipped", label: "Đã giao hàng" },
-  { value: "cancelled", label: "Đã hủy" },
+  { value: "processing", label: STATUS_LABELS.processing },
+  { value: "paid", label: STATUS_LABELS.paid },
+  { value: "shipped", label: STATUS_LABELS.shipped },
+  { value: "completed", label: STATUS_LABELS.completed },
+  { value: "cancelled", label: STATUS_LABELS.cancelled },
 ];
 
 export default function OrdersAdminPage() {
@@ -140,6 +154,7 @@ export default function OrdersAdminPage() {
                   <th className="px-3 py-3 text-left">Tổng</th>
                   <th className="px-3 py-3 text-left">Trạng thái</th>
                   <th className="px-3 py-3 text-left">Chi tiết</th>
+                  <th className="px-3 py-3 text-left">Kênh</th>
                   <th className="px-3 py-3 text-left">Thanh toán</th>
                 </tr>
               </thead>
@@ -171,8 +186,19 @@ export default function OrdersAdminPage() {
                     <tr key={order._id} className="hover:bg-zinc-50">
                       <td className="px-3 py-3 font-semibold text-zinc-900">{order._id}</td>
                       <td className="px-3 py-3">
-                        <div className="text-zinc-900">{order.user?.name || "Khách"}</div>
-                        <div className="text-xs text-zinc-500">{order.user?.email || ""}</div>
+                        {(() => {
+                          const isPos = order.source === "pos";
+                          const displayName = isPos ? order.shipping?.fullName || "Khách POS" : order.user?.name || "Khách";
+                          const subText = isPos
+                            ? order.shipping?.phone || order.shipping?.address || ""
+                            : order.user?.email || "";
+                          return (
+                            <>
+                              <div className="text-zinc-900">{displayName}</div>
+                              <div className="text-xs text-zinc-500">{subText}</div>
+                            </>
+                          );
+                        })()}
                       </td>
                       <td className="px-3 py-3 text-zinc-600">
                         {order.createdAt ? formatDateTime(order.createdAt) : "Chưa cập nhật"}
@@ -183,7 +209,7 @@ export default function OrdersAdminPage() {
                       </td>
                       <td className="px-3 py-3 text-zinc-600">
                         <select
-                          value={order.status || "pending"}
+                          value={(order.status === "pending" ? "processing" : order.status) || "processing"}
                           onChange={(e) => handleStatusChange(order._id, e.target.value)}
                           disabled={updatingId === order._id}
                           className="rounded border border-zinc-300 bg-white px-2 py-1 text-sm"
@@ -205,8 +231,9 @@ export default function OrdersAdminPage() {
                         </button>
                       </td>
                       <td className="px-3 py-3 text-zinc-600">
-                        {order.paymentMethod === "online" ? "Online" : "COD"}
+                        {SOURCE_LABELS[order.source] || "Online"}
                       </td>
+                      <td className="px-3 py-3 text-zinc-600">{order.paymentMethod === "online" ? "Online" : "COD"}</td>
                     </tr>
                   ))}
               </tbody>
@@ -233,9 +260,7 @@ export default function OrdersAdminPage() {
                 </button>
               </div>
 
-              {detailLoading ? (
-                <p className="mt-4 text-sm text-zinc-600">Đang tải chi tiết...</p>
-              ) : null}
+              {detailLoading ? <p className="mt-4 text-sm text-zinc-600">Đang tải chi tiết...</p> : null}
               {detailError ? <p className="mt-4 text-sm text-red-600">{detailError}</p> : null}
 
               {!detailLoading && detail && !detailError ? (
@@ -247,12 +272,22 @@ export default function OrdersAdminPage() {
                     </div>
                     <div>
                       <p className="text-xs uppercase text-zinc-500">Khách</p>
-                      <p className="font-semibold text-zinc-900">{detail.user?.name || "Khách"}</p>
-                      <p className="text-xs text-zinc-500">{detail.user?.email || ""}</p>
+                      <p className="font-semibold text-zinc-900">
+                        {detail.source === "pos" ? detail.shipping?.fullName || "Khách POS" : detail.user?.name || "Khách"}
+                      </p>
+                      <p className="text-xs text-zinc-500">
+                        {detail.source === "pos" ? detail.shipping?.phone || detail.shipping?.address || "" : detail.user?.email || ""}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase text-zinc-500">Kênh</p>
+                      <p className="font-semibold text-zinc-900">{SOURCE_LABELS[detail.source] || "Online"}</p>
                     </div>
                     <div>
                       <p className="text-xs uppercase text-zinc-500">Trạng thái</p>
-                      <p className="font-semibold text-zinc-900">{detail.status}</p>
+                      <p className="font-semibold text-zinc-900">
+                        {STATUS_LABELS[detail.status === "pending" ? "processing" : detail.status] || detail.status}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs uppercase text-zinc-500">Thanh toán</p>
@@ -289,9 +324,7 @@ export default function OrdersAdminPage() {
                       <p className="font-semibold text-zinc-900">{detail.shipping?.fullName || "Chưa có tên"}</p>
                       <p>{detail.shipping?.phone || "Chưa có số điện thoại"}</p>
                       <p>{detail.shipping?.address || "Chưa có địa chỉ"}</p>
-                      {detail.shipping?.note ? (
-                        <p className="text-xs text-zinc-500">Ghi chú: {detail.shipping.note}</p>
-                      ) : null}
+                      {detail.shipping?.note ? <p className="text-xs text-zinc-500">Ghi chú: {detail.shipping.note}</p> : null}
                     </div>
                   </div>
                 </div>

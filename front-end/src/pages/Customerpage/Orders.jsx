@@ -4,6 +4,22 @@ import Header from "../../components/Customer/Header";
 import Footer from "../../components/Customer/Footer";
 import instance from "../../lib/api";
 
+const STATUS_STYLE = {
+  processing: "bg-amber-50 text-amber-700 ring-amber-100",
+  paid: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+  shipped: "bg-blue-50 text-blue-700 ring-blue-100",
+  completed: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+  cancelled: "bg-red-50 text-red-700 ring-red-100",
+};
+
+const STATUS_LABEL = {
+  processing: "Đang xử lý",
+  paid: "Đã thanh toán",
+  shipped: "Đang giao hàng",
+  completed: "Hoàn tất",
+  cancelled: "Đã hủy",
+};
+
 export default function OrdersPage() {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
@@ -35,20 +51,6 @@ export default function OrdersPage() {
     };
     fetchOrders();
   }, []);
-
-  const statusStyle = {
-    pending: "bg-amber-50 text-amber-700 ring-amber-100",
-    paid: "bg-emerald-50 text-emerald-700 ring-emerald-100",
-    shipped: "bg-blue-50 text-blue-700 ring-blue-100",
-    cancelled: "bg-red-50 text-red-700 ring-red-100",
-  };
-
-  const statusLabel = {
-    pending: "Đang xử lý",
-    paid: "Đã thanh toán",
-    shipped: "Đã giao hàng",
-    cancelled: "Đã hủy",
-  };
 
   return (
     <>
@@ -105,9 +107,14 @@ export default function OrdersPage() {
                     <span className="font-semibold text-[#9a785d]">{formatCurrency(order.total)}</span>
                   </p>
                   <div
-                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ${statusStyle[order.status] || "bg-zinc-50 text-zinc-700 ring-zinc-100"}`}
+                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ${
+                      STATUS_STYLE[order.status === "pending" ? "processing" : order.status] ||
+                      "bg-zinc-50 text-zinc-700 ring-zinc-100"
+                    }`}
                   >
-                    {statusLabel[order.status] || order.status || "Chưa cập nhật"}
+                    {STATUS_LABEL[order.status === "pending" ? "processing" : order.status] ||
+                      order.status ||
+                      "Chưa cập nhật"}
                   </div>
                 </div>
                 <div className="flex gap-3">

@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import AdminLayout from "../../components/Admin/AdminLayout";
 import AdminRoute from "../../components/Admin/AdminRoute";
 import useAdminData from "../../lib/hooks/useAdminData";
@@ -16,11 +16,12 @@ const ROLE_LABELS = {
 
 const getRoleLabel = (role) => ROLE_LABELS[role] || role;
 
-
 export default function Users() {
   const { loading, error, users = [], refresh } = useAdminData();
   const currentUser = getUser();
-  const [page, setPage] = React.useState(5);
+  const isAdmin = currentUser?.role === "admin";
+
+  const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(5);
   const [roleFilter, setRoleFilter] = React.useState("all");
   const [editModalOpen, setEditModalOpen] = React.useState(false);
@@ -37,6 +38,7 @@ export default function Users() {
   const [editLoading, setEditLoading] = React.useState(false);
   const [editError, setEditError] = React.useState(null);
   const [editSaving, setEditSaving] = React.useState(false);
+
   const {
     searchTerm,
     setSearchTerm,
@@ -45,24 +47,24 @@ export default function Users() {
     error: searchError,
     refetch: refetchSearch,
   } = useSearchPage({ endpoint: "/api/users", debounceMs: 400, minLength: 1 });
+
   const trimmedSearch = searchTerm.trim();
   const searchActive = Boolean(trimmedSearch);
   const shouldUseSearchResults = searchActive && !searchError;
   const rawSource = shouldUseSearchResults ? searchResults : users;
 
-  //lọc bỏ user hiện tại (admin)
+  // ẩn chính mình khỏi danh sách
   const filteredSource = React.useMemo(() => {
     if (!currentUser) return rawSource;
-    return rawSource.filter((user) => user._id !== currentUser._id); // hoặc user.role !== "admin"
+    return rawSource.filter((user) => user._id !== currentUser._id);
   }, [rawSource, currentUser]);
 
-  //lọc theo vai trò
   const dataSource = React.useMemo(() => {
     if (roleFilter === "all") return filteredSource;
     return filteredSource.filter((user) => user.role === roleFilter);
   }, [filteredSource, roleFilter]);
 
-  //dùng để hiển thị trạng thái khi xóa, khóa user
+  // trạng thái xóa/khóa
   const [deletingId, setDeletingId] = React.useState(null);
   const handleDeleteUser = async (user) => {
     if (!window.confirm(`Xóa ${user.email}?`)) return;
@@ -74,7 +76,12 @@ export default function Users() {
       setDeletingId(null);
     }
   };
+
   const handleToggleLock = async (user) => {
+    if (!isAdmin) {
+      window.alert("Chỉ admin mới được khóa/mở khóa tài khoản.");
+      return;
+    }
     const actionLabel = user.isActive ? "Khóa" : "Mở khóa";
     if (!window.confirm(`${actionLabel} ${user.email}?`)) return;
 
@@ -84,23 +91,19 @@ export default function Users() {
     await refreshWithSearch();
   };
 
-
-  //chọn loading, error hiển thị
   const listLoading = shouldUseSearchResults ? searchLoading : loading;
   const listError = shouldUseSearchResults ? searchError : error;
+
   React.useEffect(() => {
-    setPage(1); // cài lại trang khi thay đổi bộ lọc
+    setPage(1);
   }, [trimmedSearch, roleFilter]);
-  // phân trang
-  const { paginated, totalItems, totalPages, offset } = usePagination(
-    dataSource,
-    page,
-    pageSize
-  );
+
+  const { paginated, totalItems, totalPages, offset } = usePagination(dataSource, page, pageSize);
+
   React.useEffect(() => {
     if (page > totalPages) setPage(1);
   }, [page, pageSize, totalPages]);
-  // thống kê vai trò
+
   const totalUsers = users.length;
   const roleStats = React.useMemo(() => {
     return users.reduce(
@@ -112,7 +115,7 @@ export default function Users() {
       { admin: 0, staff: 0, customer: 0, active: 0 }
     );
   }, [users]);
-  // trạng thái tìm kiếm
+
   const searchStatusText = React.useMemo(() => {
     if (!searchActive) return "";
     if (listLoading) return "Đang tìm...";
@@ -120,17 +123,16 @@ export default function Users() {
     if (totalItems === 0) return "Không tìm thấy người dùng phù hợp.";
     return `Tìm thấy ${totalItems} người dùng phù hợp.`;
   }, [searchActive, listLoading, listError, totalItems]);
-  // xử lý thay đổi ô tìm kiếm
-  const handleSearchChange = React.useCallback(
-    (event) => setSearchTerm(event.target.value),
-    [setSearchTerm]
-  );
+
+  const handleSearchChange = React.useCallback((event) => setSearchTerm(event.target.value), [setSearchTerm]);
+
   const refreshWithSearch = React.useCallback(async () => {
     await refresh();
     if (searchActive) {
       await refetchSearch();
     }
   }, [refresh, refetchSearch, searchActive]);
+
   const handleEditUser = async (user) => {
     if (!user || !user._id) return;
     setEditModalOpen(true);
@@ -169,17 +171,17 @@ export default function Users() {
         createdAt: data.createdAt,
       });
     } catch (err) {
-      setEditError(
-        err?.response?.data?.message || err.message || "Không tải được người dùng."
-      );
+      setEditError(err?.response?.data?.message || err.message || "Không tải được người dùng.");
     } finally {
       setEditLoading(false);
     }
   };
+
   const handleEditFieldChange = (field) => (event) => {
     const value = event.target.value;
     setEditForm((prev) => ({ ...prev, [field]: value }));
   };
+
   const closeEditModal = () => {
     setEditModalOpen(false);
     setEditError(null);
@@ -195,11 +197,12 @@ export default function Users() {
     });
     setEditLoading(false);
   };
+
   const handleUpdateUser = async (event) => {
     event.preventDefault();
     if (!editMeta.id) return;
     if (editForm.password && editForm.password !== editForm.confirmPassword) {
-      setEditError("Mat khau nhap lai khong khop");
+      setEditError("Mật khẩu nhập lại không khớp");
       return;
     }
     setEditSaving(true);
@@ -212,13 +215,12 @@ export default function Users() {
       await refreshWithSearch();
       closeEditModal();
     } catch (err) {
-      setEditError(
-        err?.response?.data?.message || err.message || "Không thể cập nhật người dùng."
-      );
+      setEditError(err?.response?.data?.message || err.message || "Không thể cập nhật người dùng.");
     } finally {
       setEditSaving(false);
     }
   };
+
   return (
     <AdminRoute>
       <AdminLayout>
@@ -248,7 +250,6 @@ export default function Users() {
               totalItems,
               offset,
             }}
-            
           />
           <UserTable
             items={paginated}
@@ -261,6 +262,7 @@ export default function Users() {
             onDelete={handleDeleteUser}
             onToggleLock={handleToggleLock}
             deletingId={deletingId}
+            canLock={isAdmin}
           />
           <EditUserModal
             open={editModalOpen}
@@ -278,23 +280,14 @@ export default function Users() {
     </AdminRoute>
   );
 }
-function UserHeader({
-  total,
-  adminCount,
-  staffCount,
-  customerCount,
-  activeCount,
-  onRefresh,
-  refreshing,
-}) {
+
+function UserHeader({ total, adminCount, staffCount, customerCount, activeCount, onRefresh, refreshing }) {
   return (
     <div className="space-y-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">Quản lý người dùng</h1>
-          <p className="text-sm text-zinc-500">
-            Theo dõi danh sách tài khoản, trạng thái hoạt động và vai trò.
-          </p>
+          <p className="text-sm text-zinc-500">Theo dõi danh sách tài khoản, trạng thái hoạt động và vai trò.</p>
         </div>
         <button
           type="button"
@@ -310,11 +303,12 @@ function UserHeader({
         <StatCard label="Admin" value={adminCount} />
         <StatCard label="Nhân viên" value={staffCount} />
         <StatCard label="Khách hàng" value={customerCount} />
-        <StatCard label="Đang hoạt động" value={activeCount}  />
+        <StatCard label="Đang hoạt động" value={activeCount} />
       </div>
     </div>
   );
 }
+
 function StatCard({ label, value, className = "" }) {
   return (
     <div className={`rounded border border-zinc-200 bg-zinc-50 p-3 ${className}`}>
@@ -323,6 +317,7 @@ function StatCard({ label, value, className = "" }) {
     </div>
   );
 }
+
 function UserToolbar({
   paginationProps,
   searchTerm,
@@ -332,8 +327,7 @@ function UserToolbar({
   roleFilter,
   onRoleFilterChange,
 }) {
-  const { page, setPage, pageSize, setPageSize, totalPages, totalItems, offset } =
-    paginationProps;
+  const { page, setPage, pageSize, setPageSize, totalPages, totalItems, offset } = paginationProps;
 
   const roleOptions = [
     { value: "all", label: "Tất cả" },
@@ -345,9 +339,7 @@ function UserToolbar({
     <div className="space-y-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Chế độ xem
-          </label>
+          <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Chọn lọc xem</label>
           <select
             value={roleFilter}
             onChange={(e) => onRoleFilterChange(e.target.value)}
@@ -368,9 +360,7 @@ function UserToolbar({
             placeholder="Tìm tên hoặc email..."
             className="w-full rounded border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none focus:ring-0 sm:w-64"
           />
-          {searchActive && searchStatus ? (
-            <span className="text-xs text-zinc-500">{searchStatus}</span>
-          ) : null}
+          {searchActive && searchStatus ? <span className="text-xs text-zinc-500">{searchStatus}</span> : null}
         </div>
 
         <Pagination
@@ -386,7 +376,8 @@ function UserToolbar({
     </div>
   );
 }
-function UserTable({ 
+
+function UserTable({
   items,
   startIndex,
   loading,
@@ -396,7 +387,9 @@ function UserTable({
   onEdit = () => {},
   onDelete = () => {},
   onToggleLock = () => {},
-  deletingId, }) {
+  deletingId,
+  canLock,
+}) {
   if (loading) {
     return <div>Đang tải danh sách người dùng...</div>;
   }
@@ -433,19 +426,15 @@ function UserTable({
             <tr key={user._id || idx} className="hover:bg-zinc-50">
               <td className="px-3 py-2 text-center">{startIndex + idx + 1}</td>
               <td className="px-3 py-2 font-medium text-zinc-900">
-                <p>{user.name || "Khong ten"}</p>
+                <p>{user.name || "Không tên"}</p>
                 <p className="text-xs text-zinc-500">ID: {user._id || "-"}</p>
               </td>
               <td className="px-3 py-2 text-sm text-zinc-700">{user.email}</td>
-              <td className="px-3 py-2 text-center capitalize text-zinc-700">
-                {getRoleLabel(user.role)}
-              </td>
+              <td className="px-3 py-2 text-center capitalize text-zinc-700">{getRoleLabel(user.role)}</td>
               <td className="px-3 py-2 text-center">
                 <UserStatusBadge active={user.isActive} />
               </td>
-              <td className="px-3 py-2 text-center text-zinc-600">
-                {formatDateTime(user.createdAt)}
-              </td>
+              <td className="px-3 py-2 text-center text-zinc-600">{formatDateTime(user.createdAt)}</td>
               <td className="px-2 py-3 text-center">
                 <div className="flex items-center justify-center gap-2">
                   <button
@@ -461,15 +450,16 @@ function UserTable({
                   >
                     {deletingId === user._id ? "Đang xóa..." : "Xóa"}
                   </button>
-                  <button
-                    className="rounded border border-amber-500 px-2 py-1 text-xs font-semibold text-amber-600 hover:bg-amber-50"
-                    onClick={() => onToggleLock(user)}
-                  >
-                    {user.isActive ? "Khóa" : "Mở khóa"}
-                  </button>
+                  {canLock ? (
+                    <button
+                      className="rounded border border-amber-500 px-2 py-1 text-xs font-semibold text-amber-600 hover:bg-amber-50"
+                      onClick={() => onToggleLock(user)}
+                    >
+                      {user.isActive ? "Khóa" : "Mở khóa"}
+                    </button>
+                  ) : null}
                 </div>
               </td>
-
             </tr>
           ))}
         </tbody>
@@ -477,6 +467,7 @@ function UserTable({
     </div>
   );
 }
+
 function UserStatusBadge({ active }) {
   return (
     <span
@@ -490,20 +481,10 @@ function UserStatusBadge({ active }) {
     </span>
   );
 }
-function EditUserModal({
-  open,
-  onClose,
-  formValues,
-  onFieldChange,
-  onSubmit,
-  loading,
-  error,
-  saving,
-  meta = {},
-}) {
+
+function EditUserModal({ open, onClose, formValues, onFieldChange, onSubmit, loading, error, saving, meta = {} }) {
   if (!open) return null;
-  const statusBadge =
-    typeof meta.isActive === "boolean" ? <UserStatusBadge active={meta.isActive} /> : null;
+  const statusBadge = typeof meta.isActive === "boolean" ? <UserStatusBadge active={meta.isActive} /> : null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
@@ -524,7 +505,7 @@ function EditUserModal({
             onClick={onClose}
             aria-label="Đóng"
           >
-            ?
+            ×
           </button>
         </div>
 
@@ -535,9 +516,7 @@ function EditUserModal({
         ) : (
           <form onSubmit={onSubmit} className="mt-6 space-y-4">
             {error ? (
-              <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                {error}
-              </div>
+              <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
             ) : null}
             <div className="grid gap-4 md:grid-cols-2">
               <label className="space-y-1 text-sm text-zinc-600">
@@ -585,30 +564,30 @@ function EditUserModal({
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <label className="space-y-1 text-sm text-zinc-600">
-                <span className="font-medium text-zinc-800">Mat khau moi</span>
+                <span className="font-medium text-zinc-800">Mật khẩu mới</span>
                 <input
                   type="password"
                   className="w-full rounded border border-zinc-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-0"
                   value={formValues.password}
                   onChange={onFieldChange("password")}
-                  placeholder="Nhap mat khau moi (bo qua neu khong doi)"
+                  placeholder="Nhập mật khẩu mới (bỏ qua nếu không đổi)"
                 />
               </label>
               <label className="space-y-1 text-sm text-zinc-600">
-                <span className="font-medium text-zinc-800">Nhap lai moi</span>
+                <span className="font-medium text-zinc-800">Nhập lại</span>
                 <input
                   type="password"
                   className="w-full rounded border border-zinc-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-0"
                   value={formValues.confirmPassword}
                   onChange={onFieldChange("confirmPassword")}
-                  placeholder="Nhap lai mat khau"
+                  placeholder="Nhập lại mật khẩu"
                 />
               </label>
             </div>
             <label className="space-y-1 text-sm text-zinc-600">
               <span className="font-medium text-zinc-800">Vai trò</span>
               <select
-                className="w-full rounded border border-zinc-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-0 md:w-64 ml-2"
+                className="w-full rounded border border-zinc-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-0 md:w-64"
                 value={formValues.role}
                 onChange={onFieldChange("role")}
               >
@@ -623,7 +602,7 @@ function EditUserModal({
                 onClick={onClose}
                 disabled={saving}
               >
-                Huỷ
+                Hủy
               </button>
               <button
                 type="submit"

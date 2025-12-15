@@ -7,17 +7,19 @@ import {
   updateStatus,
   getAllOrders,
   cancelOrder,
+  createPosOrder,
 } from "../controllers/orderController.js";
 
 const router = express.Router();
 
 router.use(protect);
 
-router.get("/", authorize("admin"), getAllOrders);
+router.get("/", authorize("admin", "staff"), getAllOrders);
 router.post("/", createOrder);
 router.get("/my", getMyOrders);
 router.put("/:id/cancel", cancelOrder);
 router.get("/:id", getOrderById);
-router.put("/:id/status", authorize("admin"), updateStatus);
+router.put("/:id/status", authorize("admin", "staff"), updateStatus);
+router.post("/pos", authorize("admin", "staff"), createPosOrder);
 
 export default router;

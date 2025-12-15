@@ -8,6 +8,9 @@ import Products from "./pages/Adminpage/Products";
 import User from "./pages/Adminpage/User";
 import OrdersAdmin from "./pages/Adminpage/Orders";
 import Messenger from "./pages/Adminpage/Messenger";
+import Coupons from "./pages/Adminpage/Coupons";
+import POS from "./pages/Adminpage/POS";
+import AdminRoute from "./components/Admin/AdminRoute";
 import Chat from "./pages/Customerpage/Chat";
 import Storefront from "./pages/Customerpage/HomePage";
 import RingPage from "./pages/Customerpage/Nhan";
@@ -56,6 +59,22 @@ export default function App() {
       <Route path="/admin/users" element={<User />} />
       <Route path="/admin/orders" element={<OrdersAdmin />} />
       <Route path="/admin/messages" element={<Messenger />} />
+      <Route
+        path="/admin/pos"
+        element={
+          <AdminRoute allowedRoles={["admin", "staff"]}>
+            <POS />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/coupons"
+        element={
+          <AdminRoute allowedRoles={["admin"]}>
+            <Coupons />
+          </AdminRoute>
+        }
+      />
 
       {/* NotFound */}
       <Route path="*" element={<NotFound />} />

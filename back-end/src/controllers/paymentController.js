@@ -151,14 +151,25 @@ export const handleVnpReturn = async (req, res) => {
       };
 
       if (isSuccess) {
-        order.status = "paid";
+        if (order.source === "pos") {
+          order.status = "completed";
+        } else {
+          order.status = "paid";
+        }
         order.paidAt = new Date();
       }
       await order.save();
     }
 
     const payStatus = isSuccess ? "success" : "fail";
-    const redirectUrl = `${frontendBase.replace(/\/$/, "")}/orders/${order?._id || orderId || ""}?payStatus=${payStatus}`;
+
+    // Nếu đơn được tạo từ POS (admin/staff), trả về trang POS; ngược lại về trang chi tiết đơn của khách
+    const base = frontendBase.replace(/\/$/, "");
+    const redirectUrl =
+      order?.source === "pos"
+        ? `${base}/admin/pos?payStatus=${payStatus}&orderId=${order?._id || orderId || ""}`
+        : `${base}/orders/${order?._id || orderId || ""}?payStatus=${payStatus}`;
+
     return res.redirect(redirectUrl);
   } catch (error) {
     console.error("Loi handleVnpReturn:", error);

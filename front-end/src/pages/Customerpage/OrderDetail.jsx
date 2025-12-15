@@ -4,6 +4,22 @@ import Header from "../../components/Customer/Header";
 import Footer from "../../components/Customer/Footer";
 import instance from "../../lib/api";
 
+const STATUS_STYLE = {
+  processing: "bg-amber-50 text-amber-700 ring-amber-100",
+  paid: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+  shipped: "bg-blue-50 text-blue-700 ring-blue-100",
+  completed: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+  cancelled: "bg-red-50 text-red-700 ring-red-100",
+};
+
+const STATUS_LABEL = {
+  processing: "Đang xử lý",
+  paid: "Đã thanh toán",
+  shipped: "Đang giao hàng",
+  completed: "Hoàn tất",
+  cancelled: "Đã hủy",
+};
+
 export default function OrderDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -14,6 +30,7 @@ export default function OrderDetailPage() {
   const [actionError, setActionError] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [paying, setPaying] = useState(false);
+  const [printed, setPrinted] = useState(false);
   const payStatus = useMemo(() => {
     const params = new URLSearchParams(location.search);
     return params.get("payStatus");
@@ -53,7 +70,7 @@ export default function OrderDetailPage() {
   const handleCancel = async () => {
     if (!order?._id || actionLoading) return;
     setActionError("");
-    const confirmCancel = window.confirm("Hủy đơn hàng này? Hàng chưa giao sẽ được trả lại kho.");
+    const confirmCancel = window.confirm("Hủy đơn này? Hàng chưa giao sẽ được trả lại kho.");
     if (!confirmCancel) return;
     setActionLoading(true);
     try {
@@ -84,24 +101,100 @@ export default function OrderDetailPage() {
     }
   };
 
-  const statusStyle = {
-    pending: "bg-amber-50 text-amber-700 ring-amber-100",
-    paid: "bg-emerald-50 text-emerald-700 ring-emerald-100",
-    shipped: "bg-blue-50 text-blue-700 ring-blue-100",
-    cancelled: "bg-red-50 text-red-700 ring-red-100",
-  };
-
-  const statusLabel = {
-    pending: "Đang xử lý",
-    paid: "Đã thanh toán",
-    shipped: "Đã giao hàng",
-    cancelled: "Đã hủy",
-  };
-
   const subtotal = (order?.items || []).reduce(
     (sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 0),
     0
   );
+
+  // In hóa đơn khi thanh toán online thành công
+  const printReceipt = React.useCallback(
+    (o) => {
+      if (!o) return;
+      try {
+        const win = window.open("", "_blank", "width=600,height=800");
+        if (!win) return;
+        const rows = (o.items || [])
+          .map(
+            (it, idx) =>
+              `<tr>
+                <td style="padding:4px;border:1px solid #e5e7eb;text-align:center;">${idx + 1}</td>
+                <td style="padding:4px;border:1px solid #e5e7eb;">${it.name}</td>
+                <td style="padding:4px;border:1px solid #e5e7eb;text-align:right;">${(Number(it.price) || 0).toLocaleString("vi-VN")}</td>
+                <td style="padding:4px;border:1px solid #e5e7eb;text-align:center;">${it.quantity}</td>
+                <td style="padding:4px;border:1px solid #e5e7eb;text-align:right;">${(
+                  (Number(it.price) || 0) * (Number(it.quantity) || 0)
+                ).toLocaleString("vi-VN")}</td>
+              </tr>`
+          )
+          .join("");
+        const createdAtStr = o.createdAt ? new Date(o.createdAt).toLocaleString("vi-VN") : new Date().toLocaleString("vi-VN");
+        const discount = Number(o.discount) || 0;
+        const shippingFee = Number(o.shippingFee) || 0;
+        const totalsHtml = `
+          <div class="grid">
+            <div class="card"><strong>Tạm tính:</strong> ${(subtotal || 0).toLocaleString("vi-VN")} VND</div>
+            <div class="card"><strong>Giảm giá:</strong> -${discount.toLocaleString("vi-VN")} VND</div>
+            <div class="card"><strong>Phí vận chuyển:</strong> ${shippingFee.toLocaleString("vi-VN")} VND</div>
+            <div class="card"><strong>Tổng cộng:</strong> ${(Number(o.total) || 0).toLocaleString("vi-VN")} VND</div>
+          </div>
+        `;
+
+        win.document.write(`
+          <html>
+            <head>
+              <title>Hóa đơn thanh toán</title>
+              <style>
+                body { font-family: Arial, sans-serif; padding: 12px; color: #0f172a; }
+                h1 { margin: 0 0 8px; font-size: 18px; }
+                h2 { margin: 12px 0 6px; font-size: 15px; }
+                table { border-collapse: collapse; width: 100%; font-size: 12px; }
+                th { background: #f3f4f6; border:1px solid #e5e7eb; padding:6px; text-align:left; }
+                td { border:1px solid #e5e7eb; padding:6px; }
+                .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+                .card { border:1px solid #e5e7eb; border-radius:8px; padding:8px; background:#f8fafc; font-size:12px; }
+              </style>
+            </head>
+            <body>
+              <h1>HÓA ĐƠN</h1>
+              <div class="grid">
+                <div class="card"><strong>Mã đơn:</strong> ${o._id}</div>
+                <div class="card"><strong>Ngày:</strong> ${createdAtStr}</div>
+                <div class="card"><strong>Khách:</strong> ${o.shipping?.fullName || ""}</div>
+                <div class="card"><strong>Thanh toán:</strong> ${o.paymentMethod === "online" ? "Online (VNPAY)" : "COD"}</div>
+              </div>
+              <h2>Sản phẩm</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>STT</th>
+                    <th>Tên</th>
+                    <th>Đơn giá</th>
+                    <th>SL</th>
+                    <th>Thành tiền</th>
+                  </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+              <h2>Tổng cộng</h2>
+              ${totalsHtml}
+              <script>window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 300); };</script>
+            </body>
+          </html>
+        `);
+        win.document.close();
+      } catch (err) {
+        console.error("Print receipt error", err);
+      }
+    },
+    [subtotal]
+  );
+
+  React.useEffect(() => {
+    if (payStatus === "success" && order && order.paymentMethod === "online" && !printed) {
+      printReceipt(order);
+      setPrinted(true);
+    }
+  }, [payStatus, order, printed, printReceipt]);
 
   return (
     <>
@@ -169,12 +262,17 @@ export default function OrderDetailPage() {
                     </p>
                   </div>
                   <div
-                    className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold ring-1 ${statusStyle[order.status] || "bg-zinc-50 text-zinc-700 ring-zinc-100"}`}
+                    className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold ring-1 ${
+                      STATUS_STYLE[order.status === "pending" ? "processing" : order.status] ||
+                      "bg-zinc-50 text-zinc-700 ring-zinc-100"
+                    }`}
                   >
-                    {statusLabel[order.status] || order.status || "Chưa cập nhật"}
+                    {STATUS_LABEL[order.status === "pending" ? "processing" : order.status] ||
+                      order.status ||
+                      "Chưa cập nhật"}
                   </div>
                 </div>
-                {order.status === "pending" ? (
+                {order.status === "processing" || order.status === "pending" ? (
                   <div className="mt-4 flex flex-wrap gap-3">
                     {order.paymentMethod === "online" ? (
                       <button
@@ -264,4 +362,3 @@ export default function OrderDetailPage() {
     </>
   );
 }
-

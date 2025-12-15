@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import AdminLayout from "../../components/Admin/AdminLayout";
 import AdminRoute from "../../components/Admin/AdminRoute";
 import useAdminData from "../../lib/hooks/useAdminData";
@@ -8,12 +8,13 @@ import formatDateTime from "../../components/Admin/FormatDateTime";
 import useSearchPage from "../../lib/hooks/useSearchPage";
 import usePagination from "../../lib/hooks/usePagination";
 import Pagination from "../../components/Admin/Pagination";
-
+import { getUser } from "../../lib/api";
 
 export default function Products() {
   const { loading, error, products = [], refresh } = useAdminData();
-  const { createProduct, updateProduct, deleteProduct, submitting, deletingId } =
-    useProductCrud();
+  const { createProduct, updateProduct, deleteProduct, submitting, deletingId } = useProductCrud();
+  const currentUser = getUser();
+  const isAdmin = currentUser?.role === "admin";
 
   const [showModal, setShowModal] = React.useState(false);
   const [formMode, setFormMode] = React.useState("create");
@@ -29,11 +30,7 @@ export default function Products() {
   const [imageFile, setImageFile] = React.useState(null);
   const [imagePreview, setImagePreview] = React.useState(null);
 
-  React.useEffect(() => {
-    return () => {
-      if (imagePreview) URL.revokeObjectURL(imagePreview); // tránh rò rỉ bộ nhớ
-    };
-  }, [imagePreview]);
+  React.useEffect(() => () => imagePreview && URL.revokeObjectURL(imagePreview), [imagePreview]);
 
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(5);
@@ -55,18 +52,14 @@ export default function Products() {
   const listError = shouldUseSearchResults ? searchError : error;
 
   React.useEffect(() => {
-    setPage(1); // luôn đặt lại trang về 1 khi tìm kiếm thay đổi
+    setPage(1);
   }, [trimmedSearch]);
 
-  const { paginated, totalItems, totalPages, offset } = usePagination(
-    dataSource,
-    page,
-    pageSize
-  );
+  const { paginated, totalItems, totalPages, offset } = usePagination(dataSource, page, pageSize);
 
   React.useEffect(() => {
     if (page > totalPages) setPage(1);
-  }, [pageSize, totalPages, page]);
+  }, [page, totalPages, pageSize]);
 
   const startIndex = offset;
   const totalProducts = products.length;
@@ -79,51 +72,34 @@ export default function Products() {
     return `Tìm thấy ${totalItems} sản phẩm phù hợp.`;
   }, [searchActive, listLoading, listError, totalItems]);
 
-  const handleSearchChange = React.useCallback(
-    (event) => {
-      setSearchTerm(event.target.value);
-    },
-    [setSearchTerm]
-  );
+  const handleSearchChange = React.useCallback((event) => setSearchTerm(event.target.value), [setSearchTerm]);
 
   const refreshWithSearch = React.useCallback(async () => {
     await refresh();
-    if (searchActive) {
-      await refetchSearch();
-    }
+    if (searchActive) await refetchSearch();
   }, [refresh, refetchSearch, searchActive]);
 
   const openAddModal = () => {
+    if (!isAdmin) {
+      window.alert("Chỉ admin mới được thêm sản phẩm.");
+      return;
+    }
     setFormMode("create");
     setEditingId(null);
-    setNewProduct({
-      title: "",
-      category: "",
-      description: "",
-      price: "",
-      image: "",
-      quantity: "",
-    });
-    if (imagePreview) {
-      URL.revokeObjectURL(imagePreview);
-      setImagePreview(null);
-    }
+    setNewProduct({ title: "", category: "", description: "", price: "", image: "", quantity: "" });
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setImagePreview(null);
     setImageFile(null);
     setShowModal(true);
   };
 
-  const closeAddModal = () => {
-    setShowModal(false);
-  };
+  const closeAddModal = () => setShowModal(false);
 
   const uploadFileToServer = async (file) => {
     if (!file) return null;
     const fd = new FormData();
     fd.append("file", file);
-    const res = await fetch("/api/upload", {
-      method: "POST",
-      body: fd,
-    });
+    const res = await fetch("/api/upload", { method: "POST", body: fd });
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`Upload failed: ${res.status} ${text}`);
@@ -133,10 +109,13 @@ export default function Products() {
   };
 
   const handleSubmit = async () => {
+    if (!isAdmin) {
+      window.alert("Chỉ admin mới được chỉnh sửa sản phẩm.");
+      return;
+    }
     try {
       let productPayload = { ...newProduct };
-      productPayload.quantity =
-        productPayload.quantity === "" ? 0 : Number(productPayload.quantity);
+      productPayload.quantity = productPayload.quantity === "" ? 0 : Number(productPayload.quantity);
 
       if (imageFile) {
         const uploadedUrl = await uploadFileToServer(imageFile);
@@ -159,20 +138,18 @@ export default function Products() {
       closeAddModal();
     } catch (err) {
       console.error(err);
-      alert(
-        err?.response?.data?.message ||
-          err?.message ||
-          (formMode === "create" ? "Lỗi khi thêm sản phẩm" : "Lỗi khi cập nhật sản phẩm")
-      );
+      alert(err?.response?.data?.message || err?.message || (formMode === "create" ? "Lỗi khi thêm sản phẩm" : "Lỗi khi cập nhật sản phẩm"));
     }
   };
 
   const handleDelete = React.useCallback(
     async (product) => {
+      if (!isAdmin) {
+        window.alert("Chỉ admin mới được xóa sản phẩm.");
+        return;
+      }
       if (!product?._id) return;
-      const confirmed = window.confirm(
-        `Bạn chắc chắn muốn xóa "${product.title || "sản phẩm"}"?`
-      );
+      const confirmed = window.confirm(`Bạn chắc chắn muốn xóa "${product.title || "sản phẩm"}"?`);
       if (!confirmed) return;
       try {
         await deleteProduct(product._id);
@@ -182,43 +159,34 @@ export default function Products() {
         window.alert(err?.response?.data?.message || "Xóa sản phẩm thất bại");
       }
     },
-    [deleteProduct, refreshWithSearch]
+    [deleteProduct, refreshWithSearch, isAdmin]
   );
 
   const handleUpdate = React.useCallback(
     (product) => {
+      if (!isAdmin) {
+        window.alert("Chỉ admin mới được sửa sản phẩm.");
+        return;
+      }
       if (!product?._id) return;
 
       setFormMode("edit");
       setEditingId(product._id);
-
       setNewProduct({
         title: product.title || "",
-        category:
-          typeof product.category === "object"
-            ? product.category?.name || ""
-            : product.category || "",
+        category: typeof product.category === "object" ? product.category?.name || "" : product.category || "",
         description: product.description || "",
-        price:
-          product.price === null || product.price === undefined
-            ? ""
-            : String(product.price),
+        price: product.price === null || product.price === undefined ? "" : String(product.price),
         image: product.image || "",
-        quantity:
-          product.quantity === null || product.quantity === undefined
-            ? ""
-            : String(product.quantity),
+        quantity: product.quantity === null || product.quantity === undefined ? "" : String(product.quantity),
       });
 
-      if (imagePreview) {
-        URL.revokeObjectURL(imagePreview);
-        setImagePreview(null);
-      }
+      if (imagePreview) URL.revokeObjectURL(imagePreview);
+      setImagePreview(null);
       setImageFile(null);
-
       setShowModal(true);
     },
-    [imagePreview]
+    [imagePreview, isAdmin]
   );
 
   const onFileChange = (e) => {
@@ -251,24 +219,11 @@ export default function Products() {
     <AdminRoute>
       <AdminLayout>
         <div className="space-y-6">
-          {/* Khởi header + toolbar với style bạn yêu cầu */}
           <div className="space-y-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
-            <ProductHeader
-              onAdd={openAddModal}
-              onRefresh={refreshWithSearch}
-              refreshing={loading}
-            />
+            <ProductHeader onAdd={openAddModal} onRefresh={refreshWithSearch} refreshing={loading} canEdit={isAdmin} />
             <ProductToolbar
               totalProducts={totalProducts}
-              paginationProps={{
-                page,
-                setPage,
-                pageSize,
-                setPageSize,
-                totalPages,
-                totalItems,
-                offset,
-              }}
+              paginationProps={{ page, setPage, pageSize, setPageSize, totalPages, totalItems, offset }}
               searchTerm={searchTerm}
               onSearchChange={handleSearchChange}
               searchStatus={searchStatusText}
@@ -276,7 +231,6 @@ export default function Products() {
             />
           </div>
 
-          {/* Bảng sản phẩm */}
           <ProductTable
             items={paginated}
             startIndex={startIndex}
@@ -287,10 +241,10 @@ export default function Products() {
             error={listError}
             searchActive={searchActive}
             totalItems={totalItems}
+            canEdit={isAdmin}
           />
         </div>
 
-        {/* Modal thêm/sửa sản phẩm */}
         <ProductModal
           visible={showModal}
           formMode={formMode}
@@ -305,27 +259,28 @@ export default function Products() {
         />
       </AdminLayout>
     </AdminRoute>
-
   );
 }
 
-function ProductHeader({ onAdd, onRefresh, refreshing }) {
+function ProductHeader({ onAdd, onRefresh, refreshing, canEdit }) {
   return (
     <div className="flex items-center justify-between">
       <div>
         <h1 className="text-2xl font-bold text-zinc-900">Quản lý sản phẩm</h1>
-        <p className="text-sm text-zinc-500">
-          Thêm, sửa, xóa và quản lý sản phẩm trong cửa hàng của bạn.
-        </p>
+        <p className="text-sm text-zinc-500">Xem và quản lý danh sách sản phẩm trong cửa hàng.</p>
       </div>
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={onAdd}
-          className="rounded border border-green-500 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50"
-        >
-          Thêm sản phẩm
-        </button>
+        {canEdit ? (
+          <button
+            type="button"
+            onClick={onAdd}
+            className="rounded border border-green-500 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50"
+          >
+            Thêm sản phẩm
+          </button>
+        ) : (
+          <span className="text-xs text-zinc-500">Chỉ admin được chỉnh sửa</span>
+        )}
         <button
           type="button"
           onClick={() => onRefresh()}
@@ -339,16 +294,8 @@ function ProductHeader({ onAdd, onRefresh, refreshing }) {
   );
 }
 
-function ProductToolbar({
-  totalProducts,
-  paginationProps,
-  searchTerm,
-  onSearchChange,
-  searchStatus,
-  searchActive,
-}) {
-  const { page, setPage, pageSize, setPageSize, totalPages, totalItems, offset } =
-    paginationProps;
+function ProductToolbar({ totalProducts, paginationProps, searchTerm, onSearchChange, searchStatus, searchActive }) {
+  const { page, setPage, pageSize, setPageSize, totalPages, totalItems, offset } = paginationProps;
 
   return (
     <div className="mt-3 space-y-3">
@@ -363,9 +310,7 @@ function ProductToolbar({
             placeholder="Tìm sản phẩm..."
             className="w-full sm:w-64 rounded border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none focus:ring-0"
           />
-          {searchActive && searchStatus ? (
-            <span className="text-xs text-zinc-500">{searchStatus}</span>
-          ) : null}
+          {searchActive && searchStatus ? <span className="text-xs text-zinc-500">{searchStatus}</span> : null}
         </div>
         <Pagination
           page={page}
@@ -375,23 +320,13 @@ function ProductToolbar({
           totalPages={totalPages}
           totalItems={totalItems}
           offset={offset}
-        /> 
+        />
       </div>
     </div>
   );
 }
 
-function ProductTable({
-  items,
-  startIndex,
-  onEdit,
-  onDelete,
-  deletingId,
-  loading,
-  error,
-  searchActive,
-  totalItems,
-}) {
+function ProductTable({ items, startIndex, onEdit, onDelete, deletingId, loading, error, searchActive, totalItems, canEdit }) {
   if (loading) {
     return <div>Đang tải danh sách sản phẩm...</div>;
   }
@@ -399,7 +334,7 @@ function ProductTable({
   if (error) {
     return (
       <div className="rounded border border-red-200 bg-red-50 p-4 text-red-700">
-        Loi: {error}
+        Lỗi: {error}
       </div>
     );
   }
@@ -434,51 +369,41 @@ function ProductTable({
               <td className="px-4 py-3 text-center">{startIndex + idx + 1}</td>
               <td className="px-4 py-3 text-center">
                 {product.image ? (
-                  <img
-                    src={product.image}
-                    alt={product.title || "?nh s?n ph?m"}
-                    className="mx-auto h-12 w-12 rounded border border-zinc-200 object-cover"
-                  />
+                  <img src={product.image} alt={product.title || "Ảnh sản phẩm"} className="mx-auto h-12 w-12 rounded border border-zinc-200 object-cover" />
                 ) : (
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded bg-zinc-100 text-xs text-zinc-400">
-                    Trống
-                  </div>
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded bg-zinc-100 text-xs text-zinc-400">Trống</div>
                 )}
               </td>
-              <td className="px-4 py-3 text-center font-medium text-zinc-900">
-                {product.title || "Không tên"}
-              </td>
-              <td className="px-4 py-3 text-center text-zinc-600">
-                {product.category?.name || product.category || "-"}
-              </td>
+              <td className="px-4 py-3 text-center font-medium text-zinc-900">{product.title || "Không tên"}</td>
+              <td className="px-4 py-3 text-center text-zinc-600">{product.category?.name || product.category || "-"}</td>
               <td className="px-4 py-3 text-center text-zinc-600">
                 <CurrencyDisplay value={product.price} />
               </td>
               <td className="px-4 py-3 text-center text-zinc-600">{product.quantity ?? 0}</td>
-              <td className="max-w-[300px] px-4 py-3 text-center text-zinc-600 truncate">
-                {product.description || "-"}
-              </td>
-              <td className="px-4 py-3 text-center text-zinc-600">
-                {formatDateTime(product.createdAt)}
-              </td>
+              <td className="max-w-[300px] px-4 py-3 text-center text-zinc-600 truncate">{product.description || "-"}</td>
+              <td className="px-4 py-3 text-center text-zinc-600">{formatDateTime(product.createdAt)}</td>
               <td className="px-2 py-3 text-center">
-                <div className="flex items-center justify-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => onEdit(product)}
-                    className="rounded border border-blue-500 px-2 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50"
-                  >
-                    Sửa
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onDelete(product)}
-                    disabled={deletingId === product._id}
-                    className="rounded border border-red-500 px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
-                  >
-                    {deletingId === product._id ? "Đang xóa..." : "Xóa"}
-                  </button>
-                </div>
+                {canEdit ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onEdit(product)}
+                      className="rounded border border-blue-500 px-2 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50"
+                    >
+                      Sửa
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDelete(product)}
+                      disabled={deletingId === product._id}
+                      className="rounded border border-red-500 px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                    >
+                      {deletingId === product._id ? "Đang xóa..." : "Xóa"}
+                    </button>
+                  </div>
+                ) : (
+                  <span className="text-xs text-zinc-500">Chỉ xem</span>
+                )}
               </td>
             </tr>
           ))}
@@ -488,45 +413,23 @@ function ProductTable({
   );
 }
 
-function ProductModal({
-  visible,
-  formMode,
-  newProduct,
-  setNewProduct,
-  imagePreview,
-  onFileChange,
-  onClearImage,
-  onClose,
-  onSubmit,
-  submitting,
-}) {
+function ProductModal({ visible, formMode, newProduct, setNewProduct, imagePreview, onFileChange, onClearImage, onClose, onSubmit, submitting }) {
   if (!visible) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-        <h2 className="mb-4 text-xl font-semibold">
-          {formMode === "create" ? "Thêm sản phẩm mới" : "Cập nhật sản phẩm"}
-        </h2>
+        <h2 className="mb-4 text-xl font-semibold">{formMode === "create" ? "Thêm sản phẩm mới" : "Cập nhật sản phẩm"}</h2>
 
         <div className="space-y-3">
           <div>
             <label className="block text-sm font-medium">Tên sản phẩm</label>
-            <input
-              type="text"
-              value={newProduct.title}
-              onChange={(e) => setNewProduct({ ...newProduct, title: e.target.value })}
-              className="w-full rounded border border-zinc-300 p-2"
-            />
+            <input type="text" value={newProduct.title} onChange={(e) => setNewProduct({ ...newProduct, title: e.target.value })} className="w-full rounded border border-zinc-300 p-2" />
           </div>
 
           <div>
             <label className="block text-sm font-medium">Danh mục</label>
-            <select
-              value={newProduct.category}
-              onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-              className="w-full rounded border border-zinc-300 bg-white p-2"
-            >
+            <select value={newProduct.category} onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })} className="w-full rounded border border-zinc-300 bg-white p-2">
               <option value="">-- Chọn danh mục --</option>
               <option value="Nhẫn">Nhẫn</option>
               <option value="Vòng tay">Vòng tay</option>
@@ -535,67 +438,33 @@ function ProductModal({
             </select>
           </div>
 
-                    <div>
+          <div>
             <label className="block text-sm font-medium">Giá (VND)</label>
-            <input
-              type="number"
-              inputMode="numeric"
-              value={newProduct.price}
-              onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-              className="w-full rounded border border-zinc-300 p-2"
-            />
-            <p className="mt-1 text-xs text-zinc-500">Hiển thị: <CurrencyDisplay value={newProduct.price} /></p>
+            <input type="number" inputMode="numeric" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} className="w-full rounded border border-zinc-300 p-2" />
+            <p className="mt-1 text-xs text-zinc-500">
+              Hiển thị: <CurrencyDisplay value={newProduct.price} />
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium">Số lượng tồn kho</label>
-            <input
-              type="number"
-              inputMode="numeric"
-              min="0"
-              value={newProduct.quantity}
-              onChange={(e) => setNewProduct({ ...newProduct, quantity: e.target.value })}
-              className="w-full rounded border border-zinc-300 p-2"
-              placeholder="Nhap so luong (VD: 10)"
-            />
+            <input type="number" inputMode="numeric" min="0" value={newProduct.quantity} onChange={(e) => setNewProduct({ ...newProduct, quantity: e.target.value })} className="w-full rounded border border-zinc-300 p-2" placeholder="Nhập số lượng (VD: 10)" />
           </div>
 
           <div>
             <label className="block text-sm font-medium">Ảnh sản phẩm</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={onFileChange}
-              className="hidden"
-              id="file-upload"
-            />
+            <input type="file" accept="image/*" onChange={onFileChange} className="hidden" id="file-upload" />
             <div className="mt-2 flex items-center gap-2">
               {imagePreview ? (
                 <>
-                  <img
-                    src={imagePreview}
-                    alt="preview"
-                    className="h-16 w-16 rounded border border-zinc-200 object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={onClearImage}
-                    className="text-xs text-zinc-600 underline"
-                  >
+                  <img src={imagePreview} alt="preview" className="h-16 w-16 rounded border border-zinc-200 object-cover" />
+                  <button type="button" onClick={onClearImage} className="text-xs text-zinc-600 underline">
                     Hủy
                   </button>
                 </>
               ) : newProduct.image ? (
                 <>
-                  <img
-                    src={newProduct.image}
-                    alt="preview"
-                    className="h-16 w-16 rounded border border-zinc-200 object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={onClearImage}
-                    className="text-xs text-zinc-600 underline"
-                  >
+                  <img src={newProduct.image} alt="preview" className="h-16 w-16 rounded border border-zinc-200 object-cover" />
+                  <button type="button" onClick={onClearImage} className="text-xs text-zinc-600 underline">
                     Xóa ảnh
                   </button>
                 </>
@@ -604,14 +473,7 @@ function ProductModal({
                   htmlFor="file-upload"
                   className="flex h-16 w-16 cursor-pointer items-center justify-center rounded border border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="h-6 w-6 text-zinc-400"
-                  >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6 text-zinc-400">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -625,37 +487,19 @@ function ProductModal({
 
           <div>
             <label className="block text-sm font-medium">Mô tả</label>
-            <textarea
-              value={newProduct.description}
-              onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-              className="w-full rounded border border-zinc-300 p-2"
-              rows={3}
-              placeholder="Mô tả ngắn về sản phẩm."
-            />
+            <textarea value={newProduct.description} onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} className="w-full rounded border border-zinc-300 p-2" rows={3} placeholder="Mô tả ngắn về sản phẩm." />
           </div>
         </div>
 
         <div className="mt-6 flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            disabled={submitting}
-            className="rounded border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-100 disabled:opacity-50"
-          >
+          <button onClick={onClose} disabled={submitting} className="rounded border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-100 disabled:opacity-50">
             Hủy
           </button>
-          <button
-            onClick={onSubmit}
-            disabled={submitting}
-            className="rounded bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
-          >
-            {submitting ? "Đang lưu..." : formMode === "create" ? "ưu" : "Cập nhật"}
+          <button onClick={onSubmit} disabled={submitting} className="rounded bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50">
+            {submitting ? "Đang lưu..." : formMode === "create" ? "Tạo mới" : "Cập nhật"}
           </button>
         </div>
       </div>
     </div>
   );
 }
-
-
-
-

@@ -14,14 +14,20 @@ export default function CartPage() {
   const [message, setMessage] = useState("");
   const [stockMap, setStockMap] = useState({});
   const [quantityNotice, setQuantityNotice] = useState("");
+  const [couponCode, setCouponCode] = useState("");
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponError, setCouponError] = useState("");
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [couponApplied, setCouponApplied] = useState(false);
 
   const subtotal = useMemo(
     () => items.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 0), 0),
     [items]
   );
   const shippingFee = 0;
-  const total = subtotal + shippingFee;
+  const total = Math.max(0, subtotal + shippingFee - couponDiscount);
 
+  // Prefill shipping info
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -40,6 +46,7 @@ export default function CartPage() {
     fetchProfile();
   }, []);
 
+  // Fetch latest stock numbers for items in cart
   useEffect(() => {
     const idsToFetch = [...new Set(items.map((it) => it.productId).filter(Boolean))];
     if (!idsToFetch.length) {
@@ -76,6 +83,13 @@ export default function CartPage() {
     };
   }, [items]);
 
+  // nếu subtotal thay đổi thì reset coupon
+  useEffect(() => {
+    setCouponApplied(false);
+    setCouponDiscount(0);
+    setCouponError("");
+  }, [subtotal]);
+
   const handleQuantityChange = (item, rawValue) => {
     const parsed = Math.max(1, Math.floor(Number(rawValue) || 1));
     const max = stockMap[item.productId];
@@ -86,6 +100,28 @@ export default function CartPage() {
     }
     setQuantityNotice("");
     updateQuantity(item.productId, parsed);
+  };
+
+  const applyCoupon = async () => {
+    setCouponError("");
+    setCouponDiscount(0);
+    setCouponApplied(false);
+    const code = couponCode.trim();
+    if (!code) {
+      setCouponError("Vui lòng nhập mã.");
+      return;
+    }
+    setApplyingCoupon(true);
+    try {
+      const res = await instance.post("/api/coupons/validate", { code, subtotal });
+      const discount = res?.data?.discount || 0;
+      setCouponDiscount(discount);
+      setCouponApplied(true);
+    } catch (err) {
+      setCouponError(err?.response?.data?.message || err.message || "Không áp dụng được mã.");
+    } finally {
+      setApplyingCoupon(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -105,6 +141,7 @@ export default function CartPage() {
         shipping,
         paymentMethod,
         shippingFee,
+        couponCode: couponApplied ? couponCode : "",
       });
       const orderId = res.data?._id;
       if (!orderId) {
@@ -166,7 +203,7 @@ export default function CartPage() {
                       </div>
                       <div className="flex flex-1 flex-col gap-1">
                         <p className="text-sm font-semibold">{item.name}</p>
-                        <p className="text-xs text-[#7b6654]">{item.material || "Chất liệu: cập nhật sau"}</p>
+                        <p className="text-xs text-[#7b6654]">{item.material || "Chat lieu: cap nhat sau"}</p>
                         <div className="flex items-center gap-3">
                           <label className="text-xs text-[#7b6654]">SL:</label>
                           <input
@@ -206,7 +243,7 @@ export default function CartPage() {
               <h2 className="text-lg font-semibold">Thông tin giao hàng</h2>
               <input
                 className="rounded-lg border border-[#eadfce] px-3 py-2 text-sm"
-                placeholder="Họ và tên"
+                placeholder="Ho và tên"
                 value={shipping.fullName}
                 onChange={(e) => setShipping((s) => ({ ...s, fullName: e.target.value }))}
               />
@@ -256,11 +293,39 @@ export default function CartPage() {
                 </p>
               </div>
 
+              <div className="rounded-2xl border border-dashed border-[#eadfce] bg-[#f9f3ea] p-4">
+                <p className="flex items-center gap-2 text-sm">Mã giảm giá</p>
+                <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                  <input
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    placeholder="NHAPMA"
+                    className="flex-1 rounded-lg border border-[#eadfce] px-3 py-2 text-sm uppercase"
+                  />
+                  <button
+                    type="button"
+                    onClick={applyCoupon}
+                    disabled={applyingCoupon || !couponCode.trim()}
+                    className="rounded-lg bg-[#2f241a] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                  >
+                    {applyingCoupon ? "Đang áp..." : "Áp dụng mã"}
+                  </button>
+                </div>
+                {couponError ? <p className="mt-1 text-xs text-red-600">{couponError}</p> : null}
+                {couponApplied && !couponError ? <p className="mt-1 text-xs text-emerald-700">Đã áp dụng mã.</p> : null}
+              </div>
+
               <div className="space-y-1 text-sm text-[#4b3d30]">
                 <div className="flex justify-between">
-                  <span>Tạm tính</span>
+                  <span>Thành tiền</span>
                   <span className="font-semibold text-[#9a785d]">{subtotal.toLocaleString("vi-VN")} VND</span>
                 </div>
+                {couponApplied ? (
+                  <div className="flex justify-between text-emerald-700">
+                    <span>Giảm giá</span>
+                    <span>-{couponDiscount.toLocaleString("vi-VN")} VND</span>
+                  </div>
+                ) : null}
                 <div className="flex justify-between">
                   <span>Phí vận chuyển</span>
                   <span className="font-semibold text-[#9a785d]">{shippingFee.toLocaleString("vi-VN")} VND</span>
@@ -288,4 +353,3 @@ export default function CartPage() {
     </>
   );
 }
-
