@@ -28,6 +28,18 @@ const orderSchema = new mongoose.Schema(
     items: { type: [orderItemSchema], required: true },
     shipping: { type: shippingSchema, required: true },
     paymentMethod: { type: String, enum: ["cod", "online"], default: "cod" },
+    paidAt: { type: Date, default: null },
+    paymentInfo: {
+      provider: { type: String, default: "" },
+      txnRef: { type: String, default: "" },
+      transactionNo: { type: String, default: "" },
+      bankCode: { type: String, default: "" },
+      cardType: { type: String, default: "" },
+      amount: { type: Number, default: 0 },
+      responseCode: { type: String, default: "" },
+      orderInfo: { type: String, default: "" },
+      raw: { type: Object, default: null },
+    },
     status: {
       type: String,
       enum: ["pending", "paid", "shipped", "cancelled"],

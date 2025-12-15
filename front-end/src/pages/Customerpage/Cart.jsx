@@ -34,7 +34,7 @@ export default function CartPage() {
           address: user.address || prev.address,
         }));
       } catch (_err) {
-        // ignore errors; fallback to manual entry
+        // ignore errors; allow manual entry
       }
     };
     fetchProfile();
@@ -96,7 +96,7 @@ export default function CartPage() {
       return;
     }
     if (!shipping.fullName || !shipping.phone || !shipping.address) {
-      setMessage("Vui lòng nhập đủ họ tên, số điện thoại và địa chỉ.");
+      setMessage("Vui lòng nhập họ tên, số điện thoại và địa chỉ.");
       return;
     }
     setSubmitting(true);
@@ -106,8 +106,23 @@ export default function CartPage() {
         paymentMethod,
         shippingFee,
       });
+      const orderId = res.data?._id;
+      if (!orderId) {
+        throw new Error("Không nhận được mã đơn.");
+      }
       await clearCart();
-      navigate(`/orders/${res.data?._id || ""}`, { replace: true });
+
+      if (paymentMethod === "online") {
+        const payRes = await instance.post("/api/payments/vnpay/create", { orderId });
+        const payUrl = payRes?.data?.paymentUrl;
+        if (!payUrl) {
+          throw new Error("Không nhận được đường dẫn thanh toán.");
+        }
+        window.location.href = payUrl;
+        return;
+      }
+
+      navigate("/orders", { replace: true });
     } catch (err) {
       setMessage(err?.response?.data?.message || err.message || "Đặt hàng thất bại.");
     } finally {
@@ -145,13 +160,13 @@ export default function CartPage() {
                           <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center text-[11px] text-[#7b6654]">
-                            Không ảnh
+                            Không có ảnh
                           </div>
                         )}
                       </div>
                       <div className="flex flex-1 flex-col gap-1">
                         <p className="text-sm font-semibold">{item.name}</p>
-                        <p className="text-xs text-[#7b6654]">{item.material || "Chất liệu: cập nhật"}</p>
+                        <p className="text-xs text-[#7b6654]">{item.material || "Chất liệu: cập nhật sau"}</p>
                         <div className="flex items-center gap-3">
                           <label className="text-xs text-[#7b6654]">SL:</label>
                           <input
@@ -234,8 +249,11 @@ export default function CartPage() {
                     checked={paymentMethod === "online"}
                     onChange={(e) => setPaymentMethod(e.target.value)}
                   />
-                  Thanh toán online (chưa kích hoạt)
+                  Thanh toán online qua VNPAY
                 </label>
+                <p className="text-xs text-[#7b6654]">
+                  Chọn VNPAY để chuyển sang trang thanh toán an toàn sau khi đặt đơn.
+                </p>
               </div>
 
               <div className="space-y-1 text-sm text-[#4b3d30]">
@@ -270,3 +288,4 @@ export default function CartPage() {
     </>
   );
 }
+

@@ -29,10 +29,6 @@ export default function Sidebar() {
         <LinkItem to="/admin/products">Quản lý sản phẩm</LinkItem>
         <LinkItem to="/admin/orders">Đơn hàng</LinkItem>
         <LinkItem to="/admin/messages">Tin nhắn</LinkItem>
-        <LinkItem to="">Quản lý nội dung</LinkItem>
-        <LinkItem to="">Thanh toán</LinkItem>
-        <LinkItem to="/admin/settings">Cài đặt</LinkItem>
-
       </nav>
     </div>
   );

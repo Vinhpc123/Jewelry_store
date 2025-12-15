@@ -24,6 +24,11 @@ export const createOrder = async (req, res) => {
       return res.status(400).json({ message: "Thieu thong tin giao hang" });
     }
 
+    const normalizedMethod = String(paymentMethod || "").toLowerCase();
+    if (!["cod", "online"].includes(normalizedMethod)) {
+      return res.status(400).json({ message: "Phuong thuc thanh toan khong hop le" });
+    }
+
     const cart = await Cart.findOne({ user: req.user._id });
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({ message: "Gio hang trong" });
@@ -79,7 +84,7 @@ export const createOrder = async (req, res) => {
       user: req.user._id,
       items: refreshedItems,
       shipping,
-      paymentMethod,
+      paymentMethod: normalizedMethod,
       subtotal,
       shippingFee,
       total,

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import Header from "../../components/Customer/Header";
 import Footer from "../../components/Customer/Footer";
 import instance from "../../lib/api";
@@ -7,11 +7,17 @@ import instance from "../../lib/api";
 export default function OrderDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionError, setActionError] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const payStatus = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get("payStatus");
+  }, [location.search]);
 
   const formatCurrency = useMemo(
     () => (value) => {
@@ -60,6 +66,24 @@ export default function OrderDetailPage() {
     }
   };
 
+  const handlePayOnline = async () => {
+    if (!order?._id || paying) return;
+    setActionError("");
+    setPaying(true);
+    try {
+      const res = await instance.post("/api/payments/vnpay/create", { orderId: order._id });
+      const url = res?.data?.paymentUrl;
+      if (!url) {
+        throw new Error("Không nhận được link thanh toán.");
+      }
+      window.location.href = url;
+    } catch (err) {
+      setActionError(err?.response?.data?.message || err.message || "Thanh toán online thất bại.");
+    } finally {
+      setPaying(false);
+    }
+  };
+
   const statusStyle = {
     pending: "bg-amber-50 text-amber-700 ring-amber-100",
     paid: "bg-emerald-50 text-emerald-700 ring-emerald-100",
@@ -91,7 +115,7 @@ export default function OrderDetailPage() {
               </Link>
               <span className="mx-2">/</span>
               <Link to="/orders" className="hover:text-[#2f241a]">
-                Đon hàng
+                Đơn hàng
               </Link>
               <span className="mx-2">/</span>
               <span className="text-[#2f241a] font-semibold">Chi tiết</span>
@@ -112,6 +136,17 @@ export default function OrderDetailPage() {
         <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-10">
           {error ? (
             <div className="rounded-2xl bg-red-50 p-4 text-sm text-red-700 ring-1 ring-red-100">{error}</div>
+          ) : null}
+
+          {payStatus === "success" ? (
+            <div className="rounded-2xl bg-emerald-50 p-4 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-100">
+              Thanh toán online thành công.
+            </div>
+          ) : null}
+          {payStatus === "fail" ? (
+            <div className="rounded-2xl bg-red-50 p-4 text-sm font-semibold text-red-700 ring-1 ring-red-100">
+              Thanh toán online thất bại. Vui lòng thử lại hoặc chọn COD.
+            </div>
           ) : null}
 
           {loading ? (
@@ -141,13 +176,23 @@ export default function OrderDetailPage() {
                 </div>
                 {order.status === "pending" ? (
                   <div className="mt-4 flex flex-wrap gap-3">
+                    {order.paymentMethod === "online" ? (
+                      <button
+                        type="button"
+                        onClick={handlePayOnline}
+                        disabled={paying || actionLoading}
+                        className="rounded-full border border-[#0f9d58] px-4 py-2 text-sm font-semibold text-[#0f9d58] transition hover:bg-emerald-50 disabled:opacity-60"
+                      >
+                        {paying ? "Đang chuyển..." : "Thanh toán VNPAY"}
+                      </button>
+                    ) : null}
                     <button
                       type="button"
                       onClick={handleCancel}
                       disabled={actionLoading}
                       className="rounded-full border border-red-600 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-60"
                     >
-                      {actionLoading ? "Đang hủy..." : "ủy đơn"}
+                      {actionLoading ? "Đang hủy..." : "Hủy đơn"}
                     </button>
                     {actionError ? <p className="text-sm text-red-600">{actionError}</p> : null}
                   </div>
@@ -165,7 +210,7 @@ export default function OrderDetailPage() {
                             <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center text-[11px] text-[#7b6654]">
-                              Không ảnh
+                              Không có ảnh
                             </div>
                           )}
                         </div>
@@ -192,7 +237,7 @@ export default function OrderDetailPage() {
 
                   <div className="space-y-2 border-t border-[#eadfce] pt-4 text-sm text-[#4b3d30]">
                     <div className="flex justify-between">
-                      <span> Tổng tiền</span>
+                      <span>Tạm tính</span>
                       <span className="font-semibold text-[#9a785d]">{formatCurrency(subtotal)}</span>
                     </div>
                     <div className="flex justify-between">
@@ -206,7 +251,7 @@ export default function OrderDetailPage() {
                       <span>{formatCurrency(order.total)}</span>
                     </div>
                     <p className="text-xs text-[#7b6654]">
-                      Phương thức: {order.paymentMethod === "online" ? "Online" : "COD"}
+                      Phương thức: {order.paymentMethod === "online" ? "Online (VNPAY)" : "COD"}
                     </p>
                   </div>
                 </div>
@@ -219,3 +264,4 @@ export default function OrderDetailPage() {
     </>
   );
 }
+
