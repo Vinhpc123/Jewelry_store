@@ -14,9 +14,7 @@ Tìm hiểu về:
 
 - Sql: MongoDB
 
-- Tìm hiểu thanh toán online với Paypal Sandbox, VNPAY
-
-- Tìm hiểu xác thực OTP với firebase
+- Tìm hiểu thanh toán online với VNPAY
 
 - Tìm hiểu xác thực API với JWT (Json web token)
 
