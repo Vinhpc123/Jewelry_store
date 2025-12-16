@@ -6,6 +6,8 @@ import {
   getProfile,
   updateProfile,
   googleLogin,
+  forgotPassword,
+  resetPassword,
 } from "../controllers/authController.js";
 import { registerPublic } from "../controllers/authController.js";
 import { protect, authorize } from "../../middleware/authMiddleware.js";
@@ -19,6 +21,8 @@ router.post("/signup", registerPublic);
 router.post("/register", protect, authorize("admin"), register);
 router.post("/login", login);
 router.post("/google", googleLogin);
+router.post("/forgot", forgotPassword);
+router.post("/reset", resetPassword);
 router.post("/logout", protect, logout);
 router.get("/profile", protect, getProfile);
 router.patch("/profile", protect, updateProfile);

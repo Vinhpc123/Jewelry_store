@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Mail, Eye, EyeOff, KeyRound } from "lucide-react";
+import { Mail, KeyRound } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import LabeledInput from "../inputs/LabeledInput";
 import PasswordField from "../inputs/PasswordField";
 import Checkbox from "../ui/Checkbox";
 import PrimaryButton from "../ui/PrimaryButton";
 import { login, setAuthToken, setUser } from "../../../lib/api";
-import { useNavigate } from "react-router-dom";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -27,7 +27,7 @@ export default function LoginForm() {
         setAuthToken(data.token);
         if (data.user) setUser(data.user);
       }
-      alert("Đăng nhập thành công");
+      alert("Đăng nhập thành công!");
       const role = data?.user?.role;
       if (role === "admin" || role === "staff") {
         navigate("/admin");
@@ -62,10 +62,14 @@ export default function LoginForm() {
 
       <div className="flex items-center justify-between">
         <Checkbox checked={remember} onCheckedChange={setRemember} label="Nhớ mật khẩu" />
-        <a href="#" className="text-sm text-zinc-500 hover:text-zinc-700">Quên mật khẩu?</a>
+        <Link to="/forgot-password" className="text-sm text-zinc-500 hover:text-zinc-700">
+          Quên mật khẩu?
+        </Link>
       </div>
 
-      <PrimaryButton type="submit" onClick={handleLogin} className="w-full">Đăng nhập</PrimaryButton>
+      <PrimaryButton type="submit" onClick={handleLogin} className="w-full">
+        Đăng nhập
+      </PrimaryButton>
     </form>
   );
 }

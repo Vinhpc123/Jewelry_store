@@ -67,6 +67,14 @@ export function login(payload) {
   return instance.post("/api/auth/login", payload);
 }
 
+export function requestPasswordReset(email) {
+  return instance.post("/api/auth/forgot", { email });
+}
+
+export function resetPassword(token, password) {
+  return instance.post("/api/auth/reset", { token, password });
+}
+
 export function loginWithGoogle(idToken) {
   return instance.post("/api/auth/google", { idToken });
 }

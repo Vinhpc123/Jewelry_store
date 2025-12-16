@@ -4,6 +4,8 @@ import LoginPage from "./pages/LogPage/LoginPage";
 import AdminPage from "./pages/Adminpage/Dashboard";
 import NotFound from "./pages/NotFoundPage/NotFound";
 import RegisterPage from "./pages/LogPage/RegisterPage";
+import ForgotPasswordPage from "./pages/LogPage/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/LogPage/ResetPasswordPage";
 import Products from "./pages/Adminpage/Products";
 import User from "./pages/Adminpage/User";
 import OrdersAdmin from "./pages/Adminpage/Orders";
@@ -38,6 +40,8 @@ export default function App() {
       {/* Login / Register */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       {/* Customer Routes */}
       <Route path="/Nhan" element={<RingPage />} />
