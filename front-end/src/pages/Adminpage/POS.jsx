@@ -222,6 +222,13 @@ export default function POS() {
                       onClick={() => addToCart(p)}
                       className="flex flex-col items-start gap-2 rounded-lg border border-zinc-200 p-3 text-left hover:border-indigo-400"
                     >
+                      <div className="aspect-square w-full overflow-hidden rounded-md bg-zinc-100">
+                        {p.image ? (
+                          <img src={p.image} alt={p.title} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-xs text-zinc-500">KhA'ng cA3  §œnh</div>
+                        )}
+                      </div>
                       <div className="flex w-full items-center justify-between">
                         <span className="font-semibold text-zinc-900 line-clamp-1">{p.title}</span>
                         <span className="text-xs text-zinc-500">Kho: {p.quantity ?? 0}</span>

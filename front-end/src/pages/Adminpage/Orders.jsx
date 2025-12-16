@@ -4,6 +4,14 @@ import AdminRoute from "../../components/Admin/AdminRoute";
 import formatDateTime from "../../components/Admin/FormatDateTime";
 import instance from "../../lib/api";
 
+const STATUS_STYLES = {
+  processing: "bg-amber-50 text-amber-700 border border-amber-200",
+  paid: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  shipped: "bg-blue-50 text-blue-700 border border-blue-200",
+  completed: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  cancelled: "bg-red-50 text-red-700 border border-red-200",
+};
+
 const STATUS_LABELS = {
   processing: "Đang xử lý",
   paid: "Đã thanh toán",
@@ -212,7 +220,10 @@ export default function OrdersAdminPage() {
                           value={(order.status === "pending" ? "processing" : order.status) || "processing"}
                           onChange={(e) => handleStatusChange(order._id, e.target.value)}
                           disabled={updatingId === order._id}
-                          className="rounded border border-zinc-300 bg-white px-2 py-1 text-sm"
+                          className={`w-36 rounded px-2 py-1 text-sm font-semibold transition ${
+                            STATUS_STYLES[(order.status === "pending" ? "processing" : order.status) || "processing"] ||
+                            "bg-zinc-50 text-zinc-700 border border-zinc-200"
+                          }`}
                         >
                           {STATUS_OPTIONS.filter((o) => o.value).map((opt) => (
                             <option key={opt.value} value={opt.value}>
