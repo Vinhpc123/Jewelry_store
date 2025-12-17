@@ -25,7 +25,6 @@
 - Thông tin sandbox VNPAY (TMN Code, Hash Secret)
 
 ## Thiết lập & chạy
-1) Cài phụ thuộc:
 ```bash
 npm install                    # cài concurrently + socket libs ở root
 npm install --prefix back-end
