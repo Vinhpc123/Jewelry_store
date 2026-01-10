@@ -4,6 +4,29 @@ import User from "../models/user.js";
 import { generateToken } from "../../utils/generateToken.js";
 import { sendEmail } from "../utils/sendEmail.js";
 
+let firebaseAuthInstance = null;
+const getFirebaseAuth = async () => {
+  if (firebaseAuthInstance) return firebaseAuthInstance;
+
+  const credsJson = process.env.GOOGLE_CREDENTIALS_JSON;
+  try {
+    // Lazy import to khong crash khi chua cai firebase-admin
+    const admin = await import("firebase-admin");
+    if (!admin.apps.length) {
+      const credential = credsJson
+        ? admin.credential.cert(JSON.parse(credsJson))
+        : admin.credential.applicationDefault();
+      admin.initializeApp({ credential });
+    }
+    firebaseAuthInstance = admin.auth();
+    return firebaseAuthInstance;
+  } catch (err) {
+    throw new Error(
+      "Google login chua duoc cau hinh (thieu firebase-admin hoac bien moi truong GOOGLE_CREDENTIALS_JSON)"
+    );
+  }
+};
+
 // Tao nguoi dung moi (admin)
 export const register = async (req, res) => {
   try {
@@ -154,7 +177,7 @@ export const forgotPassword = async (req, res) => {
         to: user.email,
         subject: "Đặt lại mật khẩu Jewelry Store",
         text: `Nhấn vào link sau để đặt lại mật khẩu: ${resetLink}`,
-        html: `<p>Bạn vừa yêu cầu đặt lại mật khẩu.</p><p><a href="${resetLink}">Ấm vào đây để đặt lại</a></p><p>Link hết hạn sau 15 phút.</p>`,
+        html: `<p>Bạn vừa yêu cầu đặt lại mật khẩu.</p><p><a href="${resetLink}">Nhấn vào đây để đặt lại</a></p><p>Link hết hạn sau 15 phút.</p>`,
       });
     } catch (mailErr) {
       return res.status(500).json({ message: "Không thể gửi email reset", error: mailErr.message });
@@ -247,7 +270,7 @@ export const googleLogin = async (req, res) => {
     const { idToken } = req.body;
     if (!idToken) return res.status(400).json({ message: "Missing idToken" });
 
-    const auth = getFirebaseAuth();
+    const auth = await getFirebaseAuth();
     const decoded = await auth.verifyIdToken(idToken);
 
     const email = decoded?.email;
@@ -297,6 +320,11 @@ export const googleLogin = async (req, res) => {
     });
   } catch (error) {
     console.error("Google login error:", error);
-    return res.status(500).json({ message: "Không thể đăng nhập Google", error: error.message });
+    return res.status(500).json({
+      message: "Không thể đăng nhập Google",
+      error: error.message || error.toString(),
+    });
   }
 };
+
+

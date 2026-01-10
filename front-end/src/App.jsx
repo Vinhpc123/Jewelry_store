@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import LoginPage from "./pages/LogPage/LoginPage";
 import AdminPage from "./pages/Adminpage/Dashboard";
 import NotFound from "./pages/NotFoundPage/NotFound";
@@ -27,12 +27,64 @@ import OrdersPage from "./pages/Customerpage/Orders";
 import OrderDetailPage from "./pages/Customerpage/OrderDetail";
 import BlogDetail from "./pages/Customerpage/BlogDetail";
 import ProfilePage from "./pages/Customerpage/Profile";
+import { fetchProfile, getStoredToken, getUser, setAuthToken, setUser } from "./lib/api";
 
 export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <Routes>
+      <AppRoutes />
+    </BrowserRouter>
+  );
+}
+
+function AppRoutes() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [authReady, setAuthReady] = React.useState(false);
+  const [currentUser, setCurrentUser] = React.useState(() => getUser());
+
+  React.useEffect(() => {
+    let mounted = true;
+    const bootstrapAuth = async () => {
+      const token = getStoredToken();
+      if (token) {
+        setAuthToken(token);
+        try {
+          const res = await fetchProfile();
+          if (mounted && res?.data) {
+            setUser(res.data);
+            setCurrentUser(res.data);
+          }
+        } catch (err) {
+          setAuthToken(null);
+          setUser(null);
+          setCurrentUser(null);
+        }
+      }
+      if (mounted) setAuthReady(true);
+    };
+    bootstrapAuth();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (!authReady) return;
+    const role = currentUser?.role;
+    const path = location.pathname || "/";
+    if ((role === "admin" || role === "staff") && !path.startsWith("/admin")) {
+      navigate("/admin", { replace: true });
+      return;
+    }
+    if (role === "customer" && path.startsWith("/admin")) {
+      navigate("/", { replace: true });
+    }
+  }, [authReady, currentUser, location.pathname, navigate]);
+
+  return (
+    <Routes>
       {/* Customer first */}
       <Route path="/" element={<Storefront />} />
       <Route path="/shop" element={<Storefront />} />
@@ -58,11 +110,46 @@ export default function App() {
       <Route path="/blog/:slug" element={<BlogDetail />} />
 
       {/* Admin Routes */}
-      <Route path="/admin" element={<AdminPage />} />
-      <Route path="/admin/products" element={<Products />} />
-      <Route path="/admin/users" element={<User />} />
-      <Route path="/admin/orders" element={<OrdersAdmin />} />
-      <Route path="/admin/messages" element={<Messenger />} />
+      <Route
+        path="/admin"
+        element={
+          <AdminRoute allowedRoles={["admin", "staff"]}>
+            <AdminPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/products"
+        element={
+          <AdminRoute allowedRoles={["admin", "staff"]}>
+            <Products />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <AdminRoute allowedRoles={["admin", "staff"]}>
+            <User />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/orders"
+        element={
+          <AdminRoute allowedRoles={["admin", "staff"]}>
+            <OrdersAdmin />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/messages"
+        element={
+          <AdminRoute allowedRoles={["admin", "staff"]}>
+            <Messenger />
+          </AdminRoute>
+        }
+      />
       <Route
         path="/admin/pos"
         element={
@@ -83,7 +170,5 @@ export default function App() {
       {/* NotFound */}
       <Route path="*" element={<NotFound />} />
     </Routes>
-
-    </BrowserRouter>
   );
 }

@@ -6,9 +6,9 @@ export const connectDB = async () => {
       process.env.mongodb_connection_string,
     );
 
-    console.log("lien ket csdl thanh cong");
+    console.log("liên kết cơ sở dữ liệu thành công");
   } catch (error) {
-    console.error("loi ket noi csdl:", error);
-    process.exit(1); // thoat ung dung khi ket noi that bai
+    console.error("lỗi kết nối:", error);
+    process.exit(1); // thoát ứng dụng khi kết nối thất bại
   }
 };

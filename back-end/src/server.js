@@ -59,7 +59,7 @@ app.use("/uploads", express.static(uploadsDir));
 
 app.post("/api/upload", upload.single("file"), (req, res) => {
   if (!req.file) {
-    return res.status(400).json({ message: "Khong co file tai len" });
+    return res.status(400).json({ message: "Không có file được tải lên" });
   }
 
   const fileUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;

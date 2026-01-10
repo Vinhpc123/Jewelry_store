@@ -16,5 +16,9 @@ const jewelrySchema = new mongoose.Schema(
   }
 );
 
+// Indexes giup tim kiem/loc nhanh hon theo tieu de, danh muc va thoi gian
+jewelrySchema.index({ title: 1, category: 1, createdAt: -1 });
+jewelrySchema.index({ title: "text", description: "text", category: "text" });
+
 const Jewelry = mongoose.model("Jewelry", jewelrySchema);
 export default Jewelry;

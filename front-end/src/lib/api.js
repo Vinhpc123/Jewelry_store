@@ -79,6 +79,10 @@ export function loginWithGoogle(idToken) {
   return instance.post("/api/auth/google", { idToken });
 }
 
+export function fetchProfile() {
+  return instance.get("/api/auth/profile");
+}
+
 export function fetchUserById(id) {
   return instance.get(`/api/users/${id}`);
 }

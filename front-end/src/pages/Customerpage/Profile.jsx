@@ -1,16 +1,16 @@
-import React, { useEffect, useState, useMemo } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Customer/Header";
 import Footer from "../../components/Customer/Footer";
 import instance, { setAuthToken, setUser } from "../../lib/api";
+import { useToast } from "../../components/ui/ToastContext";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState(null);
-  const [message, setMessage] = useState(null);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -21,6 +21,7 @@ export default function ProfilePage() {
     confirm: "",
   });
   const fileInputRef = React.useRef(null);
+
   const initialLetter = useMemo(() => {
     const source = form.name?.trim() || form.email?.trim() || "";
     return source.charAt(0).toUpperCase() || "?";
@@ -35,7 +36,6 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       setLoading(true);
-      setError(null);
       try {
         const res = await instance.get("/api/auth/profile");
         const user = res?.data || {};
@@ -55,13 +55,13 @@ export default function ProfilePage() {
           navigate("/login", { replace: true });
           return;
         }
-        setError(err?.response?.data?.message || err.message || "Không tải được hồ sơ.");
+        toast.error(err?.response?.data?.message || err.message || "Khong the tai ho so.");
       } finally {
         setLoading(false);
       }
     };
     fetchProfile();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const handleChange = (key) => (e) => {
     const value = e.target.value;
@@ -74,8 +74,6 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    setError(null);
-    setMessage(null);
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -85,10 +83,10 @@ export default function ProfilePage() {
       const url = res?.data?.url;
       if (url) {
         setForm((prev) => ({ ...prev, avatar: url }));
-        setMessage("Tai avatar thanh cong. Nho bam Luu de cap nhat ho so.");
+        toast.success("Tải avatar thành công. Nhấn Lưu để cập nhật.");
       }
     } catch (err) {
-      setError(err?.response?.data?.message || err.message || "Tai anh that bai.");
+      toast.error(err?.response?.data?.message || err.message || "Tải ảnh thất bại.");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -97,9 +95,14 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
-    setMessage(null); const phoneVal = form.phone.trim(); const phoneRegex = /^(03|05|07|08|09)\d{8}$/; if (phoneVal && !phoneRegex.test(phoneVal)) { setError("So dien thoai khong hop le (10 so, bat dau bang 03,05,07,08,09)."); return; } if (!canSubmit) {
-      setError("Vui lòng kiểm tra lại thông tin.");
+    const phoneVal = form.phone.trim();
+    const phoneRegex = /^(03|05|07|08|09)\d{8}$/;
+    if (phoneVal && !phoneRegex.test(phoneVal)) {
+      toast.error("Số điện thoại không hợp lệ (10 số, bắt đầu bằng 03,05,07,08,09).");
+      return;
+    }
+    if (!canSubmit) {
+      toast.error("Vui lòng kiểm tra lại thông tin.");
       return;
     }
     setSaving(true);
@@ -114,7 +117,7 @@ export default function ProfilePage() {
       const res = await instance.patch("/api/auth/profile", payload);
       const updated = res?.data || {};
       setUser(updated);
-      setMessage("Cập nhật thành công.");
+      toast.success("Cập nhật thành công.");
       setForm((prev) => ({ ...prev, password: "", confirm: "" }));
     } catch (err) {
       const status = err?.response?.status;
@@ -124,7 +127,7 @@ export default function ProfilePage() {
         navigate("/login", { replace: true });
         return;
       }
-      setError(err?.response?.data?.message || err.message || "Cập nhật thất bại.");
+      toast.error(err?.response?.data?.message || err.message || "Cập nhật thất bại.");
     } finally {
       setSaving(false);
     }
@@ -144,15 +147,6 @@ export default function ProfilePage() {
         </section>
 
         <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-10">
-          {error ? (
-            <div className="mb-4 rounded-2xl bg-red-50 p-4 text-sm text-red-700 ring-1 ring-red-100">{error}</div>
-          ) : null}
-          {message ? (
-            <div className="mb-4 rounded-2xl bg-emerald-50 p-4 text-sm text-emerald-700 ring-1 ring-emerald-100">
-              {message}
-            </div>
-          ) : null}
-
           {loading ? (
             <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
               <div className="space-y-4 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-[#eadfce]">
@@ -257,8 +251,8 @@ export default function ProfilePage() {
                     </div>
                   )}
                   <div className="text-center">
-                    <p className="text-sm font-semibold text-[#2f241a]">{form.name || "Khach hang"}</p>
-                    <p className="text-xs text-[#7b6654]">{form.email || "Chua co email"}</p>
+                    <p className="text-sm font-semibold text-[#2f241a]">{form.name || "Khách hàng"}</p>
+                    <p className="text-xs text-[#7b6654]">{form.email || "Chưa có email"}</p>
                   </div>
                   <div className="flex flex-col items-center gap-2">
                     <button
@@ -288,4 +282,3 @@ export default function ProfilePage() {
     </>
   );
 }
-

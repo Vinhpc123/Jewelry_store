@@ -1,5 +1,6 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+﻿import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import instance, { getStoredToken, setAuthToken, setUser } from "../lib/api";
+import { useToast } from "../components/ui/ToastContext";
 
 
 const defaultCartValue = {
@@ -20,6 +21,7 @@ export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { toast } = useToast();
 
   const fetchCart = useCallback(async () => {
     const token = getStoredToken();
@@ -64,13 +66,13 @@ export function CartProvider({ children }) {
         // phiên hết hạn hoặc token sai
         setAuthToken(null);
         setUser(null);
-        alert("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.");
+        toast.warning("Phiên đăng nhập hết hạn", { description: "Vui lòng đăng nhập lại." });
         window.location.href = "/login";
         return;
       }
       throw err;
     }
-  }, []);
+  }, [toast]);
 
 
   const updateQuantity = useCallback(async (productId, quantity) => {
@@ -116,7 +118,7 @@ export function CartProvider({ children }) {
       updateQuantity,
       removeItem,
       clearCart,
-      itemCount: items.reduce((sum, it) => sum + (Number(it.quantity) || 0), 0),
+      itemCount: items.length,
     }),
     [items, loading, error, fetchCart, addToCart, updateQuantity, removeItem, clearCart]
   );
@@ -128,3 +130,5 @@ export function CartProvider({ children }) {
 export function useCart() {
   return useContext(CartContext);
 }
+
+

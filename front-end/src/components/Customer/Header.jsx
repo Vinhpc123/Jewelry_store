@@ -1,9 +1,10 @@
-import React from "react";
+﻿import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Diamond, Search, ShoppingBag, User } from "lucide-react";
 import { getUser, setAuthToken, setUser } from "../../lib/api";
 import useSearchPage from "../../lib/hooks/useSearchPage";
 import { useCart } from "../../context/CartContext";
+import { useToast } from "../ui/ToastContext";
 
 const navLinks = [
   { href: "/shop", label: "Trang chủ" },
@@ -24,6 +25,7 @@ export default function Header() {
   const [openAccount, setOpenAccount] = React.useState(false);
   const accountRef = React.useRef(null);
   const { itemCount } = useCart();
+  const { toast } = useToast();
   const { searchTerm, setSearchTerm, results, loading } = useSearchPage({
     endpoint: "/api/jewelry",
     minLength: 2,
@@ -51,6 +53,8 @@ export default function Header() {
     setAuthToken(null);
     setUser(null);
     setMe(null);
+    setOpenAccount(false);
+    toast.success("Đăng xuất thành công.");
     navigate("/");
   };
 
@@ -301,3 +305,4 @@ function SearchPanel({ open, onClose, searchTerm, setSearchTerm, results, loadin
     </div>
   );
 }
+

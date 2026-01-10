@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useCart } from "../../context/CartContext";
+import { useToast } from "../../components/ui/ToastContext";
 import { Link, useParams } from "react-router-dom";
 import Header from "../../components/Customer/Header";
 import Footer from "../../components/Customer/Footer";
@@ -16,6 +17,7 @@ const normalizeText = (value = "") =>
 export default function DetailPage() {
   const { id } = useParams();
   const { addToCart } = useCart();
+  const { toast } = useToast();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -130,6 +132,17 @@ export default function DetailPage() {
     return "/shop";
   }, [product]);
 
+  const handleAddToCart = async () => {
+    if (!product) return;
+    try {
+      await addToCart(product, 1);
+      toast.success("Đã thêm vào giỏ hàng.");
+    } catch (err) {
+      const message = err?.response?.data?.message || err?.message || "Không thể thêm vào giỏ hàng";
+      toast.error(message);
+    }
+  };
+
   return (
     <>
       <Header />
@@ -208,7 +221,7 @@ export default function DetailPage() {
                 <div className="mt-4 flex flex-wrap gap-3">
                   <button
                     className="rounded-full bg-[#2f241a] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md disabled:opacity-60"
-                    onClick={() => addToCart(product, 1)}
+                    onClick={handleAddToCart}
                     disabled={quantity <= 0}
                   >
                     {quantity <= 0 ? "Hết hàng" : "Thêm vào giỏ"}
@@ -230,7 +243,7 @@ export default function DetailPage() {
           <section className="mx-auto max-w-6xl px-4 pb-14 sm:px-6 lg:px-10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#9c7c61]">Sản phẩm liên quan</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#9c7c61]">Liên kết nhanh</p>
                 <h3 className="text-2xl font-bold text-[#2f241a]">Sản phẩm liên quan</h3>
               </div>
               <Link to={categoryPath} className="text-sm font-semibold text-amber-700 hover:text-amber-800">

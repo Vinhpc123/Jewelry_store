@@ -1,8 +1,13 @@
-import React from "react";
+﻿import React from "react";
 import Header from "../../components/Customer/Header";
 import Footer from "../../components/Customer/Footer";
 
 export default function AboutPage() {
+  const teamAvatars = {
+    "Lan Anh": "/blog/blog1.webp",
+    "Quang Minh": "/blog/blog2.jpg",
+    "Gia Han": "/blog/blog3.webp",
+  };
   return (
     <>
       <Header />
@@ -122,7 +127,15 @@ export default function AboutPage() {
                   className="flex flex-col gap-3 rounded-2xl bg-[#f9f5f0] p-5 ring-1 ring-[#eadfce]"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-full bg-[#e8d9c7]" />
+                    {teamAvatars[member.name] ? (
+                      <img
+                        src={teamAvatars[member.name]}
+                        alt={member.name}
+                        className="h-12 w-12 rounded-full object-cover ring-1 ring-[#e6d8c9]"
+                      />
+                    ) : (
+                      <div className="h-12 w-12 rounded-full bg-[#e8d9c7]" />
+                    )}
                     <div>
                       <p className="text-sm font-semibold text-[#2f241a]">{member.name}</p>
                       <p className="text-xs text-[#7b6654]">{member.role}</p>
@@ -163,3 +176,4 @@ export default function AboutPage() {
     </>
   );
 }
+

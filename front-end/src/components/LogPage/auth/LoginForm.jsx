@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Mail, KeyRound } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import LabeledInput from "../inputs/LabeledInput";
@@ -6,6 +6,7 @@ import PasswordField from "../inputs/PasswordField";
 import Checkbox from "../ui/Checkbox";
 import PrimaryButton from "../ui/PrimaryButton";
 import { login, setAuthToken, setUser } from "../../../lib/api";
+import { useToast } from "../../ui/ToastContext";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -18,6 +19,7 @@ export default function LoginForm() {
   }
 
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   async function handleLogin(e) {
     e.preventDefault();
@@ -27,7 +29,7 @@ export default function LoginForm() {
         setAuthToken(data.token);
         if (data.user) setUser(data.user);
       }
-      alert("Đăng nhập thành công!");
+      toast.success("Đăng nhập thành công!");
       const role = data?.user?.role;
       if (role === "admin" || role === "staff") {
         navigate("/admin");
@@ -36,7 +38,7 @@ export default function LoginForm() {
       }
     } catch (err) {
       const message = err?.response?.data?.message || err.message || "Lỗi đăng nhập";
-      alert(message);
+      toast.error(message);
     }
   }
 
@@ -73,3 +75,5 @@ export default function LoginForm() {
     </form>
   );
 }
+
+

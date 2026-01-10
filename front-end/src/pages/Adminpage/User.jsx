@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import AdminLayout from "../../components/Admin/AdminLayout";
 import AdminRoute from "../../components/Admin/AdminRoute";
 import useAdminData from "../../lib/hooks/useAdminData";
@@ -7,6 +7,8 @@ import usePagination from "../../lib/hooks/usePagination";
 import Pagination from "../../components/Admin/Pagination";
 import formatDateTime from "../../components/Admin/FormatDateTime";
 import instance, { getUser, fetchUserById, updateUserById } from "../../lib/api";
+import { useToast } from "../../components/ui/ToastContext";
+import { useConfirm } from "../../components/ui/ConfirmContext";
 
 const ROLE_LABELS = {
   admin: "Quản trị viên",
@@ -20,6 +22,8 @@ export default function Users() {
   const { loading, error, users = [], refresh } = useAdminData();
   const currentUser = getUser();
   const isAdmin = currentUser?.role === "admin";
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
 
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(5);
@@ -67,7 +71,14 @@ export default function Users() {
   // trạng thái xóa/khóa
   const [deletingId, setDeletingId] = React.useState(null);
   const handleDeleteUser = async (user) => {
-    if (!window.confirm(`Xóa ${user.email}?`)) return;
+    const ok = await confirm({
+      title: "Confirm",
+      description: `Xoa ${user.email}?`,
+      confirmText: "Xoa",
+      cancelText: "Huy",
+      tone: "danger",
+    });
+    if (!ok) return;
     setDeletingId(user._id);
     try {
       await instance.delete(`/api/users/${user._id}`);
@@ -79,11 +90,18 @@ export default function Users() {
 
   const handleToggleLock = async (user) => {
     if (!isAdmin) {
-      window.alert("Chỉ admin mới được khóa/mở khóa tài khoản.");
+      toast.error("Chỉ admin mới được khóa/mở khóa tài khoản.");
       return;
     }
     const actionLabel = user.isActive ? "Khóa" : "Mở khóa";
-    if (!window.confirm(`${actionLabel} ${user.email}?`)) return;
+    const ok = await confirm({
+      title: "Confirm",
+      description: `${actionLabel} ${user.email}?`,
+      confirmText: "Xac nhan",
+      cancelText: "Huy",
+      tone: "danger",
+    });
+    if (!ok) return;
 
     await instance.patch(`/api/users/${user._id}/status`, {
       isActive: !user.isActive,
@@ -618,3 +636,7 @@ function EditUserModal({ open, onClose, formValues, onFieldChange, onSubmit, loa
     </div>
   );
 }
+
+
+
+

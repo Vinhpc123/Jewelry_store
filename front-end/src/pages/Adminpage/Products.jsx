@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import AdminLayout from "../../components/Admin/AdminLayout";
 import AdminRoute from "../../components/Admin/AdminRoute";
 import useAdminData from "../../lib/hooks/useAdminData";
@@ -9,12 +9,16 @@ import useSearchPage from "../../lib/hooks/useSearchPage";
 import usePagination from "../../lib/hooks/usePagination";
 import Pagination from "../../components/Admin/Pagination";
 import { getUser } from "../../lib/api";
+import { useToast } from "../../components/ui/ToastContext";
+import { useConfirm } from "../../components/ui/ConfirmContext";
 
 export default function Products() {
   const { loading, error, products = [], refresh } = useAdminData();
   const { createProduct, updateProduct, deleteProduct, submitting, deletingId } = useProductCrud();
   const currentUser = getUser();
   const isAdmin = currentUser?.role === "admin";
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
 
   const [showModal, setShowModal] = React.useState(false);
   const [formMode, setFormMode] = React.useState("create");
@@ -81,7 +85,7 @@ export default function Products() {
 
   const openAddModal = () => {
     if (!isAdmin) {
-      window.alert("Chỉ admin mới được thêm sản phẩm.");
+      toast.error("Chỉ admin mới được thêm sản phẩm.");
       return;
     }
     setFormMode("create");
@@ -110,7 +114,7 @@ export default function Products() {
 
   const handleSubmit = async () => {
     if (!isAdmin) {
-      window.alert("Chỉ admin mới được chỉnh sửa sản phẩm.");
+      toast.error("Chỉ admin mới được chỉnh sửa sản phẩm.");
       return;
     }
     try {
@@ -127,45 +131,55 @@ export default function Products() {
 
       if (formMode === "create") {
         await createProduct(productPayload);
-        alert("Thêm sản phẩm thành công!");
+        toast.success("Them san pham thanh cong!");
       } else {
         if (!editingId) return;
         await updateProduct(editingId, productPayload);
-        alert("Cập nhật sản phẩm thành công!");
+        toast.success("Cap nhat san pham thanh cong!");
       }
 
       await refreshWithSearch();
       closeAddModal();
     } catch (err) {
       console.error(err);
-      alert(err?.response?.data?.message || err?.message || (formMode === "create" ? "Lỗi khi thêm sản phẩm" : "Lỗi khi cập nhật sản phẩm"));
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          (formMode === "create" ? "Loi khi them san pham" : "Loi khi cap nhat san pham")
+      );
     }
   };
 
   const handleDelete = React.useCallback(
     async (product) => {
       if (!isAdmin) {
-        window.alert("Chỉ admin mới được xóa sản phẩm.");
+        toast.error("Chỉ admin mới được xóa sản phẩm.");
         return;
       }
       if (!product?._id) return;
-      const confirmed = window.confirm(`Bạn chắc chắn muốn xóa "${product.title || "sản phẩm"}"?`);
+      const confirmed = await confirm({
+        title: "Confirm",
+        description: "Ban chac chan muon xoa \"" + (product.title || "san pham") + "\"?",
+        confirmText: "Xoa",
+        cancelText: "Huy",
+        tone: "danger",
+      });
       if (!confirmed) return;
       try {
         await deleteProduct(product._id);
         await refreshWithSearch();
       } catch (err) {
         console.error("Delete product failed", err);
-        window.alert(err?.response?.data?.message || "Xóa sản phẩm thất bại");
+        toast.error(err?.response?.data?.message || "Xóa sản phẩm thất bại");
       }
     },
-    [deleteProduct, refreshWithSearch, isAdmin]
+    [deleteProduct, refreshWithSearch, isAdmin, confirm, toast]
   );
 
   const handleUpdate = React.useCallback(
     (product) => {
       if (!isAdmin) {
-        window.alert("Chỉ admin mới được sửa sản phẩm.");
+        toast.error("Chỉ admin mới được sửa sản phẩm.");
         return;
       }
       if (!product?._id) return;
@@ -186,7 +200,7 @@ export default function Products() {
       setImageFile(null);
       setShowModal(true);
     },
-    [imagePreview, isAdmin]
+    [imagePreview, isAdmin, toast]
   );
 
   const onFileChange = (e) => {
@@ -503,3 +517,13 @@ function ProductModal({ visible, formMode, newProduct, setNewProduct, imagePrevi
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+

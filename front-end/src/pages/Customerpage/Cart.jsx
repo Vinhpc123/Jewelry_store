@@ -1,13 +1,15 @@
-import React, { useMemo, useState, useEffect } from "react";
+﻿import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Header from "../../components/Customer/Header";
 import Footer from "../../components/Customer/Footer";
 import { useCart } from "../../context/CartContext";
 import instance from "../../lib/api";
+import { useToast } from "../../components/ui/ToastContext";
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, clearCart, itemCount } = useCart();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [shipping, setShipping] = useState({ fullName: "", phone: "", address: "", note: "" });
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [submitting, setSubmitting] = useState(false);
@@ -19,6 +21,7 @@ export default function CartPage() {
   const [couponError, setCouponError] = useState("");
   const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [couponApplied, setCouponApplied] = useState(false);
+  const phoneRegex = /^(03|05|07|08|09)\d{8}$/;
 
   const subtotal = useMemo(
     () => items.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 0), 0),
@@ -95,11 +98,37 @@ export default function CartPage() {
     const max = stockMap[item.productId];
     if (Number.isFinite(max) && parsed > max) {
       setQuantityNotice(`Chỉ còn ${max} sản phẩm trong kho cho "${item.name}".`);
+      toast.warning("Vượt quá số lượng tồn kho", { description: `Chỉ còn ${max} sản phẩm.` });
       updateQuantity(item.productId, max);
       return;
     }
     setQuantityNotice("");
     updateQuantity(item.productId, parsed);
+    toast.success("Cập nhật số lượng giỏ hàng thành công");
+  };
+  const incrementQuantity = (item) => {
+    const current = Math.max(1, Math.floor(Number(item.quantity) || 1));
+    const max = stockMap[item.productId];
+    if (Number.isFinite(max) && current >= max) {
+      setQuantityNotice(`Chi con ${max} san pham trong kho cho "${item.name}".`);
+      toast.warning("Vuot qua so luong ton kho", { description: `Chi con ${max} san pham.` });
+      return;
+    }
+    setQuantityNotice("");
+    handleQuantityChange(item, current + 1);
+  };
+
+  const decrementQuantity = (item) => {
+    const current = Math.max(1, Math.floor(Number(item.quantity) || 1));
+    const next = Math.max(1, current - 1);
+    if (next === current) return;
+    setQuantityNotice("");
+    handleQuantityChange(item, next);
+  };
+
+  const handleRemoveItem = async (item) => {
+    await removeItem(item.productId);
+    toast.success("Đã xóa sản phẩm khỏi giỏ hàng");
   };
 
   const applyCoupon = async () => {
@@ -129,10 +158,18 @@ export default function CartPage() {
     setMessage("");
     if (!items.length) {
       setMessage("Giỏ hàng trống.");
+      toast.error("Giỏ hàng trống.");
       return;
     }
     if (!shipping.fullName || !shipping.phone || !shipping.address) {
       setMessage("Vui lòng nhập họ tên, số điện thoại và địa chỉ.");
+      toast.error("Vui lòng nhập họ tên, số điện thoại và địa chỉ.");
+      return;
+    }
+    const trimmedPhone = String(shipping.phone || "").trim();
+    if (!phoneRegex.test(trimmedPhone)) {
+      setMessage("Số điện thoại không hợp lệ (10 số, bắt đầu bằng 03,05,07,08,09).");
+      toast.error("Số điện thoại không hợp lệ (10 số, bắt đầu bằng 03,05,07,08,09).");
       return;
     }
     setSubmitting(true);
@@ -150,6 +187,7 @@ export default function CartPage() {
       await clearCart();
 
       if (paymentMethod === "online") {
+      toast.info("Đang chuyển đến trang thanh toán VNPAY...");
         const payRes = await instance.post("/api/payments/vnpay/create", { orderId });
         const payUrl = payRes?.data?.paymentUrl;
         if (!payUrl) {
@@ -159,9 +197,11 @@ export default function CartPage() {
         return;
       }
 
+      toast.success("Đặt hàng thành công.");
       navigate("/orders", { replace: true });
     } catch (err) {
       setMessage(err?.response?.data?.message || err.message || "Đặt hàng thất bại.");
+      toast.error(err?.response?.data?.message || err.message || "Đặt hàng thất bại.");
     } finally {
       setSubmitting(false);
     }
@@ -180,7 +220,7 @@ export default function CartPage() {
             <span className="font-semibold text-[#2f241a]">Giỏ hàng</span>
           </div>
 
-          <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
+          <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
             <div className="rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfce]">
               <div className="border-b border-[#eadfce] px-5 py-4">
                 <h2 className="text-lg font-semibold">Sản phẩm ({itemCount})</h2>
@@ -191,8 +231,8 @@ export default function CartPage() {
               ) : (
                 <ul className="divide-y divide-[#eadfce]">
                   {items.map((item) => (
-                    <li key={item.productId} className="flex gap-4 px-5 py-4">
-                      <div className="h-20 w-20 overflow-hidden rounded-2xl bg-[#f8f1e7 ]">
+                    <li key={item.productId} className="flex gap-3 px-5 py-3">
+                      <div className="h-16 w-16 overflow-hidden rounded-2xl bg-[#f8f1e7 ]">
                         {item.image ? (
                           <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
                         ) : (
@@ -204,30 +244,48 @@ export default function CartPage() {
                       <div className="flex flex-1 flex-col gap-1">
                         <p className="text-sm font-semibold">{item.name}</p>
                         <p className="text-xs text-[#7b6654]">{item.material || "Chat lieu: cap nhat sau"}</p>
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-2">
                           <label className="text-xs text-[#7b6654]">SL:</label>
-                          <input
-                            type="number"
-                            min="1"
-                            max={
-                              Number.isFinite(stockMap[item.productId]) && stockMap[item.productId] > 0
-                                ? stockMap[item.productId]
-                                : undefined
-                            }
-                            value={item.quantity}
-                            onChange={(e) => handleQuantityChange(item, e.target.value)}
-                            className="w-16 rounded border border-[#eadfce] px-2 py-1 text-sm"
-                          />
+                          <div className="flex items-center rounded-full border border-[#eadfce] bg-white px-1 py-0.5">
+                            <button
+                              type="button"
+                              aria-label="Giam so luong"
+                              className="h-6 w-6 rounded-full text-sm text-[#7b6654] hover:bg-[#f8f1e7]"
+                              onClick={() => decrementQuantity(item)}
+                            >
+                              -
+                            </button>
+                            <input
+                              type="number"
+                              min="1"
+                              max={
+                                Number.isFinite(stockMap[item.productId]) && stockMap[item.productId] > 0
+                                  ? stockMap[item.productId]
+                                  : undefined
+                              }
+                              value={item.quantity}
+                              onChange={(e) => handleQuantityChange(item, e.target.value)}
+                              className="w-12 appearance-none border-none bg-transparent text-center text-sm focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            />
+                            <button
+                              type="button"
+                              aria-label="Tang so luong"
+                              className="h-6 w-6 rounded-full text-sm text-[#7b6654] hover:bg-[#f8f1e7]"
+                              onClick={() => incrementQuantity(item)}
+                            >
+                              +
+                            </button>
+                          </div>
                           <button
                             type="button"
-                            className="text-xs text-red-600"
-                            onClick={() => removeItem(item.productId)}
+                            className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 hover:bg-red-100"
+                            onClick={() => handleRemoveItem(item)}
                           >
                             Xóa
                           </button>
                         </div>
                       </div>
-                      <div className="text-sm font-semibold text-[#9a785d]">
+                      <div className="min-w-[110px] text-right text-sm font-semibold text-[#9a785d]">
                         {(Number(item.price) || 0).toLocaleString("vi-VN")} VND
                       </div>
                     </li>
@@ -243,15 +301,21 @@ export default function CartPage() {
               <h2 className="text-lg font-semibold">Thông tin giao hàng</h2>
               <input
                 className="rounded-lg border border-[#eadfce] px-3 py-2 text-sm"
-                placeholder="Ho và tên"
+                placeholder="Họ và tên"
                 value={shipping.fullName}
                 onChange={(e) => setShipping((s) => ({ ...s, fullName: e.target.value }))}
               />
               <input
+                type="tel"
                 className="rounded-lg border border-[#eadfce] px-3 py-2 text-sm"
                 placeholder="Số điện thoại"
                 value={shipping.phone}
-                onChange={(e) => setShipping((s) => ({ ...s, phone: e.target.value }))}
+                onChange={(e) => {
+                  const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 10);
+                  setShipping((s) => ({ ...s, phone: digitsOnly }));
+                }}
+                inputMode="numeric"
+                pattern="^(03|05|07|08|09)[0-9]{8}$"
               />
               <input
                 className="rounded-lg border border-[#eadfce] px-3 py-2 text-sm"
@@ -293,20 +357,20 @@ export default function CartPage() {
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-dashed border-[#eadfce] bg-[#f9f3ea] p-4">
-                <p className="flex items-center gap-2 text-sm">Mã giảm giá</p>
-                <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+              <div className="rounded-xl border border-dashed border-[#eadfce] bg-[#f9f3ea] p-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#7b6654]">Mã giảm giá</p>
+                <div className="mt-2 flex items-center gap-2">
                   <input
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                     placeholder="NHAPMA"
-                    className="flex-1 rounded-lg border border-[#eadfce] px-3 py-2 text-sm uppercase"
+                    className="h-9 flex-1 rounded-lg border border-[#eadfce] px-3 text-xs uppercase"
                   />
                   <button
                     type="button"
                     onClick={applyCoupon}
                     disabled={applyingCoupon || !couponCode.trim()}
-                    className="rounded-lg bg-[#2f241a] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                    className="h-9 rounded-lg bg-[#2f241a] px-3 text-xs font-semibold text-white disabled:opacity-60"
                   >
                     {applyingCoupon ? "Đang áp..." : "Áp dụng mã"}
                   </button>
@@ -315,7 +379,7 @@ export default function CartPage() {
                 {couponApplied && !couponError ? <p className="mt-1 text-xs text-emerald-700">Đã áp dụng mã.</p> : null}
               </div>
 
-              <div className="space-y-1 text-sm text-[#4b3d30]">
+              <div className="space-y-2 rounded-2xl bg-[#fdf7ef] px-4 py-3 text-sm text-[#4b3d30]">
                 <div className="flex justify-between">
                   <span>Thành tiền</span>
                   <span className="font-semibold text-[#9a785d]">{subtotal.toLocaleString("vi-VN")} VND</span>
@@ -341,7 +405,7 @@ export default function CartPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="rounded-full bg-[#2f241a] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md disabled:opacity-60"
+                className="w-full rounded-full bg-[#2f241a] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md disabled:opacity-60"
               >
                 {submitting ? "Đang đặt..." : "Đặt hàng"}
               </button>
@@ -353,3 +417,5 @@ export default function CartPage() {
     </>
   );
 }
+
+

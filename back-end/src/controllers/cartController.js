@@ -15,25 +15,25 @@ export const getCart = async (req, res) => {
     res.status(200).json(cart || { user: req.user._id, items: [] });
   } catch (error) {
     console.error("Loi getCart:", error);
-    res.status(500).json({ message: "Loi he thong" });
+    res.status(500).json({ message: "Lỗi hệ thống" });
   }
 };
 
 export const addOrUpdateItem = async (req, res) => {
   try {
     const { productId, quantity = 1 } = req.body;
-    if (!productId) return res.status(400).json({ message: "Thieu productId" });
+    if (!productId) return res.status(400).json({ message: "Thiếu productId" });
     const qty = Number(quantity);
-    if (!Number.isInteger(qty) || qty <= 0) return res.status(400).json({ message: "So luong khong hop le" });
+    if (!Number.isInteger(qty) || qty <= 0) return res.status(400).json({ message: "Số lượng không hợp lệ" });
 
     const product = await Jewelry.findById(productId);
-    if (!product) return res.status(404).json({ message: "San pham khong ton tai" });
+    if (!product) return res.status(404).json({ message: "Sản phẩm không tồn tại" });
 
     const cart = await ensureCart(req.user._id);
     const idx = cart.items.findIndex((it) => String(it.productId) === String(productId));
     const itemPayload = {
       productId: product._id,
-      name: product.title || product.name || "San pham",
+      name: product.title || product.name || "Sản phẩm",
       price: Number(product.price) || 0,
       image: product.image,
       material: product.material,
@@ -49,7 +49,7 @@ export const addOrUpdateItem = async (req, res) => {
     res.status(200).json(cart);
   } catch (error) {
     console.error("Loi addOrUpdateItem:", error);
-    res.status(500).json({ message: "Loi he thong" });
+    res.status(500).json({ message: "Lỗi hệ thống" });
   }
 };
 
@@ -64,7 +64,7 @@ export const removeItem = async (req, res) => {
     res.status(200).json(cart);
   } catch (error) {
     console.error("Loi removeItem:", error);
-    res.status(500).json({ message: "Loi he thong" });
+    res.status(500).json({ message: "Lỗi hệ thống" });
   }
 };
 
@@ -79,6 +79,6 @@ export const clearCart = async (req, res) => {
     return res.status(200).json({ user: req.user._id, items: [] });
   } catch (error) {
     console.error("Loi clearCart:", error);
-    res.status(500).json({ message: "Loi he thong" });
+    res.status(500).json({ message: "Lỗi hệ thống" });
   }
 };

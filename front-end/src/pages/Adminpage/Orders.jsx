@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import AdminLayout from "../../components/Admin/AdminLayout";
 import AdminRoute from "../../components/Admin/AdminRoute";
 import formatDateTime from "../../components/Admin/FormatDateTime";
 import instance from "../../lib/api";
+import { useToast } from "../../components/ui/ToastContext";
 
 const STATUS_STYLES = {
   processing: "bg-amber-50 text-amber-700 border border-amber-200",
@@ -44,6 +45,7 @@ export default function OrdersAdminPage() {
   const [detail, setDetail] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState("");
+  const { toast } = useToast();
 
   const fetchOrders = useMemo(
     () => async () => {
@@ -75,7 +77,7 @@ export default function OrdersAdminPage() {
       await instance.put(`/api/orders/${orderId}/status`, { status: newStatus });
       await fetchOrders();
     } catch (err) {
-      window.alert(err?.response?.data?.message || "Cập nhật trạng thái thất bại.");
+      toast.error(err?.response?.data?.message || "Cập nhật trạng thái thất bại.");
     } finally {
       setUpdatingId(null);
     }
@@ -347,3 +349,6 @@ export default function OrdersAdminPage() {
     </AdminRoute>
   );
 }
+
+
+

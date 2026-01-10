@@ -1,10 +1,12 @@
-import React from "react";
+﻿import React from "react";
 import { getUser } from "../../lib/api";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../ui/ToastContext";
 
 export default function Topbar() {
   const user = getUser();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const displayName = user?.name || user?.email || "Admin";
 
   function handleLogout() {
@@ -14,6 +16,7 @@ export default function Topbar() {
     } catch (err) {
       console.warn("logout clear error", err);
     }
+    toast.success("Đăng xuất thành công.");
     navigate("/");
   }
 
@@ -29,3 +32,4 @@ export default function Topbar() {
     </div>
   );
 }
+

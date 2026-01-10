@@ -74,7 +74,7 @@ export const getAdminStats = async (_req, res) => {
       system: { status: "ok" },
     });
   } catch (error) {
-    res.status(500).json({ message: "Khong the lay thong ke", error: error.message });
+    res.status(500).json({ message: "Không thể lấy thông kê", error: error.message });
   }
 };
 
@@ -113,8 +113,16 @@ export const getRevenueMetrics = async (req, res) => {
       range = 7;
     }
 
+    const revenueMatch = {
+      createdAt: { $gte: start, $lte: end },
+      $or: [
+        { paymentMethod: "online", status: { $in: ["paid", "shipped", "completed"] } },
+        { paymentMethod: "cod", status: "completed" },
+      ],
+    };
+
     const seriesAgg = await Order.aggregate([
-      { $match: { createdAt: { $gte: start, $lte: end }, status: { $ne: "cancelled" } } },
+      { $match: revenueMatch },
       {
         $group: {
           _id: { $dateToString: { format, date: "$createdAt", timezone: "Asia/Ho_Chi_Minh" } },
@@ -152,6 +160,6 @@ export const getRevenueMetrics = async (req, res) => {
       totals,
     });
   } catch (error) {
-    res.status(500).json({ message: "Khong the lay doanh thu", error: error.message });
+    res.status(500).json({ message: "Không thể lấy thông kê", error: error.message });
   }
 };

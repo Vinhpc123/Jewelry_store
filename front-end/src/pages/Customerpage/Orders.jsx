@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "../../components/Customer/Header";
 import Footer from "../../components/Customer/Footer";
@@ -34,8 +34,30 @@ export default function OrdersPage() {
       return `${num.toLocaleString("vi-VN")} VND`;
     },
     []
-  );
+  )
 
+  const orderStats = useMemo(() => {
+    const stats = {
+      totalOrders: 0,
+      totalSpent: 0,
+      processing: 0,
+      paid: 0,
+      completed: 0,
+      cancelled: 0,
+    };
+    orders.forEach((order) => {
+      const normalizedStatus = order.status === "pending" ? "processing" : order.status;
+      stats.totalOrders += 1;
+      if (normalizedStatus === "processing") stats.processing += 1;
+      if (normalizedStatus === "paid") stats.paid += 1;
+      if (normalizedStatus === "completed") stats.completed += 1;
+      if (normalizedStatus === "cancelled") stats.cancelled += 1;
+      if (["paid", "shipped", "completed"].includes(normalizedStatus)) {
+        stats.totalSpent += Number(order.total) || 0;
+      }
+    });
+    return stats;
+  }, [orders]);
   useEffect(() => {
     const fetchOrders = async () => {
       setLoading(true);
@@ -91,7 +113,31 @@ export default function OrdersPage() {
             </div>
           ) : null}
 
-          <div className="space-y-4">
+                    {!loading && orders.length > 0 ? (
+            <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#eadfce]">
+                <p className="text-xs uppercase tracking-[0.2em] text-[#7b6654]">Tổng đơn</p>
+                <p className="mt-2 text-2xl font-semibold text-[#2f241a]">{orderStats.totalOrders}</p>
+              </div>
+              <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#eadfce]">
+                <p className="text-xs uppercase tracking-[0.2em] text-[#7b6654]">Tổng tiền</p>
+                <p className="mt-2 text-lg font-semibold text-[#9a785d]">{formatCurrency(orderStats.totalSpent)}</p>
+              </div>
+              <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#eadfce]">
+                <p className="text-xs uppercase tracking-[0.2em] text-[#7b6654]">Đang xử lý</p>
+                <p className="mt-2 text-2xl font-semibold text-[#2f241a]">{orderStats.processing}</p>
+              </div>
+              <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#eadfce]">
+                <p className="text-xs uppercase tracking-[0.2em] text-[#7b6654]">Đã thanh toán</p>
+                <p className="mt-2 text-2xl font-semibold text-[#2f241a]">{orderStats.paid}</p>
+              </div>
+              <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#eadfce]">
+                <p className="text-xs uppercase tracking-[0.2em] text-[#7b6654]">Đã hoàn tất</p>
+                <p className="mt-2 text-2xl font-semibold text-[#2f241a]">{orderStats.completed}</p>
+              </div>
+            </div>
+          ) : null}
+<div className="space-y-4">
             {orders.map((order) => (
               <div
                 key={order._id}
@@ -135,3 +181,5 @@ export default function OrdersPage() {
     </>
   );
 }
+
+

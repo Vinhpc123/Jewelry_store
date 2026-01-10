@@ -1,10 +1,11 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Mail, User, KeyRound } from "lucide-react";
 import LabeledInput from "../inputs/LabeledInput";
 import PasswordField from "../inputs/PasswordField";
 import Checkbox from "../ui/Checkbox";
 import PrimaryButton from "../ui/PrimaryButton";
 import { signup, setAuthToken } from "../../../lib/api";
+import { useToast } from "../../ui/ToastContext";
 import { useNavigate } from "react-router-dom";
 
 export default function RegisterForm() {
@@ -22,12 +23,13 @@ export default function RegisterForm() {
   }
 
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   async function handleSubmit(e) {
     e.preventDefault();
 
     if (password !== confirm) {
-      alert("Mật khẩu và xác nhận mật khẩu không khớp");
+      toast.error("Mật khẩu và xác nhận mật khẩu không khớp");
       return;
     }
 
@@ -37,11 +39,11 @@ export default function RegisterForm() {
       if (data.token) {
         setAuthToken(data.token);
       }
-      alert("Đăng ký thành công");
+      toast.success("Đăng ký thành công!");
       navigate("/");
     } catch (err) {
       const message = err?.response?.data?.message || err.message || "Lỗi đăng ký";
-      alert(message);
+      toast.error(message);
     }
   }
 
@@ -90,3 +92,4 @@ export default function RegisterForm() {
     </form>
   );
 }
+

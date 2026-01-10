@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "../../components/Customer/Header";
 import Footer from "../../components/Customer/Footer";
@@ -213,30 +213,67 @@ export default function Storefront() {
         <section className="mx-auto max-w-7xl px-6 pb-28 pt-10 sm:px-5 lg:px-10">
           <div className="space-y-2 text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.35em] text-amber-700">
-              Bộ Sưu Tập Nổi Bật
+              Lookbook
             </p>
             <h2 className="text-3xl font-bold sm:text-4xl">
-              Tôn Vinh Vẻ Đẹp Tinh Xảo
+              Phong cách thời trang theo xu hướng
             </h2>
           </div>
-          <div className="mt-10 grid gap-10 md:grid-cols-4">
-            {featuredCollections.map((item) => (
-              <Link
-                to={item.path}
-                key={item.title}
-                className="group relative block h-[450px] overflow-hidden shadow-lg ring-1 ring-slate-100 transition duration-500 hover:-translate-y-1 hover:shadow-2xl"
-              >
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-black/5 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <p className="text-lg font-semibold text-white">{item.title}</p>
-                </div>
-              </Link>
-            ))}
+          <div className="mt-10 grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+            <Link
+              to="/about"
+              className="group relative block h-[520px] overflow-hidden rounded-3xl shadow-lg ring-1 ring-slate-100 transition duration-500 hover:-translate-y-1 hover:shadow-2xl"
+            >
+              <img
+                src="banner/banner3.jpg"
+                alt="Lookbook hero"
+                className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                <p className="text-sm uppercase tracking-[0.3em] text-white/80">
+                  Ritual of Shine
+                </p>
+                <h3 className="mt-2 text-2xl font-semibold">
+                  Thanh lịch & Tinh tế
+                </h3>
+                <p className="mt-2 max-w-md text-sm text-white/85">
+                  Chọn nét tinh tế, tôn lên da và phong cách
+                </p>
+                <span className="mt-4 inline-flex rounded-full bg-white/90 px-4 py-2 text-xs font-semibold text-amber-800">
+                  Về chúng tôi
+                </span>
+              </div>
+            </Link>
+            <div className="grid gap-6 sm:grid-cols-2">
+              {featuredCollections.map((item) => {
+                const subtitleMap = {
+                  "/Nhan": "Nét đẹp vĩnh cửu",
+                  "/Daychuyen": "Vẻ đẹp tinh tế",
+                  "/Vongtay": "Phong cách thời thượng",
+                  "/Bongtai": "Tỏa sáng mọi ánh nhìn",
+                };
+                const subtitle = subtitleMap[item.path] || "";
+                return (
+                  <Link
+                    key={item.title}
+                    to={item.path}
+                    className="group relative block h-[245px] overflow-hidden rounded-3xl bg-slate-100 shadow-sm ring-1 ring-slate-100 transition duration-500 hover:-translate-y-1 hover:shadow-lg"
+                  >
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                      <p className="text-sm font-semibold">{item.title}</p>
+                      <p className="text-xs text-white/80">{subtitle}</p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </section>
 
@@ -358,13 +395,17 @@ export default function Storefront() {
                 key={post.slug}
                 className="flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200 transition duration-300 hover:-translate-y-1 hover:shadow-lg"
               >
-                <div className="overflow-hidden bg-slate-100">
+                <Link
+                  to={`/blog/${post.slug}`}
+                  className="block overflow-hidden bg-slate-100"
+                  aria-label={post.title}
+                >
                   <img
                     src={post.image}
                     alt={post.title}
-                    className="h-[250px] w-full object-cover transition duration-500 hover:scale-105"
+                    className="h-[250px] w-full object-cover transition duration-500 group-hover:scale-105"
                   />
-                </div>
+                </Link>
                 <div className="flex flex-1 flex-col gap-2 px-4 py-5">
                   <h3 className="text-lg font-semibold text-slate-900">
                     {post.title}

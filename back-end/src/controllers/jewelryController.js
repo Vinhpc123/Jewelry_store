@@ -21,8 +21,22 @@ export const getAllJewelry = async (req, res) => {
       query.category = { $regex: category.trim(), $options: "i" };
     }
 
-    const jewelry = await Jewelry.find(query).sort({ createdAt: -1 });
-    res.status(200).json(jewelry);
+    // Phan trang tuy chon: neu khong truyen limit thi giu nguyen hanh vi cu (tra full)
+    const limit = Math.min(Math.max(Number(req.query.limit) || 0, 0), 200);
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const skip = limit ? (page - 1) * limit : 0;
+
+    if (limit) {
+      const [items, total] = await Promise.all([
+        Jewelry.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+        Jewelry.countDocuments(query),
+      ]);
+      res.setHeader("X-Total-Count", total);
+      res.status(200).json(items);
+    } else {
+      const jewelry = await Jewelry.find(query).sort({ createdAt: -1 });
+      res.status(200).json(jewelry);
+    }
   } catch (error) {
     console.error("Loi khi lay san pham:", error);
     res.status(500).json({ message: "Loi he thong" });

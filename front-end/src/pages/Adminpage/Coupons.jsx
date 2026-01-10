@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import AdminLayout from "../../components/Admin/AdminLayout";
 import AdminRoute from "../../components/Admin/AdminRoute";
 import useCoupons from "../../lib/hooks/useCoupons";
@@ -6,6 +6,8 @@ import usePagination from "../../lib/hooks/usePagination";
 import Pagination from "../../components/Admin/Pagination";
 import CurrencyDisplay from "../../components/Admin/CurrencyDisplay";
 import formatDateTime from "../../components/Admin/FormatDateTime";
+import { useToast } from "../../components/ui/ToastContext";
+import { useConfirm } from "../../components/ui/ConfirmContext";
 
 const emptyCoupon = {
   code: "",
@@ -28,6 +30,8 @@ const toDateInput = (value) => {
 
 export default function Coupons() {
   const { coupons, loading, error, saving, deletingId, refresh, createCoupon, updateCoupon, deleteCoupon } = useCoupons();
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
   const [search, setSearch] = React.useState("");
   const [showModal, setShowModal] = React.useState(false);
   const [formMode, setFormMode] = React.useState("create");
@@ -74,7 +78,7 @@ export default function Coupons() {
 
   const handleSubmit = async () => {
     if (!form.code.trim()) {
-      window.alert("Ma giam gia khong duoc de trong");
+      toast.error("Ma giam gia khong duoc de trong");
       return;
     }
     try {
@@ -85,18 +89,26 @@ export default function Coupons() {
       }
       setShowModal(false);
       setForm(emptyCoupon);
+      toast.success("Luu ma giam gia thanh cong");
     } catch (err) {
-      window.alert(err?.response?.data?.message || err?.message || "Khong the luu ma giam gia");
+      toast.error(err?.response?.data?.message || err?.message || "Khong the luu ma giam gia");
     }
   };
 
   const handleDelete = async (coupon) => {
-    const ok = window.confirm(`Xoa ma "${coupon.code}"?`);
+    const ok = await confirm({
+      title: "Confirm",
+      description: `Xoa ma \"${coupon.code}\"?`,
+      confirmText: "Xoa",
+      cancelText: "Huy",
+      tone: "danger",
+    });
     if (!ok) return;
     try {
       await deleteCoupon(coupon._id);
+      toast.success("Xoa ma giam gia thanh cong");
     } catch (err) {
-      window.alert(err?.response?.data?.message || err?.message || "Khong the xoa ma giam gia");
+      toast.error(err?.response?.data?.message || err?.message || "Khong the xoa ma giam gia");
     }
   };
 
@@ -384,3 +396,4 @@ function CouponModal({ visible, form, setForm, formMode, onClose, onSubmit, subm
     </div>
   );
 }
+

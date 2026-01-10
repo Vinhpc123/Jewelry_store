@@ -1,8 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import Header from "../../components/Customer/Header";
 import Footer from "../../components/Customer/Footer";
 import instance from "../../lib/api";
+import { useConfirm } from "../../components/ui/ConfirmContext";
+import { useToast } from "../../components/ui/ToastContext";
 
 const STATUS_STYLE = {
   processing: "bg-amber-50 text-amber-700 ring-amber-100",
@@ -31,6 +33,8 @@ export default function OrderDetailPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [paying, setPaying] = useState(false);
   const [printed, setPrinted] = useState(false);
+  const { confirm } = useConfirm();
+  const { toast } = useToast();
   const payStatus = useMemo(() => {
     const params = new URLSearchParams(location.search);
     return params.get("payStatus");
@@ -70,14 +74,23 @@ export default function OrderDetailPage() {
   const handleCancel = async () => {
     if (!order?._id || actionLoading) return;
     setActionError("");
-    const confirmCancel = window.confirm("Hủy đơn này? Hàng chưa giao sẽ được trả lại kho.");
+    const confirmCancel = await confirm({
+      title: "Xác nhận",
+      description: "Hủy đơn hàng này? Hàng chưa giao sẽ được trả lại kho.",
+      confirmText: "Hủy đơn",
+      cancelText: "Không",
+      tone: "danger",
+    });
     if (!confirmCancel) return;
     setActionLoading(true);
     try {
       const res = await instance.put(`/api/orders/${order._id}/cancel`);
       setOrder(res?.data || order);
+      toast.success("Hủy đơn thành công.");
     } catch (err) {
-      setActionError(err?.response?.data?.message || err.message || "Hủy đơn thất bại.");
+      const message = err?.response?.data?.message || err.message || "Hủy đơn thất bại.";
+      setActionError(message);
+      toast.error(message);
     } finally {
       setActionLoading(false);
     }
