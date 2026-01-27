@@ -21,7 +21,7 @@ const roleLabel = {
 };
 
 const productStatusLabel = {
-  active: "Con hàng",
+  active: "Còn hàng",
   completed: "Hết hàng",
 };
 
@@ -536,37 +536,82 @@ function RevenueChart({ series, mode = "day" }) {
     return <div className="flex h-full items-center justify-center text-sm text-zinc-500">Chưa có dữ liệu doanh thu</div>;
   }
 
-  const max = Math.max(...series.map((s) => s.total), 1);
+  const [hoveredIndex, setHoveredIndex] = React.useState(null);
+  const chartWidth = 200;
+  const chartHeight = 70;
+  const chartBottom = 60;
+  const labelGutter = 12;
+
+  const buildSmoothPath = (points, tension = 0.22) => {
+    if (!points.length) return "";
+    if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+    let d = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i += 1) {
+      const p0 = points[i - 1] || points[i];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const p3 = points[i + 2] || p2;
+      const c1x = p1.x + (p2.x - p0.x) * tension;
+      const c1y = Math.min(chartBottom, p1.y + (p2.y - p0.y) * tension);
+      const c2x = p2.x - (p3.x - p1.x) * tension;
+      const c2y = Math.min(chartBottom, p2.y - (p3.y - p1.y) * tension);
+      d += ` C ${c1x} ${c1y} ${c2x} ${c2y} ${p2.x} ${p2.y}`;
+    }
+    return d;
+  };
+
+  const safeSeries = series.map((s) => ({ ...s, total: Math.max(0, Number(s.total) || 0) }));
+  const max = Math.max(...safeSeries.map((s) => s.total), 1);
   const scale = (v) => Math.pow(v, 0.7); // nén biên độ để đỡ bẹt khi có outlier
   const maxScaled = scale(max);
-  const last = series[series.length - 1];
-  const first = series[0];
+  const last = safeSeries[safeSeries.length - 1];
+  const first = safeSeries[0];
 
-  const xPad = mode === "day" ? 0 : 1; // ngày: sát mép hơn, tuần/tháng giữ khoảng đệm
-  const pts = series.map((s, idx) => {
-    const x = xPad + (idx / Math.max(series.length - 1, 1)) * (100 - xPad * 2);
-    const y = 60 - (scale(s.total) / maxScaled) * 50;
+  const xPad = 10;
+  const pts = safeSeries.map((s, idx) => {
+    const x = xPad + (idx / Math.max(series.length - 1, 1)) * (chartWidth - xPad * 2);
+    const y = chartBottom - (scale(s.total) / maxScaled) * 50;
     return { x, y };
   });
 
-  const linePath = pts.reduce((d, p, idx) => `${d}${idx === 0 ? "M" : " L"} ${p.x} ${p.y}`, "");
-  const areaPath = `${linePath} L 100 70 L 0 70 Z`;
+  const linePath = buildSmoothPath(pts);
+  const areaPath = `${linePath} L ${chartWidth} ${chartHeight} L 0 ${chartHeight} Z`;
 
   const ticksY = [0, 0.25, 0.5, 0.75, 1].map((t) => Math.round(max * t));
   const maxLabels = mode === "month" ? 12 : mode === "week" ? 7 : 6;
   const step = Math.max(1, Math.floor(series.length / Math.max(maxLabels - 1, 1)));
-  const xLabels = series.filter((_, idx) => idx % step === 0 || idx === series.length - 1);
+  const xLabels = safeSeries.filter((_, idx) => idx % step === 0 || idx === safeSeries.length - 1);
   const dotStep = Math.max(1, Math.floor(series.length / 20)); // chỉ hiển thị điểm thưa để bớt rối
   const fmtLabel = (d) => {
-    const dt = mode === "month" ? parseYMD(`${d}-01`) : parseYMD(d);
-    if (mode === "month") return `T${dt.getMonth() + 1}`;
+    const dt = mode === "month" ? parseYMD(String(d) + "-01") : parseYMD(d);
+    if (mode === "month") return "T" + (dt.getMonth() + 1);
     if (mode === "week") return dt.toLocaleDateString("vi-VN", { weekday: "short" });
     return dt.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
   };
 
+  const hoveredPoint = hoveredIndex !== null ? pts[hoveredIndex] : null;
+  const hoveredData = hoveredIndex !== null ? safeSeries[hoveredIndex] : null;
+  const hoverLeft = hoveredPoint
+    ? `${(hoveredPoint.x / (chartWidth + labelGutter)) * 100}%`
+    : "0%";
+  const hoverTop = hoveredPoint ? `${(hoveredPoint.y / chartHeight) * 100}%` : "0%";
+
   return (
-    <div className="p-3">
-      <svg viewBox="0 0 100 70" className="h-80 w-full">
+    <div className="relative pt-3 pb-2 px-0">
+      {hoveredData ? (
+        <div
+          className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-3 rounded-lg border border-indigo-100 bg-white px-3 py-2 text-xs text-zinc-700 shadow-lg"
+          style={{ left: hoverLeft, top: hoverTop }}
+        >
+          <div className="text-[11px] text-zinc-500">{fmtLabel(hoveredData.date)}</div>
+          <div className="font-semibold text-indigo-700">{formatMoney(hoveredData.total)}</div>
+        </div>
+      ) : null}
+      <svg
+        viewBox={`0 0 ${chartWidth + labelGutter} ${chartHeight}`}
+        className="h-80 w-full"
+        onMouseLeave={() => setHoveredIndex(null)}
+      >
         <defs>
           <linearGradient id="revFill" x1="0" x2="0" y1="0" y2="1">
             <stop offset="0%" stopColor="#6366f1" stopOpacity="0.2" />
@@ -578,28 +623,35 @@ function RevenueChart({ series, mode = "day" }) {
           </filter>
         </defs>
         {ticksY.map((t) => {
-          const y = 60 - (t / max) * 50;
-          return <line key={t} x1="0" y1={y} x2="100" y2={y} stroke="#e5e7eb" strokeWidth="0.4" strokeDasharray="2 2" />;
+          const y = chartBottom - (t / max) * 50;
+          return <line key={t} x1="0" y1={y} x2={chartWidth} y2={y} stroke="#e5e7eb" strokeWidth="0.4" strokeDasharray="2 2" />;
         })}
         <path d={areaPath} fill="url(#revFill)" stroke="none" />
-        <path d={linePath} fill="none" stroke="#4f46e5" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" filter="url(#lineShadow)" />
+        <path d={linePath} fill="none" stroke="#a5b4fc" strokeWidth="4" strokeLinejoin="round" strokeLinecap="round" opacity="0.6" />
+        <path d={linePath} fill="none" stroke="#4f46e5" strokeWidth="2.6" strokeLinejoin="round" strokeLinecap="round" filter="url(#lineShadow)" />
         {pts.map((p, idx) =>
           idx % dotStep === 0 || idx === pts.length - 1 ? (
-            <circle key={idx} cx={p.x} cy={p.y} r="1.6" fill="#4f46e5" filter="url(#lineShadow)" />
+            <g key={idx}>
+              <circle cx={p.x} cy={p.y} r="4.2" fill="transparent" onMouseEnter={() => setHoveredIndex(idx)} />
+              <circle cx={p.x} cy={p.y} r="1.6" fill="#4f46e5" filter="url(#lineShadow)" />
+            </g>
           ) : null
         )}
         {ticksY.map((t, idx) => {
-          const y = 60 - (t / max) * 50;
+          const y = chartBottom - (t / max) * 50;
           return (
-            <text key={idx} x="102" y={y + 1.5} fontSize="3" fill="#6b7280">
+            <text key={idx} x={chartWidth + 2} y={y + 1.5} fontSize="3" fill="#6b7280">
               {formatShort(t)}
             </text>
           );
         })}
         {xLabels.map((s, idx) => {
-          const x = (series.indexOf(s) / Math.max(series.length - 1, 1)) * 100;
+          const index = safeSeries.indexOf(s);
+          const x = xPad + (index / Math.max(safeSeries.length - 1, 1)) * (chartWidth - xPad * 2);
+          const anchor = index === 0 ? "start" : index === safeSeries.length - 1 ? "end" : "middle";
+          const dx = anchor === "start" ? 1 : anchor === "end" ? -1 : 0;
           return (
-            <text key={idx} x={x} y="68" fontSize="3.5" fill="#6b7280" textAnchor="middle">
+            <text key={idx} x={x} y="68" dx={dx} fontSize="3.5" fill="#6b7280" textAnchor={anchor}>
               {fmtLabel(s.date)}
             </text>
           );

@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import AdminLayout from "../../components/Admin/AdminLayout";
 import AdminRoute from "../../components/Admin/AdminRoute";
 import useAdminData from "../../lib/hooks/useAdminData";
@@ -11,7 +11,7 @@ import { useToast } from "../../components/ui/ToastContext";
 import { useConfirm } from "../../components/ui/ConfirmContext";
 
 const ROLE_LABELS = {
-  admin: "Quản trị viên",
+  admin: "Admin",
   staff: "Nhân viên",
   customer: "Khách hàng",
 };
@@ -57,10 +57,10 @@ export default function Users() {
   const shouldUseSearchResults = searchActive && !searchError;
   const rawSource = shouldUseSearchResults ? searchResults : users;
 
-  // ẩn chính mình khỏi danh sách
+  // ?n ch�nh m�nh kh?i danh sách
   const filteredSource = React.useMemo(() => {
     if (!currentUser) return rawSource;
-    return rawSource.filter((user) => user._id !== currentUser._id);
+    return rawSource.filter((user) => user._id !== currentUser._id && (isAdmin || user.role !== "admin"));
   }, [rawSource, currentUser]);
 
   const dataSource = React.useMemo(() => {
@@ -68,14 +68,20 @@ export default function Users() {
     return filteredSource.filter((user) => user.role === roleFilter);
   }, [filteredSource, roleFilter]);
 
-  // trạng thái xóa/khóa
+  // tr?ng th�i x�a/kh�a
   const [deletingId, setDeletingId] = React.useState(null);
+  const canDeleteUser = React.useCallback((user) => isAdmin && user?.role !== "admin", [isAdmin]);
+  const canEditUser = React.useCallback((user) => isAdmin || user?.role !== "admin", [isAdmin]);
   const handleDeleteUser = async (user) => {
+    if (!canDeleteUser(user)) {
+      toast.error("Chi admin moi duoc xoa tai khoan admin.");
+      return;
+    }
     const ok = await confirm({
-      title: "Confirm",
-      description: `Xoa ${user.email}?`,
-      confirmText: "Xoa",
-      cancelText: "Huy",
+      title: "Xác nhận",
+      description: `Xóa ${user.email}?`,
+      confirmText: "Xóa",
+      cancelText: "Hủy bỏ",
       tone: "danger",
     });
     if (!ok) return;
@@ -95,10 +101,10 @@ export default function Users() {
     }
     const actionLabel = user.isActive ? "Khóa" : "Mở khóa";
     const ok = await confirm({
-      title: "Confirm",
+      title: "Xác nhận",
       description: `${actionLabel} ${user.email}?`,
-      confirmText: "Xac nhan",
-      cancelText: "Huy",
+      confirmText: "Xác nhận",
+      cancelText: "Hủy bỏ",
       tone: "danger",
     });
     if (!ok) return;
@@ -152,6 +158,10 @@ export default function Users() {
   }, [refresh, refetchSearch, searchActive]);
 
   const handleEditUser = async (user) => {
+    if (!canEditUser(user)) {
+      toast.error("Nhân viên không được sửa tài khoản admin.");
+      return;
+    }
     if (!user || !user._id) return;
     setEditModalOpen(true);
     setEditError(null);
@@ -281,7 +291,9 @@ export default function Users() {
             onToggleLock={handleToggleLock}
             deletingId={deletingId}
             canLock={isAdmin}
-          />
+            canDeleteUser={canDeleteUser}
+            canEditUser={canEditUser}
+            />
           <EditUserModal
             open={editModalOpen}
             onClose={closeEditModal}
@@ -407,6 +419,8 @@ function UserTable({
   onToggleLock = () => {},
   deletingId,
   canLock,
+  canDeleteUser = () => true,
+  canEditUser = () => true,
 }) {
   if (loading) {
     return <div>Đang tải danh sách người dùng...</div>;
@@ -414,7 +428,7 @@ function UserTable({
   if (error) {
     return (
       <div className="rounded border border-red-200 bg-red-50 p-4 text-red-700">
-        Lỗi: {error}
+        L?i: {error}
       </div>
     );
   }
@@ -458,13 +472,14 @@ function UserTable({
                   <button
                     className="rounded border border-blue-500 px-2 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50"
                     onClick={() => onEdit(user)}
+                    disabled={!canEditUser(user)}
                   >
                     Sửa
                   </button>
                   <button
                     className="rounded border border-red-500 px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
                     onClick={() => onDelete(user)}
-                    disabled={deletingId === user._id}
+                    disabled={deletingId === user._id || !canDeleteUser(user)}
                   >
                     {deletingId === user._id ? "Đang xóa..." : "Xóa"}
                   </button>
@@ -636,6 +651,8 @@ function EditUserModal({ open, onClose, formValues, onFieldChange, onSubmit, loa
     </div>
   );
 }
+
+
 
 
 

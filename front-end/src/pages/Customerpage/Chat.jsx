@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import Header from "../../components/Customer/Header";
 import Footer from "../../components/Customer/Footer";
 import { io } from "socket.io-client";
@@ -55,7 +55,7 @@ export default function Chat() {
           setMessages(msgRes?.data?.messages || []);
         }
       } catch (error) {
-        console.error("Tải cuộc trò chuyện thất bại", error);
+        console.error("Tai cuoc tro chuyen that bai", error);
       } finally {
         setLoading(false);
       }
@@ -88,7 +88,7 @@ export default function Chat() {
     const prev = prevCountRef.current;
     const current = messages.length;
     prevCountRef.current = current;
-    if (prev === 0) return; // bỏ qua lần đầu tải
+    if (prev === 0) return; // skip initial load
     messagesRef.current.scrollTo({ top: messagesRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
@@ -104,7 +104,7 @@ export default function Chat() {
         });
         setMessages(res?.data?.messages || []);
       } catch (error) {
-        console.error("Tải tin nhắn thất bại", error);
+        console.error("Tai tin nhan that bai", error);
       } finally {
         setLoading(false);
       }
@@ -131,22 +131,67 @@ export default function Chat() {
   return (
     <>
       <Header />
-      <div className="mx-auto flex min-h-screen max-w-3xl flex-col bg-gradient-to-br from-sky-50 via-white to-indigo-5 px-2 py-6">
-        <header className="mb-4 flex items-center justify-between rounded-2xl border border-indigo-100 bg-white/90 px-4 py-2 shadow-sm">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-indigo-500">Hỗ trợ</p>
-            <h1 className="text-lg font-semibold text-zinc-900">Chat với Admin</h1>
-            <p className="text-sm text-zinc-500">Nhận phản hồi nhanh từ đội ngũ hỗ trợ.</p>
+      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-4 px-2 py-6 md:flex-row">
+        <aside className="w-full md:w-80">
+          <div className="rounded-2xl border border-indigo-100 bg-white/95 shadow-sm">
+            <div className="border-b border-indigo-100/70 px-4 py-4">
+              <p className="text-[11px] uppercase tracking-[0.2em] text-indigo-500">Hỗ trợ</p>
+              <h1 className="text-lg font-semibold text-zinc-900">Trung tâm hỗ trợ</h1>
+              <p className="text-sm text-zinc-500">Hỏi đáp nhanh.</p>
+            </div>
+            <div className="space-y-4 px-4 py-4">
+              <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2">
+                <p className="text-xs text-zinc-500">Tài khoản</p>
+                <p className="text-sm font-semibold text-zinc-900">{me?.email || "Khách"}</p>
+              </div>
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                Đang kết nối với tư vấn viên
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                  Chủ đề nhanh
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {[
+                    "Đơn hàng",
+                    "Bảo hành",
+                    "Giao hàng",
+                    "Hoàn tiền",
+                    "Trang sức",
+                    "Thanh toán",
+                  ].map((item) => (
+                    <span
+                      key={item}
+                      className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs text-zinc-600"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-600">
+                <p className="font-semibold text-zinc-900">Giờ hỗ trợ</p>
+                <p>08:00 - 22:00 (HCM)</p>
+              </div>
+            </div>
           </div>
-          <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-100">
-            {me?.email || "Khách"} 
-          </div>
-        </header>
+        </aside>
 
-        <div className="flex-1 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+        <section className="flex-1 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b bg-white/90 px-4 py-3">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.2em] text-indigo-500">Chat</p>
+              <h2 className="text-base font-semibold text-zinc-900">Chat với Admin</h2>
+              <p className="text-xs text-zinc-500">Phản hồi nhanh từ đội ngũ hỗ trợ.</p>
+            </div>
+            <div className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+              {me?.email || "Khách"}
+            </div>
+          </div>
+
           <div
             ref={messagesRef}
-            className="h-[65vh] space-y-3 overflow-y-auto bg-gradient-to-br from-indigo-50/50 via-white to-sky-50 px-4 py-4"
+            className="h-[65vh] space-y-3 overflow-y-auto bg-white px-4 py-4"
           >
             {loading && !messages.length ? (
               <div className="text-sm text-zinc-500">Đang tải tin nhắn...</div>
@@ -175,11 +220,7 @@ export default function Chat() {
                         }`}
                       >
                         <p className="whitespace-pre-wrap break-words">{m.content}</p>
-                        <div
-                          className={`mt-1 text-[11px] ${
-                            isMe ? "text-indigo-100/90" : "text-zinc-500"
-                          }`}
-                        >
+                        <div className={`mt-1 text-[11px] ${isMe ? "text-indigo-100/90" : "text-zinc-500"}`}>
                           {new Date(m.createdAt).toLocaleTimeString()}
                         </div>
                       </div>
@@ -219,9 +260,10 @@ export default function Chat() {
               </button>
             </div>
           </div>
-        </div>
+        </section>
       </div>
       <Footer />
     </>
   );
 }
+

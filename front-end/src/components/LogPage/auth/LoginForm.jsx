@@ -1,11 +1,11 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Mail, KeyRound } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import LabeledInput from "../inputs/LabeledInput";
 import PasswordField from "../inputs/PasswordField";
 import Checkbox from "../ui/Checkbox";
 import PrimaryButton from "../ui/PrimaryButton";
-import { login, setAuthToken, setUser } from "../../../lib/api";
+import { fetchProfile, login, setAuthToken, setUser } from "../../../lib/api";
 import { useToast } from "../../ui/ToastContext";
 
 export default function LoginForm() {
@@ -27,10 +27,19 @@ export default function LoginForm() {
       const { data } = await login({ email, password });
       if (data.token) {
         setAuthToken(data.token);
-        if (data.user) setUser(data.user);
       }
+      let user = data?.user || null;
+      if (!user && data?.token) {
+        try {
+          const profile = await fetchProfile();
+          user = profile?.data || null;
+        } catch (profileErr) {
+          user = null;
+        }
+      }
+      if (user) setUser(user);
       toast.success("Đăng nhập thành công!");
-      const role = data?.user?.role;
+      const role = user?.role;
       if (role === "admin" || role === "staff") {
         navigate("/admin");
       } else {
@@ -54,7 +63,7 @@ export default function LoginForm() {
       />
 
       <PasswordField
-        label="Mật khẩu"
+        label="Mât khẩu"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         show={show}

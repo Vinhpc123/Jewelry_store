@@ -145,7 +145,7 @@ export default function Products() {
       toast.error(
         err?.response?.data?.message ||
           err?.message ||
-          (formMode === "create" ? "Loi khi them san pham" : "Loi khi cap nhat san pham")
+          (formMode === "create" ? "Lỗi khi thêm sản phẩm" : "Lỗi khi cập nhật sản phẩm")
       );
     }
   };
@@ -158,10 +158,10 @@ export default function Products() {
       }
       if (!product?._id) return;
       const confirmed = await confirm({
-        title: "Confirm",
-        description: "Ban chac chan muon xoa \"" + (product.title || "san pham") + "\"?",
-        confirmText: "Xoa",
-        cancelText: "Huy",
+        title: "Xác nhận",
+        description: "Bạn chắc chắn muốn xóa \"" + (product.title || "sản phẩm") + "\"?",
+        confirmText: "Xóa",
+        cancelText: "Hủy bỏ",
         tone: "danger",
       });
       if (!confirmed) return;

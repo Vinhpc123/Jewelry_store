@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import AdminLayout from "../../components/Admin/AdminLayout";
 import AdminRoute from "../../components/Admin/AdminRoute";
 import useCoupons from "../../lib/hooks/useCoupons";
@@ -26,6 +26,22 @@ const toDateInput = (value) => {
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "";
   return d.toISOString().slice(0, 10);
+};
+
+const toStartOfDay = (value) => {
+  if (!value) return null;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+const toEndOfDay = (value) => {
+  if (!value) return null;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  d.setHours(23, 59, 59, 999);
+  return d;
 };
 
 export default function Coupons() {
@@ -78,7 +94,7 @@ export default function Coupons() {
 
   const handleSubmit = async () => {
     if (!form.code.trim()) {
-      toast.error("Ma giam gia khong duoc de trong");
+      toast.error("Mã không được để trống");
       return;
     }
     try {
@@ -89,26 +105,26 @@ export default function Coupons() {
       }
       setShowModal(false);
       setForm(emptyCoupon);
-      toast.success("Luu ma giam gia thanh cong");
+      toast.success("Lưu mã giảm giá thành công");
     } catch (err) {
-      toast.error(err?.response?.data?.message || err?.message || "Khong the luu ma giam gia");
+      toast.error(err?.response?.data?.message || err?.message || "Không thể lưu mã giảm giá");
     }
   };
 
   const handleDelete = async (coupon) => {
     const ok = await confirm({
-      title: "Confirm",
-      description: `Xoa ma \"${coupon.code}\"?`,
-      confirmText: "Xoa",
-      cancelText: "Huy",
+      title: "Xác nhận",
+      description: `Xóa mã "${coupon.code}"?`,
+      confirmText: "Xóa",
+      cancelText: "Hủy bỏ",
       tone: "danger",
     });
     if (!ok) return;
     try {
       await deleteCoupon(coupon._id);
-      toast.success("Xoa ma giam gia thanh cong");
+      toast.success("Xóa mã giảm giá thành công");
     } catch (err) {
-      toast.error(err?.response?.data?.message || err?.message || "Khong the xoa ma giam gia");
+      toast.error(err?.response?.data?.message || err?.message || "Không thể xóa mã giảm giá");
     }
   };
 
@@ -199,8 +215,8 @@ export default function Coupons() {
                         </td>
                         <td className="px-3 py-2 text-zinc-700">
                           <div className="flex flex-col">
-                            <span>Lượt dùng: {c.usedCount ?? 0}/{c.usageLimit ? c.usageLimit : "∞"}</span>
-                            <span>ĐH tối thiểu: <CurrencyDisplay value={c.minOrder || 0} /></span>
+                            <span>Lượt dùng: {c.usedCount ?? 0}/{c.usageLimit ? c.usageLimit : "8"}</span>
+                            <span>Giá tối thiểu: <CurrencyDisplay value={c.minOrder || 0} /></span>
                             {c.maxDiscount ? <span>Giảm tối đa: <CurrencyDisplay value={c.maxDiscount} /></span> : null}
                           </div>
                         </td>
@@ -212,13 +228,25 @@ export default function Coupons() {
                           </div>
                         </td>
                         <td className="px-3 py-2">
-                          <span
-                            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-                              c.active ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-zinc-100 text-zinc-600 border border-zinc-200"
-                            }`}
-                          >
-                            {c.active ? "Đang hoạt động" : "Ngừng"}
-                          </span>
+                          {(() => {
+                            const now = new Date();
+                            const startDate = toStartOfDay(c.startDate);
+                            const endDate = toEndOfDay(c.endDate);
+                            const isExpired = Boolean(endDate && endDate < now);
+                            const isNotStarted = Boolean(startDate && startDate > now);
+                            const isActive = Boolean(c.active && !isExpired && !isNotStarted);
+                            const label = isExpired ? "Hết hạn" : isNotStarted ? "Chưa bắt đầu" : isActive ? "Đang hoạt động" : "Ngừng";
+                            const statusClass = isActive
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                              : isExpired
+                              ? "bg-amber-50 text-amber-700 border border-amber-100"
+                              : "bg-zinc-100 text-zinc-600 border border-zinc-200";
+                            return (
+                              <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusClass}`}>
+                                {label}
+                              </span>
+                            );
+                          })()}
                         </td>
                         <td className="px-3 py-2">
                           <div className="flex items-center gap-2">
@@ -305,11 +333,11 @@ function CouponModal({ visible, form, setForm, formMode, onClose, onSubmit, subm
               value={form.value}
               onChange={(e) => updateField("value", e.target.value)}
               className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-              placeholder={form.type === "percent" ? "VD: 10 cho 10%" : "VD: 50000 cho 50.000đ"}
+              placeholder={form.type === "percent" ? "VD: 10 cho 10%" : "VD: 50000 cho 50.000d"}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-700">Đơn tối thiểu (VND)</label>
+            <label className="block text-sm font-medium text-zinc-700">Giá tối thiểu (VND)</label>
             <input
               type="number"
               inputMode="numeric"
