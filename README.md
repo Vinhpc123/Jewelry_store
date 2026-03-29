@@ -1,31 +1,45 @@
 # Jewelry Store
 
-Ứng dụng full-stack bán trang sức kèm trang quản trị, hỗ trợ bán online và POS, thanh toán VNPAY, chat thời gian thực và khôi phục mật khẩu qua email.
+Ứng dụng full-stack bán trang sức, gồm giao diện khách hàng và hệ thống quản trị cho admin/staff. Dự án hỗ trợ mua hàng online, POS tại quầy, thanh toán VNPAY, chat realtime và khôi phục mật khẩu qua email.
 
-## Tính năng nổi bật
-- Khách hàng: duyệt danh mục (nhẫn, dây chuyền, vòng tay, bông tai), xem chi tiết sản phẩm, tìm kiếm/tìm nâng cao, giỏ hàng, áp mã giảm giá, đặt hàng COD/online, theo dõi đơn, hồ sơ cá nhân, blog, chat hỗ trợ.
-- Quản trị/nhân viên: dashboard tổng quan, CRUD sản phẩm (kèm upload ảnh), quản lý tồn kho/trạng thái, quản lý người dùng (khóa/mở, phân quyền admin/staff/customer), đơn hàng (xử lý, hủy, hoàn kho), mã giảm giá (áp dụng/giới hạn), POS tại quầy, hộp thư hỗ trợ chat.
-- Thanh toán & bảo mật: thanh toán VNPAY (sandbox), JWT auth kèm khóa tạm khi nhập sai nhiều lần, reset mật khẩu qua email, CORS cấu hình theo domain FE, upload file qua `/api/upload`.
-- Thời gian thực: chat khách hàng - admin/staff và cập nhật qua `socket.io`.
+## Công nghệ sử dụng
 
-## Kiến trúc & công nghệ
-- Frontend: React 19 + Vite, Tailwind CSS, Radix UI, React Router, Axios, `socket.io-client`.
-- Backend: Node.js, Express, MongoDB/Mongoose, JWT, Multer (upload), Nodemailer (SMTP), `socket.io`.
-- Dev tooling: ESLint, concurrently (chạy FE/BE song song).
+- Frontend: React, Vite, Tailwind CSS, React Router, Axios
+- Backend: Node.js, Express, MongoDB, Mongoose, JWT, Socket.IO
+- Khác: Multer, Nodemailer, VNPAY
+
+## Tính năng chính
+
+- Khách hàng: xem sản phẩm, thêm vào giỏ hàng, đặt hàng, áp mã giảm giá, theo dõi đơn hàng, cập nhật hồ sơ, chat hỗ trợ
+- Admin/Staff: quản lý sản phẩm, người dùng, đơn hàng, coupon, POS và chat với khách hàng
+- Hệ thống: đăng nhập, phân quyền, upload ảnh, thanh toán online, reset mật khẩu
 
 ## Cấu trúc thư mục
-- `front-end/`: mã nguồn React (pages cho khách, admin, auth; hooks; context; styles).
-- `back-end/`: API Express, socket server, controllers/routes/models, upload lưu tại `back-end/uploads`.
-- `package.json` gốc: script chạy đồng thời FE/BE với `concurrently`.
 
-## Yêu cầu hệ thống
-- Node.js >= 18
-- MongoDB instance
-- Tài khoản SMTP (gửi email reset)
-- Thông tin sandbox VNPAY (TMN Code, Hash Secret)
+- `front-end/`: giao diện người dùng viết bằng React
+- `back-end/`: API, xử lý nghiệp vụ và kết nối MongoDB
+- `back-end/uploads/`: thư mục lưu ảnh upload trong lúc chạy
 
-## Thiết lập & chạy
+## Cài đặt
+
+Từ thư mục gốc của project, cài dependencies:
+
 ```bash
-npm install                    # cài concurrently + socket libs ở root
+npm install
 npm install --prefix back-end
 npm install --prefix front-end
+```
+
+## Chạy dự án
+
+Chạy đồng thời frontend và backend từ thư mục gốc:
+
+```bash
+npm start
+```
+
+Mặc định:
+
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:5000`
+
