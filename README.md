@@ -19,6 +19,31 @@
 - `front-end/`: giao diện người dùng viết bằng React
 - `back-end/`: API, xử lý nghiệp vụ và kết nối MongoDB
 - `back-end/uploads/`: thư mục lưu ảnh upload trong lúc chạy
+```text
+jewelry-project/
+|-- back-end/
+|   |-- src/
+|   |   |-- config/
+|   |   |-- controllers/
+|   |   |-- models/
+|   |   |-- routes/
+|   |   |-- socket/
+|   |   `-- utils/
+|   |-- uploads/
+|   `-- package.json
+|-- front-end/
+|   |-- public/
+|   |-- src/
+|   |   |-- components/
+|   |   |-- context/
+|   |   |-- data/
+|   |   |-- lib/
+|   |   `-- pages/
+|   `-- package.json
+|-- package.json
+`-- README.md
+```
+
 
 ## Cài đặt
 
