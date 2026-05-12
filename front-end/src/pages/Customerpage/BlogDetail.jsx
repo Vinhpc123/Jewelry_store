@@ -71,7 +71,7 @@ export default function BlogDetail() {
           </div>
           <div className="relative mx-auto flex max-w-4xl flex-col gap-3 px-4 py-16 sm:px-6">
             <Link
-              to="/ "
+              to="/"
               className="w-fit text-sm font-semibold text-amber-200 hover:text-white"
             >
               ← Quay về trang chủ

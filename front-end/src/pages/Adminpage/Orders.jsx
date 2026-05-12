@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import AdminLayout from "../../components/Admin/AdminLayout";
 import AdminRoute from "../../components/Admin/AdminRoute";
 import formatDateTime from "../../components/Admin/FormatDateTime";
@@ -153,8 +153,9 @@ export default function OrdersAdminPage() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
-            <table className="min-w-full divide-y divide-zinc-200 text-sm">
+          <div className="rounded-lg border border-zinc-200 bg-white shadow-sm">
+            <div className="w-full overflow-x-auto">
+              <table className="min-w-full divide-y divide-zinc-200 text-sm">
               <thead className="bg-zinc-100 text-xs font-semibold uppercase tracking-wide text-zinc-600">
                 <tr>
                   <th className="px-3 py-3 text-left">Mã đơn</th>
@@ -171,21 +172,21 @@ export default function OrdersAdminPage() {
               <tbody className="divide-y divide-zinc-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-6 text-center text-zinc-500">
+                    <td colSpan={9} className="px-4 py-6 text-center text-zinc-500">
                       Đang tải...
                     </td>
                   </tr>
                 ) : null}
                 {!loading && error ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-4 text-center text-red-600">
+                    <td colSpan={9} className="px-4 py-4 text-center text-red-600">
                       {error}
                     </td>
                   </tr>
                 ) : null}
                 {!loading && !error && filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-4 text-center text-zinc-500">
+                    <td colSpan={9} className="px-4 py-4 text-center text-zinc-500">
                       Không có đơn hàng nào.
                     </td>
                   </tr>
@@ -251,6 +252,7 @@ export default function OrdersAdminPage() {
                   ))}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
 

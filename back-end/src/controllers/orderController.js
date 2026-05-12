@@ -176,8 +176,8 @@ export const getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
-    // chi chu don hoac admin
-    if (String(order.user) !== String(req.user._id) && req.user.role !== "admin") {
+    // chi chu don, admin, hoac staff
+    if (String(order.user) !== String(req.user._id) && !(["admin", "staff"].includes(req.user.role))) {
       return res.status(403).json({ message: "Không có quyền xem đơn này" });
     }
     res.status(200).json(order);
@@ -222,7 +222,7 @@ export const updateStatus = async (req, res) => {
     const { status } = req.body;
     const normalizedStatus = status === "pending" ? "processing" : status;
     const allowed = ["processing", "pending", "paid", "shipped", "completed", "cancelled"];
-    if (!allowed.includes(status)) return res.status(400).json({ message: "Trạng thái không hợp lệ" });
+    if (!allowed.includes(normalizedStatus)) return res.status(400).json({ message: "Trạng thái không hợp lệ" });
 
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
@@ -233,6 +233,14 @@ export const updateStatus = async (req, res) => {
     if (normalizedStatus === "cancelled") {
       if (prevStatus === "shipped" || prevStatus === "completed") {
         return res.status(400).json({ message: "Không thể hủy đơn đã giao hoặc hoàn tất" });
+      }
+      // Hoàn lại coupon usedCount nếu có
+      if (order.couponCode) {
+        const coupon = await Coupon.findOne({ code: order.couponCode });
+        if (coupon && coupon.usedCount > 0) {
+          coupon.usedCount = Math.max(0, coupon.usedCount - 1);
+          await coupon.save();
+        }
       }
       await restockItems(order);
     }
@@ -295,7 +303,7 @@ export const createPosOrder = async (req, res) => {
       (sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 0),
       0
     );
-    const total = Math.max(0, subtotal + Number(shippingFee) || 0);
+    const total = Math.max(0, subtotal + (Number(shippingFee) || 0))
 
     const order = await Order.create({
       user: req.user._id,

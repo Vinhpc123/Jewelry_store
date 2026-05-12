@@ -3,7 +3,6 @@ import AdminLayout from "../../components/Admin/AdminLayout";
 import AdminRoute from "../../components/Admin/AdminRoute";
 import useAdminData from "../../lib/hooks/useAdminData";
 import CurrencyDisplay from "../../components/Admin/CurrencyDisplay";
-import formatDateTime from "../../components/Admin/FormatDateTime";
 import instance from "../../lib/api";
 
 export default function POS() {
@@ -54,6 +53,79 @@ export default function POS() {
   const subtotal = cart.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 0), 0);
   const total = subtotal; // shippingFee = 0 cho POS
 
+  const printReceipt = React.useCallback(
+    (order, sourceItems) => {
+      try {
+        const win = window.open("", "_blank", "width=600,height=800");
+        if (!win) return;
+        const printItems = sourceItems || order?.items || [];
+        const printTotal = printItems.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 0), 0);
+        const rows = printItems
+          .map(
+            (it, idx) =>
+              `<tr>
+                <td style="padding:4px;border:1px solid #e5e7eb;text-align:center;">${idx + 1}</td>
+                <td style="padding:4px;border:1px solid #e5e7eb;">${it.name}</td>
+                <td style="padding:4px;border:1px solid #e5e7eb;text-align:right;">${(Number(it.price) || 0).toLocaleString("vi-VN")}</td>
+                <td style="padding:4px;border:1px solid #e5e7eb;text-align:center;">${it.quantity}</td>
+                <td style="padding:4px;border:1px solid #e5e7eb;text-align:right;">${(
+                  (Number(it.price) || 0) * (Number(it.quantity) || 0)
+                ).toLocaleString("vi-VN")}</td>
+              </tr>`
+          )
+          .join("");
+        const createdAt = order?.createdAt ? new Date(order.createdAt).toLocaleString("vi-VN") : new Date().toLocaleString("vi-VN");
+        const orderId = order?._id || "N/A";
+        win.document.write(`
+          <html>
+            <head>
+              <title>Hóa đơn POS</title>
+              <style>
+                body { font-family: Arial, sans-serif; padding: 12px; color: #0f172a; }
+                h1 { margin: 0 0 8px; font-size: 18px; }
+                h2 { margin: 12px 0 6px; font-size: 15px; }
+                table { border-collapse: collapse; width: 100%; font-size: 12px; }
+                th { background: #f3f4f6; border:1px solid #e5e7eb; padding:6px; text-align:left; }
+                td { border:1px solid #e5e7eb; padding:6px; }
+                .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+                .card { border:1px solid #e5e7eb; border-radius:8px; padding:8px; background:#f8fafc; font-size:12px; }
+              </style>
+            </head>
+            <body>
+              <h1>HÓA ĐƠN POS</h1>
+              <div class="grid">
+                <div class="card"><strong>Mã đơn:</strong> ${orderId}</div>
+                <div class="card"><strong>Ngày:</strong> ${createdAt}</div>
+                <div class="card"><strong>Khách:</strong> ${customer.name}</div>
+                <div class="card"><strong>Thanh toán:</strong> ${paymentMethod === "online" ? "Thẻ/Online" : "Tiền mặt"}</div>
+              </div>
+              <h2>Sản phẩm</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>STT</th>
+                    <th>Tên</th>
+                    <th>Đơn giá</th>
+                    <th>SL</th>
+                    <th>Thành tiền</th>
+                  </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+              <h2>Tổng cộng</h2>
+              <div class="card"><strong>Tổng:</strong> ${printTotal.toLocaleString("vi-VN")} VND</div>
+              <script>window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 300); };</script>
+            </body>
+          </html>
+        `);
+        win.document.close();
+      } catch (err) {
+        console.error("Print receipt error", err);
+      }
+    },
+    [customer.name, paymentMethod]
+  );
+
   // Khi quay lại từ VNPAY với payStatus=success, tự in hóa đơn POS
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -77,7 +149,7 @@ export default function POS() {
         }
       })();
     }
-  }, []);
+  }, [printReceipt]);
 
   const handleSubmit = async () => {
     setMessage("");
@@ -122,74 +194,6 @@ export default function POS() {
     }
   };
 
-  const printReceipt = (order, sourceItems) => {
-    try {
-      const win = window.open("", "_blank", "width=600,height=800");
-      if (!win) return;
-      const rows = cart
-        .map(
-          (it, idx) =>
-            `<tr>
-              <td style="padding:4px;border:1px solid #e5e7eb;text-align:center;">${idx + 1}</td>
-              <td style="padding:4px;border:1px solid #e5e7eb;">${it.name}</td>
-              <td style="padding:4px;border:1px solid #e5e7eb;text-align:right;">${(Number(it.price) || 0).toLocaleString("vi-VN")}</td>
-              <td style="padding:4px;border:1px solid #e5e7eb;text-align:center;">${it.quantity}</td>
-              <td style="padding:4px;border:1px solid #e5e7eb;text-align:right;">${(
-                (Number(it.price) || 0) * (Number(it.quantity) || 0)
-              ).toLocaleString("vi-VN")}</td>
-            </tr>`
-        )
-        .join("");
-      const createdAt = order?.createdAt ? new Date(order.createdAt).toLocaleString("vi-VN") : new Date().toLocaleString("vi-VN");
-      const orderId = order?._id || "N/A";
-      win.document.write(`
-        <html>
-          <head>
-            <title>Hóa đơn POS</title>
-            <style>
-              body { font-family: Arial, sans-serif; padding: 12px; color: #0f172a; }
-              h1 { margin: 0 0 8px; font-size: 18px; }
-              h2 { margin: 12px 0 6px; font-size: 15px; }
-              table { border-collapse: collapse; width: 100%; font-size: 12px; }
-              th { background: #f3f4f6; border:1px solid #e5e7eb; padding:6px; text-align:left; }
-              td { border:1px solid #e5e7eb; padding:6px; }
-              .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
-              .card { border:1px solid #e5e7eb; border-radius:8px; padding:8px; background:#f8fafc; font-size:12px; }
-            </style>
-          </head>
-          <body>
-            <h1>HÓA ĐƠN POS</h1>
-            <div class="grid">
-              <div class="card"><strong>Mã đơn:</strong> ${orderId}</div>
-              <div class="card"><strong>Ngày:</strong> ${createdAt}</div>
-              <div class="card"><strong>Khách:</strong> ${customer.name}</div>
-              <div class="card"><strong>Thanh toán:</strong> ${paymentMethod === "online" ? "Thẻ/Online" : "Tiền mặt"}</div>
-            </div>
-            <h2>Sản phẩm</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>STT</th>
-                  <th>Tên</th>
-                  <th>Đơn giá</th>
-                  <th>SL</th>
-                  <th>Thành tiền</th>
-                </tr>
-              </thead>
-              <tbody>${rows}</tbody>
-            </table>
-            <h2>Tổng cộng</h2>
-            <div class="card"><strong>Tổng:</strong> ${total.toLocaleString("vi-VN")} VND</div>
-            <script>window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 300); };</script>
-          </body>
-        </html>
-      `);
-      win.document.close();
-    } catch (err) {
-      console.error("Print receipt error", err);
-    }
-  };
-
   return (
     <AdminRoute allowedRoles={["admin", "staff"]}>
       <AdminLayout>
@@ -226,7 +230,7 @@ export default function POS() {
                         {p.image ? (
                           <img src={p.image} alt={p.title} className="h-full w-full object-cover" />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center text-xs text-zinc-500">KhA'ng cA3  §œnh</div>
+                          <div className="flex h-full w-full items-center justify-center text-xs text-zinc-500">Không có ảnh</div>
                         )}
                       </div>
                       <div className="flex w-full items-center justify-between">

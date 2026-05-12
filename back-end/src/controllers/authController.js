@@ -1,4 +1,4 @@
-﻿// Auth and User Management Controller
+// Auth and User Management Controller
 import crypto from "crypto";
 import User from "../models/user.js";
 import { generateToken } from "../../utils/generateToken.js";
@@ -11,8 +11,9 @@ const getFirebaseAuth = async () => {
   const credsJson = process.env.GOOGLE_CREDENTIALS_JSON;
   try {
     // Lazy import to khong crash khi chua cai firebase-admin
-    const admin = await import("firebase-admin");
-    if (!admin.apps.length) {
+    const adminModule = await import("firebase-admin");
+    const admin = adminModule.default || adminModule;
+    if (!admin.apps?.length) {
       const credential = credsJson
         ? admin.credential.cert(JSON.parse(credsJson))
         : admin.credential.applicationDefault();
@@ -30,7 +31,9 @@ const getFirebaseAuth = async () => {
 // Tao nguoi dung moi (admin)
 export const register = async (req, res) => {
   try {
-    const { name, email, password, role = "staff", phone, address, avatar } = req.body;
+    const { name, email, password, role, phone, address, avatar } = req.body;
+    const allowedRoles = ["admin", "staff", "customer"];
+    const safeRole = allowedRoles.includes(role) ? role : "staff";
     const phoneRegex = /^(03|05|07|08|09)\d{8}$/;
 
     const existingUser = await User.findOne({ email });
@@ -41,7 +44,7 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "Số điện thoại không hợp lệ (10 số, bắt đầu bằng 03,05,07,08,09)." });
     }
 
-    const newUser = await User.create({ name, email, password, role, phone, address, avatar });
+    const newUser = await User.create({ name, email, password, role: safeRole, phone, address, avatar });
     res.status(201).json({
       _id: newUser._id,
       name: newUser.name,

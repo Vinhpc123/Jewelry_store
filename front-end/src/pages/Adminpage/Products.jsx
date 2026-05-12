@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import AdminLayout from "../../components/Admin/AdminLayout";
 import AdminRoute from "../../components/Admin/AdminRoute";
 import useAdminData from "../../lib/hooks/useAdminData";
@@ -8,7 +8,7 @@ import formatDateTime from "../../components/Admin/FormatDateTime";
 import useSearchPage from "../../lib/hooks/useSearchPage";
 import usePagination from "../../lib/hooks/usePagination";
 import Pagination from "../../components/Admin/Pagination";
-import { getUser } from "../../lib/api";
+import instance, { getUser } from "../../lib/api";
 import { useToast } from "../../components/ui/ToastContext";
 import { useConfirm } from "../../components/ui/ConfirmContext";
 
@@ -103,13 +103,10 @@ export default function Products() {
     if (!file) return null;
     const fd = new FormData();
     fd.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Upload failed: ${res.status} ${text}`);
-    }
-    const data = await res.json();
-    return data.url || null;
+    const res = await instance.post("/api/upload", fd, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res?.data?.url || null;
   };
 
   const handleSubmit = async () => {
@@ -362,8 +359,9 @@ function ProductTable({ items, startIndex, onEdit, onDelete, deletingId, loading
   }
 
   return (
-    <div className="overflow-hidden rounded border border-zinc-200 bg-white shadow-sm">
-      <table className="min-w-full table-fixed divide-y divide-zinc-200 text-sm">
+    <div className="rounded border border-zinc-200 bg-white shadow-sm">
+      <div className="w-full overflow-x-auto">
+        <table className="min-w-full table-fixed divide-y divide-zinc-200 text-sm">
         <thead className="bg-zinc-100 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
           <tr>
             <th className="w-12 text-center px-2 py-3">STT</th>
@@ -423,6 +421,7 @@ function ProductTable({ items, startIndex, onEdit, onDelete, deletingId, loading
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-﻿import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import instance, { getStoredToken, setAuthToken, setUser } from "../lib/api";
 import { useToast } from "../components/ui/ToastContext";
 
@@ -118,7 +118,7 @@ export function CartProvider({ children }) {
       updateQuantity,
       removeItem,
       clearCart,
-      itemCount: items.length,
+      itemCount: items.reduce((sum, it) => sum + (Number(it.quantity) || 0), 0),
     }),
     [items, loading, error, fetchCart, addToCart, updateQuantity, removeItem, clearCart]
   );

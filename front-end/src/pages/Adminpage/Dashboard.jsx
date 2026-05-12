@@ -532,15 +532,15 @@ function ActivityItem({ title, subtitle, time, icon, accent }) {
 }
 
 function RevenueChart({ series, mode = "day" }) {
-  if (!series || series.length === 0) {
-    return <div className="flex h-full items-center justify-center text-sm text-zinc-500">Chưa có dữ liệu doanh thu</div>;
-  }
-
   const [hoveredIndex, setHoveredIndex] = React.useState(null);
   const chartWidth = 200;
   const chartHeight = 70;
   const chartBottom = 60;
   const labelGutter = 12;
+
+  if (!series || series.length === 0) {
+    return <div className="flex h-full items-center justify-center text-sm text-zinc-500">Chưa có dữ liệu doanh thu</div>;
+  }
 
   const buildSmoothPath = (points, tension = 0.22) => {
     if (!points.length) return "";

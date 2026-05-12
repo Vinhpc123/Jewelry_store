@@ -117,7 +117,7 @@ export default function DetailPage() {
     return () => {
       ignore = true;
     };
-  }, [product]);
+  }, [product, id]);
 
   const name = product?.title || product?.name || "Sản phẩm";
   const priceText = product?.price || product?.price === 0 ? formatCurrency(product.price) : "";

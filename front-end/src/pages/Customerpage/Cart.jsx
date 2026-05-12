@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Header from "../../components/Customer/Header";
 import Footer from "../../components/Customer/Footer";
@@ -42,7 +42,7 @@ export default function CartPage() {
           phone: user.phone || prev.phone,
           address: user.address || prev.address,
         }));
-      } catch (_err) {
+      } catch {
         // ignore errors; allow manual entry
       }
     };
@@ -64,7 +64,7 @@ export default function CartPage() {
             try {
               const res = await instance.get(`/api/jewelry/${pid}`);
               return { pid, data: res?.data };
-            } catch (_err) {
+            } catch {
               return { pid, data: null };
             }
           })
@@ -76,7 +76,7 @@ export default function CartPage() {
           return acc;
         }, {});
         setStockMap(nextMap);
-      } catch (_err) {
+      } catch {
         // ignore stock fetch errors
       }
     };
@@ -110,8 +110,8 @@ export default function CartPage() {
     const current = Math.max(1, Math.floor(Number(item.quantity) || 1));
     const max = stockMap[item.productId];
     if (Number.isFinite(max) && current >= max) {
-      setQuantityNotice(`Chi con ${max} san pham trong kho cho "${item.name}".`);
-      toast.warning("Vuot qua so luong ton kho", { description: `Chi con ${max} san pham.` });
+      setQuantityNotice(`Chỉ còn ${max} sản phẩm trong kho cho "${item.name}".`);
+      toast.warning("Vượt quá số lượng tồn kho", { description: `Chỉ còn ${max} sản phẩm.` });
       return;
     }
     setQuantityNotice("");
@@ -232,7 +232,7 @@ export default function CartPage() {
                 <ul className="divide-y divide-[#eadfce]">
                   {items.map((item) => (
                     <li key={item.productId} className="flex gap-3 px-5 py-3">
-                      <div className="h-16 w-16 overflow-hidden rounded-2xl bg-[#f8f1e7 ]">
+                      <div className="h-16 w-16 overflow-hidden rounded-2xl bg-[#f8f1e7]">
                         {item.image ? (
                           <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
                         ) : (

@@ -8,8 +8,8 @@ import {
   googleLogin,
   forgotPassword,
   resetPassword,
+  registerPublic,
 } from "../controllers/authController.js";
-import { registerPublic } from "../controllers/authController.js";
 import { protect, authorize } from "../../middleware/authMiddleware.js";
 
 const router = express.Router();

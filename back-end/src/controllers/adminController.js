@@ -143,10 +143,11 @@ export const getRevenueMetrics = async (req, res) => {
     );
 
     if (mode === "day") {
-      const todayStr = new Date().toISOString().slice(0, 10);
+      const vnOptions = { timeZone: "Asia/Ho_Chi_Minh" };
+      const todayStr = new Date().toLocaleDateString("en-CA", vnOptions);
       const last7Date = new Date();
       last7Date.setDate(last7Date.getDate() - 7);
-      const last7Str = last7Date.toISOString().slice(0, 10);
+      const last7Str = last7Date.toLocaleDateString("en-CA", vnOptions);
       series.forEach((item) => {
         if (item.date === todayStr) totals.today += item.total;
         if (item.date >= last7Str) totals.last7 += item.total;

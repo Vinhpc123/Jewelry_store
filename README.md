@@ -19,6 +19,7 @@
 - `front-end/`: giao diện người dùng viết bằng React
 - `back-end/`: API, xử lý nghiệp vụ và kết nối MongoDB
 - `back-end/uploads/`: thư mục lưu ảnh upload trong lúc chạy
+
 ```text
 jewelry-project/
 |-- back-end/
@@ -44,7 +45,6 @@ jewelry-project/
 `-- README.md
 ```
 
-
 ## Cài đặt
 
 Từ thư mục gốc của project, cài dependencies:
@@ -67,4 +67,3 @@ Mặc định:
 
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:5000`
-

@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import Header from "../../components/Customer/Header";
 import Footer from "../../components/Customer/Footer";
 import { io } from "socket.io-client";
@@ -31,6 +31,11 @@ export default function Chat() {
   const readyRef = React.useRef(false);
   const prevCountRef = React.useRef(0);
   const me = getUser();
+  const meIdRef = React.useRef(me?._id || null);
+
+  React.useEffect(() => {
+    meIdRef.current = me?._id || null;
+  }, [me?._id]);
 
   React.useEffect(() => {
     conversationRef.current = conversationId;
@@ -73,7 +78,8 @@ export default function Chat() {
       setConversationId((prev) => prev || cid);
       const current = conversationRef.current;
       if (current && String(current) !== String(cid)) return;
-      if (me?._id && String(message.senderId) === String(me._id)) return;
+      const myId = meIdRef.current;
+      if (myId && String(message.senderId) === String(myId)) return;
       setMessages((prev) => [...prev, message]);
     });
 
@@ -81,7 +87,7 @@ export default function Chat() {
       socket.off("server:message");
       socket.disconnect();
     };
-  }, []);
+  }, [me?._id]);
 
   React.useEffect(() => {
     if (!messagesRef.current) return;
@@ -100,7 +106,7 @@ export default function Chat() {
         const res = await fetchMessages(conversationId, {
           page: 1,
           limit: 50,
-          userId: me?._id,
+          userId: meIdRef.current,
         });
         setMessages(res?.data?.messages || []);
       } catch (error) {
@@ -109,7 +115,7 @@ export default function Chat() {
         setLoading(false);
       }
     })();
-  }, [conversationId]);
+  }, [conversationId, me?._id]);
 
   const handleSend = async () => {
     if (!input.trim()) return;

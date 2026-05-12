@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import Header from "../../components/Customer/Header";
 import Footer from "../../components/Customer/Footer";
@@ -316,7 +316,7 @@ export default function OrderDetailPage() {
                   <ul className="divide-y divide-[#eadfce]">
                     {order.items?.map((item, idx) => (
                       <li key={`${item.productId || idx}-${idx}`} className="flex gap-4 py-4">
-                        <div className="h-16 w-16 overflow-hidden rounded-2xl bg-[#f8f1e7 ]">
+                        <div className="h-16 w-16 overflow-hidden rounded-2xl bg-[#f8f1e7]">
                           {item.image ? (
                             <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
                           ) : (

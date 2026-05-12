@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "../../components/Customer/Header";
 import Footer from "../../components/Customer/Footer";
@@ -47,6 +47,7 @@ export default function Storefront() {
       description:
         "Khám phá vẻ đẹp tinh khôi và sức sống động của thiên nhiên trong từng thiết kế trang sức độc đáo.",
       cta: "Khám Phá Ngay",
+      ctaPath: "/shop",
       image: "/banner/banner1.jpg",
     },
     {
@@ -54,6 +55,7 @@ export default function Storefront() {
       description:
         "Tinh tuyển chất liệu cao cấp, tạo nên những đường nét mềm mại và sang trọng cho mọi khoảnh khắc.",
       cta: "Xem Bộ Sưu Tập",
+      ctaPath: "/shop",
       image: "banner/banner2.jpg",
     },
     {
@@ -61,6 +63,7 @@ export default function Storefront() {
       description:
         "Những thiết kế đậm chất nghệ thuật, tôn vinh vẻ đẹp dịu dàng và kiêu sa của phái đẹp.",
       cta: "Khám Phá BST",
+      ctaPath: "/shop",
       image: "banner/banner3.png",
     },
     {
@@ -68,6 +71,7 @@ export default function Storefront() {
       description:
         "Kết hợp thủ công tinh xảo và phong cách tối giản, mang lại sự tinh tế trong từng chi tiết.",
       cta: "Đặt Lịch Thử",
+      ctaPath: "/chat",
       image: "banner/banner4.jpeg",
     },
   ];
@@ -187,9 +191,12 @@ export default function Storefront() {
             <p className="mt-3 max-w-3xl text-sm text-white/90 sm:text-base">
               {currentSlide.description}
             </p>
-            <button className="mt-6 rounded-full bg-white/85 px-6 py-2 text-sm font-semibold text-amber-800 shadow-md transition hover:bg-white">
+            <Link
+              to={currentSlide.ctaPath || "/shop"}
+              className="mt-6 rounded-full bg-white/85 px-6 py-2 text-sm font-semibold text-amber-800 shadow-md transition hover:bg-white"
+            >
               {currentSlide.cta}
-            </button>
+            </Link>
             <div className="mt-6 flex items-center gap-2">
               {heroSlides.map((_, idx) => (
                 <button

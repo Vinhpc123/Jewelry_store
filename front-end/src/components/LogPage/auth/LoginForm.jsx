@@ -14,10 +14,6 @@ export default function LoginForm() {
   const [show, setShow] = useState(false);
   const [remember, setRemember] = useState(true);
 
-  function onSubmit(e) {
-    e.preventDefault();
-  }
-
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -33,7 +29,7 @@ export default function LoginForm() {
         try {
           const profile = await fetchProfile();
           user = profile?.data || null;
-        } catch (profileErr) {
+        } catch {
           user = null;
         }
       }
@@ -52,7 +48,7 @@ export default function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={handleLogin} className="space-y-4">
       <LabeledInput
         label="Email"
         icon={<Mail className="h-4 w-4 text-zinc-400" />}

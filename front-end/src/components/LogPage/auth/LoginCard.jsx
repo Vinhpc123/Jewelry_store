@@ -12,7 +12,7 @@ export default function LoginCard() {
         <LoginForm />
       </div>
       <p className="text-center text-sm text-zinc-500 mt-8">
-        Bạn đã có tài khoản chưa?{" "}
+        Chưa có tài khoản?{" "}
         <Link to="/register" className="text-indigo-600 hover:text-indigo-700 font-medium">
           Đăng ký
         </Link>

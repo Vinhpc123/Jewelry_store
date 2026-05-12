@@ -16,7 +16,7 @@ function LinkItem({ to, end = false, children }) {
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ onNavigate }) {
   const user = getUser();
   const role = user?.role || "customer";
   const isAdmin = role === "admin";
@@ -30,13 +30,29 @@ export default function Sidebar() {
       </div>
 
       <nav className="space-y-1">
-        <LinkItem to="/admin" end>Trang chủ</LinkItem>
-        <LinkItem to="/admin/users">Quản lý người dùng</LinkItem>
-        <LinkItem to="/admin/products">Quản lý sản phẩm</LinkItem>
-        <LinkItem to="/admin/orders">Đơn hàng</LinkItem>
-        <LinkItem to="/admin/pos">POS tại quầy</LinkItem>
-        <LinkItem to="/admin/messages">Tin nhắn</LinkItem>
-        {isAdmin ? <LinkItem to="/admin/coupons">Phiếu giảm giá</LinkItem> : null}
+        <div onClick={onNavigate}>
+          <LinkItem to="/admin" end>Trang chủ</LinkItem>
+        </div>
+        <div onClick={onNavigate}>
+          <LinkItem to="/admin/users">Quản lý người dùng</LinkItem>
+        </div>
+        <div onClick={onNavigate}>
+          <LinkItem to="/admin/products">Quản lý sản phẩm</LinkItem>
+        </div>
+        <div onClick={onNavigate}>
+          <LinkItem to="/admin/orders">Đơn hàng</LinkItem>
+        </div>
+        <div onClick={onNavigate}>
+          <LinkItem to="/admin/pos">POS tại quầy</LinkItem>
+        </div>
+        <div onClick={onNavigate}>
+          <LinkItem to="/admin/messages">Tin nhắn</LinkItem>
+        </div>
+        {isAdmin ? (
+          <div onClick={onNavigate}>
+            <LinkItem to="/admin/coupons">Phiếu giảm giá</LinkItem>
+          </div>
+        ) : null}
       </nav>
     </div>
   );

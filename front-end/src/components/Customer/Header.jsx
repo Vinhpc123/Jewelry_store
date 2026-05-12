@@ -1,6 +1,6 @@
-﻿import React from "react";
+import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Diamond, Search, ShoppingBag, User } from "lucide-react";
+import { Diamond, Search, ShoppingBag, User, Menu, X } from "lucide-react";
 import { getUser, setAuthToken, setUser } from "../../lib/api";
 import useSearchPage from "../../lib/hooks/useSearchPage";
 import { useCart } from "../../context/CartContext";
@@ -23,6 +23,7 @@ export default function Header() {
   const [me, setMe] = React.useState(() => getUser());
   const [openSearch, setOpenSearch] = React.useState(false);
   const [openAccount, setOpenAccount] = React.useState(false);
+  const [openMobileNav, setOpenMobileNav] = React.useState(false);
   const accountRef = React.useRef(null);
   const { itemCount } = useCart();
   const { toast } = useToast();
@@ -61,13 +62,24 @@ export default function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <Link to="/shop" className="flex items-center gap-2 text-zinc-900">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6">
+          <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+            <button
+              type="button"
+              aria-label="Mở menu"
+              className="rounded-full p-2 transition hover:bg-zinc-100 md:hidden"
+              onClick={() => setOpenMobileNav(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+
+            <Link to="/shop" className="flex min-w-0 items-center gap-2 text-zinc-900">
             <span className="grid h-9 w-9 place-items-center rounded-full bg-zinc-900 text-white shadow-sm">
               <Diamond className="h-4 w-4" />
             </span>
-            <span className="text-lg font-semibold tracking-wide">JEWELUX</span>
+            <span className="truncate text-sm font-semibold tracking-wide sm:text-lg">JEWELUX</span>
           </Link>
+          </div>
 
           <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-zinc-700">
             {navLinks.map((link) => {
@@ -102,7 +114,7 @@ export default function Header() {
             })}
           </nav>
 
-          <div className="flex items-center gap-4 text-zinc-800">
+          <div className="flex items-center gap-1.5 text-zinc-800 sm:gap-4">
             <button
               type="button"
               aria-label="Tìm kiếm"
@@ -187,14 +199,65 @@ export default function Header() {
               <Link
                 to="/login"
                 aria-label="Đăng nhập"
-                className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800"
+                className="rounded-full bg-zinc-900 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800 sm:px-4"
               >
-                Đăng nhập
+                <span className="hidden sm:inline">Đăng nhập</span>
+                <span className="sm:hidden">Login</span>
               </Link>
             )}
           </div>
         </div>
       </header>
+
+      {/* Mobile navigation drawer */}
+      <div
+        className={`fixed inset-0 z-50 md:hidden ${openMobileNav ? "pointer-events-auto" : "pointer-events-none"}`}
+        aria-hidden={!openMobileNav}
+      >
+        <div
+          className={`absolute inset-0 bg-black/40 transition-opacity ${openMobileNav ? "opacity-100" : "opacity-0"}`}
+          onClick={() => setOpenMobileNav(false)}
+        />
+        <div
+          className={`absolute left-0 top-0 h-full w-[min(85vw,340px)] bg-white shadow-xl transition-transform ${
+            openMobileNav ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <div className="flex items-center justify-between border-b border-zinc-200 p-4">
+            <div className="flex items-center gap-2 text-zinc-900">
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-zinc-900 text-white shadow-sm">
+                <Diamond className="h-4 w-4" />
+              </span>
+              <span className="text-base font-semibold tracking-wide">JEWELUX</span>
+            </div>
+            <button
+              type="button"
+              aria-label="Đóng menu"
+              className="rounded-full p-2 transition hover:bg-zinc-100"
+              onClick={() => setOpenMobileNav(false)}
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <nav className="p-2">
+            {navLinks.map((link) => {
+              const active = pathname.startsWith(link.href.toLowerCase());
+              return (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  onClick={() => setOpenMobileNav(false)}
+                  className={`block rounded-xl px-4 py-3 text-sm font-medium ${
+                    active ? "bg-zinc-100 text-zinc-900" : "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      </div>
 
       <SearchPanel
         open={openSearch}

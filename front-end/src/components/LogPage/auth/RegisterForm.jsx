@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Mail, User, KeyRound } from "lucide-react";
 import LabeledInput from "../inputs/LabeledInput";
 import PasswordField from "../inputs/PasswordField";
@@ -17,10 +17,6 @@ export default function RegisterForm() {
   const [showPwd, setShowPwd] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [agree, setAgree] = useState(true);
-
-  function onSubmit(ev) {
-    ev.preventDefault(); // UI-only: do nothing
-  }
 
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -48,7 +44,7 @@ export default function RegisterForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <LabeledInput
         label="Họ và tên"
         icon={<User className="h-4 w-4 text-zinc-400" />}

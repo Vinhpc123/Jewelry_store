@@ -33,6 +33,11 @@ export default function Messenger() {
   const socketRef = React.useRef(null);
   const selectedRef = React.useRef(null);
   const me = getUser();
+  const meIdRef = React.useRef(me?._id || null);
+
+  React.useEffect(() => {
+    meIdRef.current = me?._id || null;
+  }, [me?._id]);
 
   React.useEffect(() => {
     const token = getStoredToken();
@@ -72,7 +77,8 @@ export default function Messenger() {
     (payload) => {
       const { conversationId, message } = payload || {};
       if (!conversationId || !message) return;
-      if (me?._id && String(message.senderId) === String(me._id)) return;
+      const myId = meIdRef.current;
+      if (myId && String(message.senderId) === String(myId)) return;
 
       setConversations((prev) => {
         const list = [...prev];

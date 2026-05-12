@@ -45,6 +45,16 @@ function AppRoutes() {
   const [currentUser, setCurrentUser] = React.useState(() => getUser());
 
   React.useEffect(() => {
+    const syncAuthState = () => setCurrentUser(getUser());
+    window.addEventListener("storage", syncAuthState);
+    window.addEventListener("auth:changed", syncAuthState);
+    return () => {
+      window.removeEventListener("storage", syncAuthState);
+      window.removeEventListener("auth:changed", syncAuthState);
+    };
+  }, []);
+
+  React.useEffect(() => {
     let mounted = true;
     const bootstrapAuth = async () => {
       const token = getStoredToken();
@@ -56,7 +66,7 @@ function AppRoutes() {
             setUser(res.data);
             setCurrentUser(res.data);
           }
-        } catch (err) {
+        } catch {
           setAuthToken(null);
           setUser(null);
           setCurrentUser(null);

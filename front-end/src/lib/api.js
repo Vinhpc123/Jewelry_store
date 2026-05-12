@@ -102,14 +102,13 @@ export function sendChatMessage(payload) {
   return instance.post("/api/chat/messages", payload);
 }
 
-export default instance;
-
 // Interceptor xu ly 401
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error?.response?.status;
     const requestUrl = error?.config?.url || "";
+    const requestMethod = (error?.config?.method || "get").toLowerCase();
     const isAuthLogin = requestUrl.includes("/api/auth/login");
     const path = window.location?.pathname || "";
     const isProtectedPath =
@@ -128,8 +127,13 @@ instance.interceptors.response.use(
     if (status === 401 && !isAuthLogin) {
       const config = error?.config || {};
 
-      // Phục hồi request không cần xác thực
-      if (!isProtectedPath && !isProtectedRequest && !config.__isRetryRequest) {
+      // Chỉ retry GET requests không cần xác thực, tránh retry loop với POST/PUT
+      if (
+        requestMethod === "get" &&
+        !isProtectedPath &&
+        !isProtectedRequest &&
+        !config.__isRetryRequest
+      ) {
         config.__isRetryRequest = true;
         if (config.headers) delete config.headers.Authorization;
         return instance(config);
@@ -141,3 +145,5 @@ instance.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export default instance;

@@ -61,7 +61,7 @@ export default function Users() {
   const filteredSource = React.useMemo(() => {
     if (!currentUser) return rawSource;
     return rawSource.filter((user) => user._id !== currentUser._id && (isAdmin || user.role !== "admin"));
-  }, [rawSource, currentUser]);
+  }, [rawSource, currentUser, isAdmin]);
 
   const dataSource = React.useMemo(() => {
     if (roleFilter === "all") return filteredSource;
@@ -440,63 +440,120 @@ function UserTable({
     );
   }
   return (
-    <div className="overflow-hidden rounded border border-zinc-200 bg-white shadow-sm">
-      <table className="min-w-full table-fixed divide-y divide-zinc-200 text-sm">
-        <thead className="bg-zinc-100 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
-          <tr>
-            <th className="w-12 px-3 py-2 text-center">STT</th>
-            <th className="w-48 px-3 py-2">Tên</th>
-            <th className="w-64 px-3 py-2">Email</th>
-            <th className="w-24 px-3 py-2 text-center">Vai trò</th>
-            <th className="w-24 px-3 py-2 text-center">Trạng thái</th>
-            <th className="w-40 px-3 py-2 text-center">Ngày tạo</th>
-            <th className="w-40 px-3 py-2 text-center">Thao tác</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-zinc-200">
-          {items.map((user, idx) => (
-            <tr key={user._id || idx} className="hover:bg-zinc-50">
-              <td className="px-3 py-2 text-center">{startIndex + idx + 1}</td>
-              <td className="px-3 py-2 font-medium text-zinc-900">
-                <p>{user.name || "Không tên"}</p>
-                <p className="text-xs text-zinc-500">ID: {user._id || "-"}</p>
-              </td>
-              <td className="px-3 py-2 text-sm text-zinc-700">{user.email}</td>
-              <td className="px-3 py-2 text-center capitalize text-zinc-700">{getRoleLabel(user.role)}</td>
-              <td className="px-3 py-2 text-center">
-                <UserStatusBadge active={user.isActive} />
-              </td>
-              <td className="px-3 py-2 text-center text-zinc-600">{formatDateTime(user.createdAt)}</td>
-              <td className="px-2 py-3 text-center">
-                <div className="flex items-center justify-center gap-2">
-                  <button
-                    className="rounded border border-blue-500 px-2 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50"
-                    onClick={() => onEdit(user)}
-                    disabled={!canEditUser(user)}
-                  >
-                    Sửa
-                  </button>
-                  <button
-                    className="rounded border border-red-500 px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
-                    onClick={() => onDelete(user)}
-                    disabled={deletingId === user._id || !canDeleteUser(user)}
-                  >
-                    {deletingId === user._id ? "Đang xóa..." : "Xóa"}
-                  </button>
-                  {canLock ? (
-                    <button
-                      className="rounded border border-amber-500 px-2 py-1 text-xs font-semibold text-amber-600 hover:bg-amber-50"
-                      onClick={() => onToggleLock(user)}
-                    >
-                      {user.isActive ? "Khóa" : "Mở khóa"}
-                    </button>
-                  ) : null}
-                </div>
-              </td>
+    <div className="rounded border border-zinc-200 bg-white shadow-sm">
+      {/* Mobile/tablet: card view (no horizontal scroll) */}
+      <div className="divide-y divide-zinc-200 lg:hidden">
+        {items.map((user, idx) => (
+          <div key={user._id || idx} className="p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-zinc-900">
+                  {startIndex + idx + 1}. {user.name || "Không tên"}
+                </p>
+                <p className="mt-0.5 break-words text-xs text-zinc-600">{user.email || "-"}</p>
+                <p className="mt-1 break-all text-xs text-zinc-500">ID: {user._id || "-"}</p>
+              </div>
+              <UserStatusBadge active={user.isActive} />
+            </div>
+
+            <div className="mt-3 grid gap-2 text-xs text-zinc-700 sm:grid-cols-2">
+              <div className="rounded-md bg-zinc-50 p-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Vai trò</p>
+                <p className="mt-0.5 capitalize">{getRoleLabel(user.role)}</p>
+              </div>
+              <div className="rounded-md bg-zinc-50 p-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Ngày tạo</p>
+                <p className="mt-0.5">{formatDateTime(user.createdAt)}</p>
+              </div>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                className="rounded border border-blue-500 px-3 py-1.5 text-xs font-semibold text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+                onClick={() => onEdit(user)}
+                disabled={!canEditUser(user)}
+              >
+                Sửa
+              </button>
+              <button
+                className="rounded border border-red-500 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                onClick={() => onDelete(user)}
+                disabled={deletingId === user._id || !canDeleteUser(user)}
+              >
+                {deletingId === user._id ? "Đang xóa..." : "Xóa"}
+              </button>
+              {canLock ? (
+                <button
+                  className="rounded border border-amber-500 px-3 py-1.5 text-xs font-semibold text-amber-600 hover:bg-amber-50"
+                  onClick={() => onToggleLock(user)}
+                >
+                  {user.isActive ? "Khóa" : "Mở khóa"}
+                </button>
+              ) : null}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: table view */}
+      <div className="hidden w-full overflow-x-auto lg:block">
+        <table className="min-w-full table-fixed divide-y divide-zinc-200 text-sm">
+          <thead className="bg-zinc-100 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
+            <tr>
+              <th className="w-12 px-3 py-2 text-center">STT</th>
+              <th className="w-48 px-3 py-2">Tên</th>
+              <th className="w-64 px-3 py-2">Email</th>
+              <th className="w-24 px-3 py-2 text-center">Vai trò</th>
+              <th className="w-24 px-3 py-2 text-center">Trạng thái</th>
+              <th className="w-40 px-3 py-2 text-center">Ngày tạo</th>
+              <th className="w-40 px-3 py-2 text-center">Thao tác</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-zinc-200">
+            {items.map((user, idx) => (
+              <tr key={user._id || idx} className="hover:bg-zinc-50">
+                <td className="px-3 py-2 text-center">{startIndex + idx + 1}</td>
+                <td className="px-3 py-2 font-medium text-zinc-900">
+                  <p>{user.name || "Không tên"}</p>
+                  <p className="text-xs text-zinc-500">ID: {user._id || "-"}</p>
+                </td>
+                <td className="px-3 py-2 text-sm text-zinc-700">{user.email}</td>
+                <td className="px-3 py-2 text-center capitalize text-zinc-700">{getRoleLabel(user.role)}</td>
+                <td className="px-3 py-2 text-center">
+                  <UserStatusBadge active={user.isActive} />
+                </td>
+                <td className="px-3 py-2 text-center text-zinc-600">{formatDateTime(user.createdAt)}</td>
+                <td className="px-2 py-3 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      className="rounded border border-blue-500 px-2 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50"
+                      onClick={() => onEdit(user)}
+                      disabled={!canEditUser(user)}
+                    >
+                      Sửa
+                    </button>
+                    <button
+                      className="rounded border border-red-500 px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                      onClick={() => onDelete(user)}
+                      disabled={deletingId === user._id || !canDeleteUser(user)}
+                    >
+                      {deletingId === user._id ? "Đang xóa..." : "Xóa"}
+                    </button>
+                    {canLock ? (
+                      <button
+                        className="rounded border border-amber-500 px-2 py-1 text-xs font-semibold text-amber-600 hover:bg-amber-50"
+                        onClick={() => onToggleLock(user)}
+                      >
+                        {user.isActive ? "Khóa" : "Mở khóa"}
+                      </button>
+                    ) : null}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
