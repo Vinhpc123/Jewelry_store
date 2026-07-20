@@ -3,6 +3,7 @@ import Cart from "../models/cart.js";
 import Jewelry from "../models/jewelry.js";
 import Coupon from "../models/coupon.js";
 import { computeCouponDiscount } from "./couponController.js";
+import { calculateSubtotal, calculateTotal } from "../utils/cartHelper.js";
 
 const restockItems = async (order) => {
   for (const it of order.items) {
@@ -75,10 +76,7 @@ export const createOrder = async (req, res) => {
       return res.status(400).json({ message: "Giỏ hàng không hợp lệ" });
     }
 
-    const subtotal = refreshedItems.reduce(
-      (sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 0),
-      0
-    );
+    const subtotal = calculateSubtotal(refreshedItems);
     const shippingFee = Number(req.body.shippingFee) || 0;
     let discount = 0;
     let couponCode = "";
@@ -109,7 +107,7 @@ export const createOrder = async (req, res) => {
       }
     }
 
-    const total = Math.max(0, subtotal + shippingFee - discount);
+    const total = calculateTotal(subtotal, shippingFee, discount);
 
     const order = await Order.create({
       user: req.user._id,
@@ -299,11 +297,8 @@ export const createPosOrder = async (req, res) => {
       });
     }
 
-    const subtotal = refreshedItems.reduce(
-      (sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 0),
-      0
-    );
-    const total = Math.max(0, subtotal + (Number(shippingFee) || 0))
+    const subtotal = calculateSubtotal(refreshedItems);
+    const total = calculateTotal(subtotal, shippingFee, 0);
 
     const order = await Order.create({
       user: req.user._id,

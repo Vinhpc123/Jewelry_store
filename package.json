@@ -3,7 +3,8 @@
     "concurrently": "^9.2.1"
   },
   "scripts": {
-    "start": "concurrently \"npm --prefix front-end run dev\" \"npm --prefix back-end run dev\""
+    "start": "concurrently \"npm --prefix front-end run dev\" \"npm --prefix back-end run dev\"",
+    "test": "npm --prefix back-end run test"
   },
   "dependencies": {
     "socket.io": "^4.8.1",
