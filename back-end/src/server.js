@@ -50,7 +50,24 @@ app.use(express.json());
 // Allow frontend dev/prod domains; `origin: true` reflects the request origin to avoid CORS blocks in dev
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || true,
+    origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+      const allowedOrigins = [
+        process.env.FRONTEND_URL,
+        "https://jewelry-store-two-rho.vercel.app",
+        "http://localhost:5173",
+        "http://localhost:3000",
+      ].filter(Boolean);
+      if (allowedOrigins.some((o) => origin.startsWith(o))) {
+        return callback(null, true);
+      }
+      // In development, allow all origins
+      if (process.env.NODE_ENV !== "production") {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
