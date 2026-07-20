@@ -74,6 +74,9 @@ app.use(
 
 app.use("/uploads", express.static(uploadsDir));
 
+// Health check endpoint (always available, even before DB connects)
+app.get("/health", (_req, res) => res.json({ status: "ok", time: new Date().toISOString() }));
+
 app.post("/api/upload", upload.single("file"), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: "Không có file được tải lên" });
@@ -97,8 +100,11 @@ app.use("/api/payments", paymentRoutes);
 const io = initSocket(server);
 app.set("io", io);
 
-connectDB().then(() => {
-  server.listen(port, () => {
-    console.log(`Server bat dau chay tren cong ${port}`);
+// Start server immediately so Render can route requests
+server.listen(port, () => {
+  console.log(`Server bat dau chay tren cong ${port}`);
+  // Connect DB after server is ready
+  connectDB().catch((err) => {
+    console.error("DB connection failed:", err.message);
   });
 });
