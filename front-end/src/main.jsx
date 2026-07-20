@@ -1,4 +1,4 @@
-﻿import { StrictMode } from 'react'
+import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
@@ -11,6 +11,11 @@ const savedToken = getStoredToken()
 if (savedToken) {
   setAuthToken(savedToken)
 }
+
+// Wake up Render free-tier backend (spins down after ~15min inactivity)
+const BACKEND = import.meta.env.VITE_API_BASE_URL || "https://jewelry-store-wgnr.onrender.com";
+fetch(`${BACKEND}/api/jewelry?limit=1`).catch(() => {});
+
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
