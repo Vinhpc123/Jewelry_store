@@ -2,11 +2,6 @@ import User from "../models/user.js";
 import Jewelry from "../models/jewelry.js";
 import Order from "../models/order.js";
 
-const getTimestamp = (date) => {
-  const time = date ? new Date(date).getTime() : 0;
-  return Number.isNaN(time) ? 0 : time;
-};
-
 export const getAdminStats = async (_req, res) => {
   try {
     const now = new Date();
@@ -46,10 +41,11 @@ export const getAdminStats = async (_req, res) => {
       Jewelry.countDocuments({ createdAt: { $gte: prevStart7, $lt: start7 } }),
     ]);
 
-    const roleCounts = roleAgg.reduce(
-      (acc, item) => ({ ...acc, [item._id]: item.count }),
-      { admin: 0, staff: 0, customer: 0 }
-    );
+    const roleCounts = roleAgg.reduce((acc, item) => ({ ...acc, [item._id]: item.count }), {
+      admin: 0,
+      staff: 0,
+      customer: 0,
+    });
 
     res.status(200).json({
       users: {

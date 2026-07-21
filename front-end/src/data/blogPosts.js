@@ -2,8 +2,7 @@ export const blogPosts = [
   {
     slug: "bi-quyet-chon-nhan-dinh-hon-vua-van",
     title: "Bí quyết chọn nhẫn đính hôn vừa vặn",
-    excerpt:
-      "Đo size chuẩn, chọn kiểu dáng phù hợp bàn tay và cách bảo quản kim loại quý.",
+    excerpt: "Đo size chuẩn, chọn kiểu dáng phù hợp bàn tay và cách bảo quản kim loại quý.",
     image: "/blog/blog1.webp",
     content: [
       {
@@ -58,8 +57,7 @@ export const blogPosts = [
   {
     slug: "cach-phoi-trang-suc-ngoc-trai-hien-dai",
     title: "Cách phối trang sức ngọc trai hiện đại",
-    excerpt:
-      "Layer nhẹ nhàng, kết hợp vàng hồng và ngọc trai cho phong cách thanh lịch.",
+    excerpt: "Layer nhẹ nhàng, kết hợp vàng hồng và ngọc trai cho phong cách thanh lịch.",
     image: "/blog/blog2.jpg",
     content: [
       {
@@ -95,8 +93,7 @@ export const blogPosts = [
   {
     slug: "bao-quan-da-quy-de-luon-sang-ben",
     title: "Bảo quản đá quý để luôn sáng bền",
-    excerpt:
-      "Tránh hóa chất mạnh, cất trong hộp lót nhung và vệ sinh định kỳ đúng cách.",
+    excerpt: "Tránh hóa chất mạnh, cất trong hộp lót nhung và vệ sinh định kỳ đúng cách.",
     image: "/blog/blog3.webp",
     content: [
       {

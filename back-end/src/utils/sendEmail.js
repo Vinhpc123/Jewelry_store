@@ -3,7 +3,9 @@ export async function sendEmail({ to, subject, html, text }) {
   try {
     ({ default: nodemailer } = await import("nodemailer"));
   } catch (err) {
-    throw new Error("nodemailer is not installed. Run npm install nodemailer in back-end.");
+    throw new Error("nodemailer is not installed. Run npm install nodemailer in back-end.", {
+      cause: err,
+    });
   }
 
   const host = process.env.SMTP_HOST;

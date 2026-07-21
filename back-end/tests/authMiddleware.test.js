@@ -1,4 +1,4 @@
-import { jest } from '@jest/globals';
+import { jest } from "@jest/globals";
 import { protect } from "../middleware/authMiddleware.js";
 import jwt from "jsonwebtoken";
 import User from "../src/models/user.js";
@@ -17,7 +17,7 @@ describe("Auth Middleware (protect)", () => {
       json: jest.fn().mockReturnThis(),
     };
     next = jest.fn();
-    
+
     // Create spies on the real modules/objects
     jwtVerifySpy = jest.spyOn(jwt, "verify");
     userFindByIdSpy = jest.spyOn(User, "findById");
@@ -67,7 +67,7 @@ describe("Auth Middleware (protect)", () => {
   test("should return 401 if user is not found in the database", async () => {
     req.headers.authorization = "Bearer valid_token";
     jwtVerifySpy.mockReturnValue({ userId: "user123" });
-    
+
     const selectMock = jest.fn().mockResolvedValue(null);
     userFindByIdSpy.mockReturnValue({
       select: selectMock,

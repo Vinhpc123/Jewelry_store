@@ -10,11 +10,7 @@ function StorySection({ story }) {
     <section className="mx-auto max-w-6xl px-4 py-12">
       <div className="grid items-stretch gap-10 md:grid-cols-[2fr_1.1fr]">
         <div className="h-full overflow-hidden bg-slate-100 shadow-sm">
-          <img
-            src={story.largeImage}
-            alt={story.title}
-            className="h-full w-full object-cover"
-          />
+          <img src={story.largeImage} alt={story.title} className="h-full w-full object-cover" />
         </div>
         <div className="flex h-full flex-col gap-6 md:items-start">
           <div className="w-full overflow-hidden bg-slate-100 shadow-sm flex-[0.6]">
@@ -26,12 +22,8 @@ function StorySection({ story }) {
           </div>
           <div className="w-full flex-[0.4] flex items-center md:items-start">
             <div className="max-w-sm">
-              <h2 className="text-2xl font-semibold text-amber-800 sm:text-3xl">
-                {story.title}
-              </h2>
-              <p className="mt-3 text-sm text-slate-700 sm:text-base">
-                {story.description}
-              </p>
+              <h2 className="text-2xl font-semibold text-amber-800 sm:text-3xl">{story.title}</h2>
+              <p className="mt-3 text-sm text-slate-700 sm:text-base">{story.description}</p>
             </div>
           </div>
         </div>
@@ -85,9 +77,7 @@ export default function Storefront() {
     () => (value) => {
       if (value === null || value === undefined || value === "") return "";
       const num =
-        typeof value === "number"
-          ? value
-          : Number(String(value).replace(/[^0-9.-]+/g, ""));
+        typeof value === "number" ? value : Number(String(value).replace(/[^0-9.-]+/g, ""));
       if (Number.isNaN(num)) return "";
       return `${num.toLocaleString("vi-VN")} VND`;
     },
@@ -95,10 +85,7 @@ export default function Storefront() {
   );
 
   useEffect(() => {
-    const timer = setInterval(
-      () => setActiveSlide((prev) => (prev + 1) % heroSlides.length),
-      8000
-    );
+    const timer = setInterval(() => setActiveSlide((prev) => (prev + 1) % heroSlides.length), 8000);
     return () => clearInterval(timer);
   }, [heroSlides.length]);
 
@@ -115,11 +102,7 @@ export default function Storefront() {
         setNewProducts(items.slice(0, 8));
       } catch (err) {
         if (ignore) return;
-        setProductsError(
-          err?.response?.data?.message ||
-            err.message ||
-            "Không thể tải sản phẩm."
-        );
+        setProductsError(err?.response?.data?.message || err.message || "Không thể tải sản phẩm.");
       } finally {
         if (!ignore) setProductsLoading(false);
       }
@@ -135,8 +118,7 @@ export default function Storefront() {
 
   const story = {
     title: "Đeo trang sức là cách thể hiện bản thân không cần một lời nói nào.",
-    description:
-      "Cuộc sống có bao lâu mà chờ chứ, hãy đeo trang sức như chưa từng được đeo nhé.",
+    description: "Cuộc sống có bao lâu mà chờ chứ, hãy đeo trang sức như chưa từng được đeo nhé.",
     largeImage: "story/story1.png",
     smallImage: "story/story2.webp",
   };
@@ -204,9 +186,7 @@ export default function Storefront() {
                   type="button"
                   onClick={() => setActiveSlide(idx)}
                   className={`h-2.5 w-2.5 rounded-full transition ${
-                    idx === activeSlide
-                      ? "bg-white"
-                      : "bg-white/50 hover:bg-white/80"
+                    idx === activeSlide ? "bg-white" : "bg-white/50 hover:bg-white/80"
                   }`}
                   aria-label={`Chuyển đến banner ${idx + 1}`}
                 />
@@ -222,9 +202,7 @@ export default function Storefront() {
             <p className="text-sm font-semibold uppercase tracking-[0.35em] text-amber-700">
               Lookbook
             </p>
-            <h2 className="text-3xl font-bold sm:text-4xl">
-              Phong cách thời trang theo xu hướng
-            </h2>
+            <h2 className="text-3xl font-bold sm:text-4xl">Phong cách thời trang theo xu hướng</h2>
           </div>
           <div className="mt-10 grid gap-6 lg:grid-cols-[1.2fr_1fr]">
             <Link
@@ -238,12 +216,8 @@ export default function Storefront() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <p className="text-sm uppercase tracking-[0.3em] text-white/80">
-                  Ritual of Shine
-                </p>
-                <h3 className="mt-2 text-2xl font-semibold">
-                  Thanh lịch & Tinh tế
-                </h3>
+                <p className="text-sm uppercase tracking-[0.3em] text-white/80">Ritual of Shine</p>
+                <h3 className="mt-2 text-2xl font-semibold">Thanh lịch & Tinh tế</h3>
                 <p className="mt-2 max-w-md text-sm text-white/85">
                   Chọn nét tinh tế, tôn lên da và phong cách
                 </p>
@@ -289,9 +263,7 @@ export default function Storefront() {
             <p className="text-sm font-semibold uppercase tracking-[0.35em] text-amber-700">
               Sản phẩm mới
             </p>
-            <h2 className="text-3xl font-bold sm:text-4xl">
-              Những sản phẩm nổi bật
-            </h2>
+            <h2 className="text-3xl font-bold sm:text-4xl">Những sản phẩm nổi bật</h2>
           </div>
 
           {productsError ? (
@@ -321,9 +293,7 @@ export default function Storefront() {
               <p className="mt-4 text-sm font-semibold text-[#2f241a]">
                 Chưa có sản phẩm để hiển thị.
               </p>
-              <p className="mt-1 text-xs text-[#7b6654]">
-                Quay lại sau để xem các mẫu mới nhất.
-              </p>
+              <p className="mt-1 text-xs text-[#7b6654]">Quay lại sau để xem các mẫu mới nhất.</p>
             </div>
           ) : null}
 
@@ -331,10 +301,7 @@ export default function Storefront() {
             <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
               {newProducts.map((item) => {
                 const name = item.title || item.name || "Sản phẩm chưa đặt tên";
-                const priceText =
-                  item.price || item.price === 0
-                    ? formatCurrency(item.price)
-                    : "";
+                const priceText = item.price || item.price === 0 ? formatCurrency(item.price) : "";
                 return (
                   <article
                     key={item._id || item.id || name}
@@ -346,7 +313,11 @@ export default function Storefront() {
                     >
                       <div className="aspect-square w-full">
                         {item.image ? (
-                          <img src={item.image} alt={name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                          <img
+                            src={item.image}
+                            alt={name}
+                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                          />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center text-xs text-[#7b6654]">
                             Chưa có ảnh
@@ -354,19 +325,16 @@ export default function Storefront() {
                         )}
                       </div>
                       <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 transition duration-300 group-hover:opacity-100" />
-                    </Link>                    
+                    </Link>
                     <div className="flex flex-1 flex-col gap-2 px-5 py-4">
                       <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#2f241a]">
                         {name}
                       </p>
                       {priceText ? (
-                        <p className="text-base font-semibold text-[#9a785d]">
-                          {priceText}
-                        </p>
+                        <p className="text-base font-semibold text-[#9a785d]">{priceText}</p>
                       ) : null}
                       <p className="text-xs text-[#7b6654] line-clamp-2">
-                        {item.description ||
-                          "Thiết kế tinh xảo, phù hợp nhiều phong cách."}
+                        {item.description || "Thiết kế tinh xảo, phù hợp nhiều phong cách."}
                       </p>
                       <div className="mt-auto flex items-center justify-between">
                         <div className="rounded-full bg-[#f8f1e7] px-3 py-1 text-[11px] font-semibold text-[#9c7c61]">
@@ -414,9 +382,7 @@ export default function Storefront() {
                   />
                 </Link>
                 <div className="flex flex-1 flex-col gap-2 px-4 py-5">
-                  <h3 className="text-lg font-semibold text-slate-900">
-                    {post.title}
-                  </h3>
+                  <h3 className="text-lg font-semibold text-slate-900">{post.title}</h3>
                   <p className="text-sm text-slate-600">{post.excerpt}</p>
                   <Link
                     to={`/blog/${post.slug}`}
@@ -448,9 +414,9 @@ export default function Storefront() {
                   Tỉ Mỉ Trong Từng Đường Nét
                 </h3>
                 <p className="text-base leading-relaxed text-slate-600">
-                  Mỗi thiết kế đều được chế tác bởi bàn tay tinh xảo của nghệ nhân, kết hợp giữa kỹ thuật truyền
-                  thống và cảm hứng hiện đại. Chúng tôi cam kết chất lượng và sự độc đáo trong từng sản phẩm, mang
-                  đến cho bạn những tuyệt tác mang dấu ấn riêng.
+                  Mỗi thiết kế đều được chế tác bởi bàn tay tinh xảo của nghệ nhân, kết hợp giữa kỹ
+                  thuật truyền thống và cảm hứng hiện đại. Chúng tôi cam kết chất lượng và sự độc
+                  đáo trong từng sản phẩm, mang đến cho bạn những tuyệt tác mang dấu ấn riêng.
                 </p>
                 <Link
                   to="/about"

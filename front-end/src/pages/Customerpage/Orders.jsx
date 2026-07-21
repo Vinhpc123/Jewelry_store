@@ -29,12 +29,13 @@ export default function OrdersPage() {
   const formatCurrency = useMemo(
     () => (value) => {
       if (value === null || value === undefined || value === "") return "";
-      const num = typeof value === "number" ? value : Number(String(value).replace(/[^0-9.-]+/g, ""));
+      const num =
+        typeof value === "number" ? value : Number(String(value).replace(/[^0-9.-]+/g, ""));
       if (Number.isNaN(num)) return "";
       return `${num.toLocaleString("vi-VN")} VND`;
     },
     []
-  )
+  );
 
   const orderStats = useMemo(() => {
     const stats = {
@@ -66,7 +67,9 @@ export default function OrdersPage() {
         const res = await instance.get("/api/orders/my");
         setOrders(Array.isArray(res?.data) ? res.data : []);
       } catch (err) {
-        setError(err?.response?.data?.message || err.message || "Không thể lấy danh sách đơn hàng.");
+        setError(
+          err?.response?.data?.message || err.message || "Không thể lấy danh sách đơn hàng."
+        );
       } finally {
         setLoading(false);
       }
@@ -93,7 +96,9 @@ export default function OrdersPage() {
 
         <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-10">
           {error ? (
-            <div className="rounded-2xl bg-red-50 p-4 text-sm text-red-700 ring-1 ring-red-100">{error}</div>
+            <div className="rounded-2xl bg-red-50 p-4 text-sm text-red-700 ring-1 ring-red-100">
+              {error}
+            </div>
           ) : null}
 
           {loading ? (
@@ -113,19 +118,25 @@ export default function OrdersPage() {
             </div>
           ) : null}
 
-                    {!loading && orders.length > 0 ? (
+          {!loading && orders.length > 0 ? (
             <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
               <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#eadfce]">
                 <p className="text-xs uppercase tracking-[0.2em] text-[#7b6654]">Tổng đơn</p>
-                <p className="mt-2 text-2xl font-semibold text-[#2f241a]">{orderStats.totalOrders}</p>
+                <p className="mt-2 text-2xl font-semibold text-[#2f241a]">
+                  {orderStats.totalOrders}
+                </p>
               </div>
               <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#eadfce]">
                 <p className="text-xs uppercase tracking-[0.2em] text-[#7b6654]">Tổng tiền</p>
-                <p className="mt-2 text-lg font-semibold text-[#9a785d]">{formatCurrency(orderStats.totalSpent)}</p>
+                <p className="mt-2 text-lg font-semibold text-[#9a785d]">
+                  {formatCurrency(orderStats.totalSpent)}
+                </p>
               </div>
               <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#eadfce]">
                 <p className="text-xs uppercase tracking-[0.2em] text-[#7b6654]">Đang xử lý</p>
-                <p className="mt-2 text-2xl font-semibold text-[#2f241a]">{orderStats.processing}</p>
+                <p className="mt-2 text-2xl font-semibold text-[#2f241a]">
+                  {orderStats.processing}
+                </p>
               </div>
               <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#eadfce]">
                 <p className="text-xs uppercase tracking-[0.2em] text-[#7b6654]">Đã thanh toán</p>
@@ -137,7 +148,7 @@ export default function OrdersPage() {
               </div>
             </div>
           ) : null}
-<div className="space-y-4">
+          <div className="space-y-4">
             {orders.map((order) => (
               <div
                 key={order._id}
@@ -146,11 +157,14 @@ export default function OrdersPage() {
                 <div className="space-y-2">
                   <p className="text-sm font-semibold text-[#2f241a]">Mã đơn: {order._id}</p>
                   <p className="text-xs text-[#7b6654]">
-                    Ngày: {order.createdAt ? new Date(order.createdAt).toLocaleString() : "Chưa cập nhật"}
+                    Ngày:{" "}
+                    {order.createdAt ? new Date(order.createdAt).toLocaleString() : "Chưa cập nhật"}
                   </p>
                   <p className="text-sm text-[#4b3d30]">
                     {order.items?.length || 0} sản phẩm · Tổng:{" "}
-                    <span className="font-semibold text-[#9a785d]">{formatCurrency(order.total)}</span>
+                    <span className="font-semibold text-[#9a785d]">
+                      {formatCurrency(order.total)}
+                    </span>
                   </p>
                   <div
                     className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ${
@@ -181,5 +195,3 @@ export default function OrdersPage() {
     </>
   );
 }
-
-

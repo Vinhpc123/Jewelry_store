@@ -14,9 +14,7 @@ export default function BlogDetail() {
       <>
         <Header />
         <main className="mx-auto max-w-4xl px-4 py-16 text-center">
-          <p className="text-lg font-semibold text-slate-800">
-            Bài viết không tồn tại.
-          </p>
+          <p className="text-lg font-semibold text-slate-800">Bài viết không tồn tại.</p>
           <button
             onClick={() => navigate(-1)}
             className="mt-4 rounded-full border border-slate-800 px-4 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-800 hover:text-white"
@@ -42,7 +40,10 @@ export default function BlogDetail() {
 
     const { title, text, bullets } = block;
     return (
-      <div key={idx} className="space-y-2 rounded-2xl bg-white/70 p-4 shadow-sm ring-1 ring-slate-100">
+      <div
+        key={idx}
+        className="space-y-2 rounded-2xl bg-white/70 p-4 shadow-sm ring-1 ring-slate-100"
+      >
         {title ? <h3 className="text-lg font-semibold text-slate-900">{title}</h3> : null}
         {text ? <p className="text-base leading-7 text-slate-700">{text}</p> : null}
         {Array.isArray(bullets) && bullets.length > 0 ? (
@@ -70,18 +71,11 @@ export default function BlogDetail() {
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/25 to-white" />
           </div>
           <div className="relative mx-auto flex max-w-4xl flex-col gap-3 px-4 py-16 sm:px-6">
-            <Link
-              to="/"
-              className="w-fit text-sm font-semibold text-amber-200 hover:text-white"
-            >
+            <Link to="/" className="w-fit text-sm font-semibold text-amber-200 hover:text-white">
               ← Quay về trang chủ
             </Link>
-            <h1 className="text-3xl font-bold text-white sm:text-4xl">
-              {post.title}
-            </h1>
-            <p className="max-w-2xl text-sm text-white/80 sm:text-base">
-              {post.excerpt}
-            </p>
+            <h1 className="text-3xl font-bold text-white sm:text-4xl">{post.title}</h1>
+            <p className="max-w-2xl text-sm text-white/80 sm:text-base">{post.excerpt}</p>
           </div>
         </section>
 
@@ -95,10 +89,7 @@ export default function BlogDetail() {
           <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-bold text-slate-900">Bài viết khác</h3>
-              <Link
-                to="/"
-                className="text-sm font-semibold text-amber-700 hover:text-amber-800"
-              >
+              <Link to="/" className="text-sm font-semibold text-amber-700 hover:text-amber-800">
                 Về trang chủ
               </Link>
             </div>
@@ -118,12 +109,8 @@ export default function BlogDetail() {
                     <p className="text-base font-semibold text-slate-900 line-clamp-2">
                       {item.title}
                     </p>
-                    <p className="text-sm text-slate-600 line-clamp-2">
-                      {item.excerpt}
-                    </p>
-                    <span className="text-sm font-semibold text-amber-700">
-                      Đọc thêm →
-                    </span>
+                    <p className="text-sm text-slate-600 line-clamp-2">{item.excerpt}</p>
+                    <span className="text-sm font-semibold text-amber-700">Đọc thêm →</span>
                   </div>
                 </Link>
               ))}

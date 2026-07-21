@@ -43,7 +43,8 @@ export default function OrderDetailPage() {
   const formatCurrency = useMemo(
     () => (value) => {
       if (value === null || value === undefined || value === "") return "";
-      const num = typeof value === "number" ? value : Number(String(value).replace(/[^0-9.-]+/g, ""));
+      const num =
+        typeof value === "number" ? value : Number(String(value).replace(/[^0-9.-]+/g, ""));
       if (Number.isNaN(num)) return "";
       return `${num.toLocaleString("vi-VN")} VND`;
     },
@@ -140,7 +141,9 @@ export default function OrderDetailPage() {
               </tr>`
           )
           .join("");
-        const createdAtStr = o.createdAt ? new Date(o.createdAt).toLocaleString("vi-VN") : new Date().toLocaleString("vi-VN");
+        const createdAtStr = o.createdAt
+          ? new Date(o.createdAt).toLocaleString("vi-VN")
+          : new Date().toLocaleString("vi-VN");
         const discount = Number(o.discount) || 0;
         const shippingFee = Number(o.shippingFee) || 0;
         const totalsHtml = `
@@ -241,7 +244,9 @@ export default function OrderDetailPage() {
 
         <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-10">
           {error ? (
-            <div className="rounded-2xl bg-red-50 p-4 text-sm text-red-700 ring-1 ring-red-100">{error}</div>
+            <div className="rounded-2xl bg-red-50 p-4 text-sm text-red-700 ring-1 ring-red-100">
+              {error}
+            </div>
           ) : null}
 
           {payStatus === "success" ? (
@@ -271,7 +276,10 @@ export default function OrderDetailPage() {
                     <p className="text-sm text-[#7b6654]">Mã đơn</p>
                     <p className="text-lg font-semibold text-[#2f241a]">{order._id}</p>
                     <p className="text-xs text-[#7b6654]">
-                      Ngày: {order.createdAt ? new Date(order.createdAt).toLocaleString() : "Chưa cập nhật"}
+                      Ngày:{" "}
+                      {order.createdAt
+                        ? new Date(order.createdAt).toLocaleString()
+                        : "Chưa cập nhật"}
                     </p>
                   </div>
                   <div
@@ -318,7 +326,11 @@ export default function OrderDetailPage() {
                       <li key={`${item.productId || idx}-${idx}`} className="flex gap-4 py-4">
                         <div className="h-16 w-16 overflow-hidden rounded-2xl bg-[#f8f1e7]">
                           {item.image ? (
-                            <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="h-full w-full object-cover"
+                            />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center text-[11px] text-[#7b6654]">
                               Không có ảnh
@@ -340,16 +352,22 @@ export default function OrderDetailPage() {
                 <div className="space-y-4 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-[#eadfce]">
                   <h2 className="text-lg font-semibold text-[#2f241a]">Thông tin giao hàng</h2>
                   <div className="space-y-2 text-sm text-[#4b3d30]">
-                    <p className="font-semibold text-[#2f241a]">{order.shipping?.fullName || "Chưa có tên"}</p>
+                    <p className="font-semibold text-[#2f241a]">
+                      {order.shipping?.fullName || "Chưa có tên"}
+                    </p>
                     <p>{order.shipping?.phone || "Chưa có số điện thoại"}</p>
                     <p>{order.shipping?.address || "Chưa có địa chỉ"}</p>
-                    {order.shipping?.note ? <p className="text-[#7b6654]">Ghi chú: {order.shipping.note}</p> : null}
+                    {order.shipping?.note ? (
+                      <p className="text-[#7b6654]">Ghi chú: {order.shipping.note}</p>
+                    ) : null}
                   </div>
 
                   <div className="space-y-2 border-t border-[#eadfce] pt-4 text-sm text-[#4b3d30]">
                     <div className="flex justify-between">
                       <span>Tạm tính</span>
-                      <span className="font-semibold text-[#9a785d]">{formatCurrency(subtotal)}</span>
+                      <span className="font-semibold text-[#9a785d]">
+                        {formatCurrency(subtotal)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Phí vận chuyển</span>

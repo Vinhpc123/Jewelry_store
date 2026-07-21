@@ -109,7 +109,9 @@ export function ToastProvider({ children }) {
             >
               <span className={`absolute left-0 top-0 h-full w-1 ${meta.bar}`} />
               <div className="flex items-start gap-3">
-                <div className={`mt-0.5 flex h-8 w-8 items-center justify-center rounded-full ${meta.iconBg} ${meta.iconText}`}>
+                <div
+                  className={`mt-0.5 flex h-8 w-8 items-center justify-center rounded-full ${meta.iconBg} ${meta.iconText}`}
+                >
                   {meta.icon}
                 </div>
                 <div className="flex-1">
@@ -132,5 +134,3 @@ export function ToastProvider({ children }) {
     </ToastContext.Provider>
   );
 }
-
-

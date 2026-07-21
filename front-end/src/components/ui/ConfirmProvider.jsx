@@ -1,7 +1,6 @@
 ﻿import { useCallback, useRef, useState } from "react";
 import { ConfirmContext } from "./ConfirmContext";
 
-
 const DEFAULTS = {
   title: "Confirm",
   description: "",
@@ -33,9 +32,7 @@ export function ConfirmProvider({ children }) {
   }, []);
 
   const confirmClass =
-    dialog?.tone === "danger"
-      ? "bg-red-600 hover:bg-red-700"
-      : "bg-slate-900 hover:bg-slate-800";
+    dialog?.tone === "danger" ? "bg-red-600 hover:bg-red-700" : "bg-slate-900 hover:bg-slate-800";
 
   return (
     <ConfirmContext.Provider value={{ confirm }}>

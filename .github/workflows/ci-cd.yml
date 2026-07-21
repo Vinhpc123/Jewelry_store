@@ -1,0 +1,45 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  lint-and-test:
+    name: Lint & Automated Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: jewelry-project/package-lock.json
+
+      - name: Install Monorepo Dependencies
+        run: |
+          cd jewelry-project
+          npm ci
+          cd back-end && npm ci
+          cd ../front-end && npm ci
+
+      - name: Run ESLint & Code Format Checks
+        run: |
+          cd jewelry-project
+          npm run lint
+
+      - name: Run Backend Automated Tests (Jest & Supertest)
+        run: |
+          cd jewelry-project
+          npm test
+
+      - name: Build Frontend
+        run: |
+          cd jewelry-project/front-end
+          npm run build

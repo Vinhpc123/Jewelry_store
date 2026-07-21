@@ -20,5 +20,3 @@ export default function usePagination(items = [], page = 1, pageSize = 2) {
 
   return { paginated, totalItems, totalPages, offset };
 }
-
-

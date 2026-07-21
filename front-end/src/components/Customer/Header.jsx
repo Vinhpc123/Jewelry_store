@@ -48,7 +48,9 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const userInitial = (me?.name || me?.fullName || me?.username || me?.email || "").charAt(0).toUpperCase();
+  const userInitial = (me?.name || me?.fullName || me?.username || me?.email || "")
+    .charAt(0)
+    .toUpperCase();
 
   const handleLogout = () => {
     setAuthToken(null);
@@ -74,11 +76,13 @@ export default function Header() {
             </button>
 
             <Link to="/shop" className="flex min-w-0 items-center gap-2 text-zinc-900">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-zinc-900 text-white shadow-sm">
-              <Diamond className="h-4 w-4" />
-            </span>
-            <span className="truncate text-sm font-semibold tracking-wide sm:text-lg">JEWELUX</span>
-          </Link>
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-zinc-900 text-white shadow-sm">
+                <Diamond className="h-4 w-4" />
+              </span>
+              <span className="truncate text-sm font-semibold tracking-wide sm:text-lg">
+                JEWELUX
+              </span>
+            </Link>
           </div>
 
           <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-zinc-700">
@@ -144,7 +148,11 @@ export default function Header() {
                   className="flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1.5 text-sm font-semibold text-zinc-800 shadow-sm transition hover:bg-zinc-200"
                 >
                   {me?.avatar ? (
-                    <img src={me.avatar} alt="Avatar" className="h-8 w-8 rounded-full object-cover" />
+                    <img
+                      src={me.avatar}
+                      alt="Avatar"
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
                   ) : (
                     <span className="grid h-8 w-8 place-items-center rounded-full bg-zinc-900 text-white">
                       {userInitial || <User className="h-4 w-4" />}
@@ -158,7 +166,11 @@ export default function Header() {
                   <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-zinc-200">
                     <div className="flex items-center gap-3 pb-3 border-b border-zinc-200">
                       {me?.avatar ? (
-                        <img src={me.avatar} alt="Avatar" className="h-10 w-10 rounded-full object-cover" />
+                        <img
+                          src={me.avatar}
+                          alt="Avatar"
+                          className="h-10 w-10 rounded-full object-cover"
+                        />
                       ) : (
                         <span className="grid h-10 w-10 place-items-center rounded-full bg-zinc-900 text-white">
                           {userInitial || <User className="h-5 w-5" />}
@@ -168,7 +180,9 @@ export default function Header() {
                         <p className="text-sm font-semibold text-zinc-900">
                           {me.name || me.fullName || me.username || "Khách hàng"}
                         </p>
-                        <p className="text-xs text-zinc-500">{me.email || me.phone || "Chưa có email"}</p>
+                        <p className="text-xs text-zinc-500">
+                          {me.email || me.phone || "Chưa có email"}
+                        </p>
                       </div>
                     </div>
                     <div className="flex flex-col gap-2">
@@ -248,7 +262,9 @@ export default function Header() {
                   to={link.href}
                   onClick={() => setOpenMobileNav(false)}
                   className={`block rounded-xl px-4 py-3 text-sm font-medium ${
-                    active ? "bg-zinc-100 text-zinc-900" : "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
+                    active
+                      ? "bg-zinc-100 text-zinc-900"
+                      : "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
                   }`}
                 >
                   {link.label}
@@ -327,8 +343,12 @@ function SearchPanel({ open, onClose, searchTerm, setSearchTerm, results, loadin
                         className="flex items-center justify-between gap-3 rounded-md px-2 py-1 transition hover:bg-zinc-50"
                       >
                         <div>
-                          <p className="font-medium text-zinc-900">{item.name || item.title || "Không có tên"}</p>
-                          {item.price ? <p className="text-xs text-zinc-500">{formatCurrency(item.price)}</p> : null}
+                          <p className="font-medium text-zinc-900">
+                            {item.name || item.title || "Không có tên"}
+                          </p>
+                          {item.price ? (
+                            <p className="text-xs text-zinc-500">{formatCurrency(item.price)}</p>
+                          ) : null}
                         </div>
                         {item.image ? (
                           <img
@@ -341,7 +361,9 @@ function SearchPanel({ open, onClose, searchTerm, setSearchTerm, results, loadin
                     ) : (
                       <div className="flex items-center justify-between gap-3 rounded-md px-2 py-1">
                         <div>
-                          <p className="font-medium text-zinc-900">{item.name || item.title || "Không có tên"}</p>
+                          <p className="font-medium text-zinc-900">
+                            {item.name || item.title || "Không có tên"}
+                          </p>
                           {item.price ? (
                             <p className="text-xs text-zinc-500">{formatCurrency(item.price)}</p>
                           ) : null}
@@ -368,4 +390,3 @@ function SearchPanel({ open, onClose, searchTerm, setSearchTerm, results, loadin
     </div>
   );
 }
-

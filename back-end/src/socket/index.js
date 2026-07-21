@@ -42,7 +42,7 @@ export const initSocket = (server) => {
       }
       socket.data.user = user;
       return next();
-    } catch (err) {
+    } catch {
       return next(new Error("Unauthorized socket"));
     }
   });

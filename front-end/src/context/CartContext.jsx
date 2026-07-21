@@ -2,7 +2,6 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import instance, { getStoredToken, setAuthToken, setUser } from "../lib/api";
 import { useToast } from "../components/ui/ToastContext";
 
-
 const defaultCartValue = {
   items: [],
   loading: false,
@@ -50,30 +49,32 @@ export function CartProvider({ children }) {
   }, [fetchCart]);
 
   // front-end/src/context/CartContext.jsx
-  const addToCart = useCallback(async (product, quantity = 1) => {
-    const token = getStoredToken();
-    if (!token) return (window.location.href = "/login");
+  const addToCart = useCallback(
+    async (product, quantity = 1) => {
+      const token = getStoredToken();
+      if (!token) return (window.location.href = "/login");
 
-    try {
-      const res = await instance.post("/api/cart/items", {
-        productId: product?._id || product?.id || product?.productId,
-        quantity,
-      });
-      setItems(res?.data?.items || []);
-      return res?.data;
-    } catch (err) {
-      if (err?.response?.status === 401) {
-        // phiên hết hạn hoặc token sai
-        setAuthToken(null);
-        setUser(null);
-        toast.warning("Phiên đăng nhập hết hạn", { description: "Vui lòng đăng nhập lại." });
-        window.location.href = "/login";
-        return;
+      try {
+        const res = await instance.post("/api/cart/items", {
+          productId: product?._id || product?.id || product?.productId,
+          quantity,
+        });
+        setItems(res?.data?.items || []);
+        return res?.data;
+      } catch (err) {
+        if (err?.response?.status === 401) {
+          // phiên hết hạn hoặc token sai
+          setAuthToken(null);
+          setUser(null);
+          toast.warning("Phiên đăng nhập hết hạn", { description: "Vui lòng đăng nhập lại." });
+          window.location.href = "/login";
+          return;
+        }
+        throw err;
       }
-      throw err;
-    }
-  }, [toast]);
-
+    },
+    [toast]
+  );
 
   const updateQuantity = useCallback(async (productId, quantity) => {
     const token = getStoredToken();
@@ -130,5 +131,3 @@ export function CartProvider({ children }) {
 export function useCart() {
   return useContext(CartContext);
 }
-
-

@@ -217,7 +217,9 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-semibold text-[#2f241a]">Nhập lại mật khẩu</label>
+                    <label className="text-sm font-semibold text-[#2f241a]">
+                      Nhập lại mật khẩu
+                    </label>
                     <input
                       type="password"
                       value={form.confirm}
@@ -251,7 +253,9 @@ export default function ProfilePage() {
                     </div>
                   )}
                   <div className="text-center">
-                    <p className="text-sm font-semibold text-[#2f241a]">{form.name || "Khách hàng"}</p>
+                    <p className="text-sm font-semibold text-[#2f241a]">
+                      {form.name || "Khách hàng"}
+                    </p>
                     <p className="text-xs text-[#7b6654]">{form.email || "Chưa có email"}</p>
                   </div>
                   <div className="flex flex-col items-center gap-2">
@@ -263,7 +267,9 @@ export default function ProfilePage() {
                     >
                       {uploading ? "Đang tải..." : "Chọn ảnh"}
                     </button>
-                    <p className="text-xs text-[#7b6654]">Chọn ảnh từ máy và nhấn Lưu để cập nhật.</p>
+                    <p className="text-xs text-[#7b6654]">
+                      Chọn ảnh từ máy và nhấn Lưu để cập nhật.
+                    </p>
                     <input
                       ref={fileInputRef}
                       type="file"

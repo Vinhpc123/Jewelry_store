@@ -32,7 +32,10 @@ const buildSignedQuery = (params, secretKey) => {
   const signData = Object.keys(encoded)
     .map((key) => `${key}=${encoded[key]}`)
     .join("&");
-  const secureHash = crypto.createHmac("sha512", secretKey).update(Buffer.from(signData, "utf-8")).digest("hex");
+  const secureHash = crypto
+    .createHmac("sha512", secretKey)
+    .update(Buffer.from(signData, "utf-8"))
+    .digest("hex");
   return { secureHash, encoded };
 };
 
@@ -45,7 +48,8 @@ export const createVnpPayment = async (req, res) => {
     if (!order) return res.status(404).json({ message: "Khong tim thay don hang" });
     const isOwner = String(order.user) === String(req.user._id);
     const isAdmin = req.user.role === "admin";
-    if (!isOwner && !isAdmin) return res.status(403).json({ message: "Khong co quyen thanh toan don nay" });
+    if (!isOwner && !isAdmin)
+      return res.status(403).json({ message: "Khong co quyen thanh toan don nay" });
 
     if (order.status === "paid") {
       return res.status(400).json({ message: "Don hang da duoc thanh toan" });
@@ -58,7 +62,8 @@ export const createVnpPayment = async (req, res) => {
     const secretKey = process.env.VNP_HASH_SECRET;
     const vnpUrl = process.env.VNP_URL || "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
     const returnUrl =
-      process.env.VNP_RETURN_URL || `${req.protocol}://${req.get("host")}/api/payments/vnpay/return`;
+      process.env.VNP_RETURN_URL ||
+      `${req.protocol}://${req.get("host")}/api/payments/vnpay/return`;
 
     if (!tmnCode || !secretKey) {
       return res.status(500).json({ message: "Chua cau hinh thong tin VNPAY" });
@@ -173,6 +178,8 @@ export const handleVnpReturn = async (req, res) => {
     return res.redirect(redirectUrl);
   } catch (error) {
     console.error("Loi handleVnpReturn:", error);
-    return res.redirect((process.env.FRONTEND_URL || "http://localhost:5173") + "/orders?payStatus=fail");
+    return res.redirect(
+      (process.env.FRONTEND_URL || "http://localhost:5173") + "/orders?payStatus=fail"
+    );
   }
 };

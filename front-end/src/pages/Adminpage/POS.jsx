@@ -50,7 +50,10 @@ export default function POS() {
 
   const removeItem = (id) => setCart((prev) => prev.filter((it) => it.productId !== id));
 
-  const subtotal = cart.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 0), 0);
+  const subtotal = cart.reduce(
+    (sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 0),
+    0
+  );
   const total = subtotal; // shippingFee = 0 cho POS
 
   const printReceipt = React.useCallback(
@@ -59,7 +62,10 @@ export default function POS() {
         const win = window.open("", "_blank", "width=600,height=800");
         if (!win) return;
         const printItems = sourceItems || order?.items || [];
-        const printTotal = printItems.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 0), 0);
+        const printTotal = printItems.reduce(
+          (sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 0),
+          0
+        );
         const rows = printItems
           .map(
             (it, idx) =>
@@ -74,7 +80,9 @@ export default function POS() {
               </tr>`
           )
           .join("");
-        const createdAt = order?.createdAt ? new Date(order.createdAt).toLocaleString("vi-VN") : new Date().toLocaleString("vi-VN");
+        const createdAt = order?.createdAt
+          ? new Date(order.createdAt).toLocaleString("vi-VN")
+          : new Date().toLocaleString("vi-VN");
         const orderId = order?._id || "N/A";
         win.document.write(`
           <html>
@@ -139,7 +147,11 @@ export default function POS() {
           printReceipt(order, order?.items);
           setMessage("Thanh toán online POS thành công, đã in hóa đơn.");
         } catch (err) {
-          setMessage(err?.response?.data?.message || err.message || "Thanh toán online thành công nhưng không in được hóa đơn.");
+          setMessage(
+            err?.response?.data?.message ||
+              err.message ||
+              "Thanh toán online thành công nhưng không in được hóa đơn."
+          );
         } finally {
           params.delete("payStatus");
           params.delete("orderId");
@@ -230,7 +242,9 @@ export default function POS() {
                         {p.image ? (
                           <img src={p.image} alt={p.title} className="h-full w-full object-cover" />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center text-xs text-zinc-500">Không có ảnh</div>
+                          <div className="flex h-full w-full items-center justify-center text-xs text-zinc-500">
+                            Không có ảnh
+                          </div>
                         )}
                       </div>
                       <div className="flex w-full items-center justify-between">
@@ -240,7 +254,9 @@ export default function POS() {
                       <span className="text-sm font-semibold text-indigo-600">
                         <CurrencyDisplay value={p.price} />
                       </span>
-                      <span className="text-xs text-zinc-500">{p.category?.name || p.category || "-"}</span>
+                      <span className="text-xs text-zinc-500">
+                        {p.category?.name || p.category || "-"}
+                      </span>
                     </button>
                   ))
                 )}
@@ -257,7 +273,10 @@ export default function POS() {
                     {cart.map((item) => {
                       const stock = products.find((p) => p._id === item.productId)?.quantity;
                       return (
-                        <div key={item.productId} className="flex items-start justify-between gap-2 rounded border border-zinc-200 p-2">
+                        <div
+                          key={item.productId}
+                          className="flex items-start justify-between gap-2 rounded border border-zinc-200 p-2"
+                        >
                           <div className="flex-1">
                             <p className="font-semibold text-zinc-900">{item.name}</p>
                             <p className="text-xs text-zinc-500">
@@ -272,7 +291,10 @@ export default function POS() {
                               onChange={(e) => updateQty(item.productId, e.target.value, stock)}
                               className="w-16 rounded border border-zinc-300 px-2 py-1 text-sm"
                             />
-                            <button onClick={() => removeItem(item.productId)} className="text-xs text-red-600">
+                            <button
+                              onClick={() => removeItem(item.productId)}
+                              className="text-xs text-red-600"
+                            >
                               Xóa
                             </button>
                           </div>

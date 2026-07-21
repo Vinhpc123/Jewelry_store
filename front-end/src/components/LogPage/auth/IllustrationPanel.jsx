@@ -36,8 +36,26 @@ function JewelIllustration() {
         fill="#f3e8db"
       />
       <g transform="translate(80,60)">
-        <rect x="34" y="32" width="210" height="270" rx="24" fill="url(#pearl)" stroke="#e5d3c2" strokeWidth="4" />
-        <rect x="52" y="58" width="175" height="220" rx="18" fill="#f9f2ea" stroke="#eddcc9" strokeWidth="2" />
+        <rect
+          x="34"
+          y="32"
+          width="210"
+          height="270"
+          rx="24"
+          fill="url(#pearl)"
+          stroke="#e5d3c2"
+          strokeWidth="4"
+        />
+        <rect
+          x="52"
+          y="58"
+          width="175"
+          height="220"
+          rx="18"
+          fill="#f9f2ea"
+          stroke="#eddcc9"
+          strokeWidth="2"
+        />
         <circle cx="140" cy="100" r="30" fill="url(#gold)" stroke="#d2b48c" strokeWidth="2" />
         <path
           d="M140 82l24 26-24 30-24-30 24-26z"

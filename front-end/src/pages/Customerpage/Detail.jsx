@@ -28,7 +28,8 @@ export default function DetailPage() {
   const formatCurrency = useMemo(
     () => (value) => {
       if (value === null || value === undefined || value === "") return "";
-      const num = typeof value === "number" ? value : Number(String(value).replace(/[^0-9.-]+/g, ""));
+      const num =
+        typeof value === "number" ? value : Number(String(value).replace(/[^0-9.-]+/g, ""));
       if (Number.isNaN(num)) return "";
       return `${num.toLocaleString("vi-VN")} VND`;
     },
@@ -107,7 +108,9 @@ export default function DetailPage() {
         setRelated(listToShow.slice(0, 4));
       } catch (err) {
         if (ignore) return;
-        setRelatedError(err?.response?.data?.message || err.message || "Không thể tải sản phẩm liên quan.");
+        setRelatedError(
+          err?.response?.data?.message || err.message || "Không thể tải sản phẩm liên quan."
+        );
       } finally {
         if (!ignore) setRelatedLoading(false);
       }
@@ -162,7 +165,9 @@ export default function DetailPage() {
 
         <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-10">
           {error ? (
-            <div className="rounded-2xl bg-red-50 p-4 text-sm text-red-700 ring-1 ring-red-100">{error}</div>
+            <div className="rounded-2xl bg-red-50 p-4 text-sm text-red-700 ring-1 ring-red-100">
+              {error}
+            </div>
           ) : null}
 
           {loading ? (
@@ -196,23 +201,31 @@ export default function DetailPage() {
                 {priceText ? <p className="text-xl font-bold text-[#9a785d]">{priceText}</p> : null}
                 <div className="text-sm text-[#5f4a38]">
                   {quantity > 0 ? (
-                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">Còn hàng: {quantity}</span>
+                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
+                      Còn hàng: {quantity}
+                    </span>
                   ) : (
                     <span className="rounded-full bg-red-50 px-3 py-1 text-red-700">Hết hàng</span>
                   )}
                 </div>
-                <p className="text-sm text-[#5f4a38] leading-relaxed whitespace-pre-line">{description}</p>
+                <p className="text-sm text-[#5f4a38] leading-relaxed whitespace-pre-line">
+                  {description}
+                </p>
 
                 <div className="grid grid-cols-1 gap-3 text-sm text-[#4b3d30] sm:grid-cols-2">
                   {product.weight ? (
                     <div className="rounded-2xl bg-[#f8f1e7] px-4 py-3">
-                      <p className="text-xs uppercase tracking-[0.14em] text-[#9c7c61]">Trọng lượng</p>
+                      <p className="text-xs uppercase tracking-[0.14em] text-[#9c7c61]">
+                        Trọng lượng
+                      </p>
                       <p className="font-semibold text-[#2f241a]">{product.weight}</p>
                     </div>
                   ) : null}
                   {product.stone ? (
                     <div className="rounded-2xl bg-[#f8f1e7] px-4 py-3">
-                      <p className="text-xs uppercase tracking-[0.14em] text-[#9c7c61]">Loại đá/quý</p>
+                      <p className="text-xs uppercase tracking-[0.14em] text-[#9c7c61]">
+                        Loại đá/quý
+                      </p>
                       <p className="font-semibold text-[#2f241a]">{product.stone}</p>
                     </div>
                   ) : null}
@@ -243,10 +256,15 @@ export default function DetailPage() {
           <section className="mx-auto max-w-6xl px-4 pb-14 sm:px-6 lg:px-10">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#9c7c61]">Liên kết nhanh</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#9c7c61]">
+                  Liên kết nhanh
+                </p>
                 <h3 className="text-2xl font-bold text-[#2f241a]">Sản phẩm liên quan</h3>
               </div>
-              <Link to={categoryPath} className="text-sm font-semibold text-amber-700 hover:text-amber-800">
+              <Link
+                to={categoryPath}
+                className="text-sm font-semibold text-amber-700 hover:text-amber-800"
+              >
                 Xem thêm &gt;
               </Link>
             </div>
@@ -304,7 +322,9 @@ export default function DetailPage() {
                       </div>
                       <div className="flex flex-1 flex-col gap-1 px-4 py-3">
                         <p className="text-sm font-semibold text-[#2f241a] line-clamp-2">{rName}</p>
-                        {rPrice ? <p className="text-sm font-bold text-[#9a785d]">{rPrice}</p> : null}
+                        {rPrice ? (
+                          <p className="text-sm font-bold text-[#9a785d]">{rPrice}</p>
+                        ) : null}
                       </div>
                     </Link>
                   );

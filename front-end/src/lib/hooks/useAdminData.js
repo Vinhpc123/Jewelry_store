@@ -38,7 +38,10 @@ export default function useAdminData() {
         products: {
           current: stats.jewelry?.total ?? (prodRes.data || []).length,
           prev: stats.jewelry?.prevTotal ?? 0,
-          pct: pct(stats.jewelry?.total ?? (prodRes.data || []).length, stats.jewelry?.prevTotal ?? 0),
+          pct: pct(
+            stats.jewelry?.total ?? (prodRes.data || []).length,
+            stats.jewelry?.prevTotal ?? 0
+          ),
         },
         newUsers7d: {
           current: stats.users?.new7d ?? 0,

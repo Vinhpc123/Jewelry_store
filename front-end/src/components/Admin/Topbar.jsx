@@ -51,4 +51,3 @@ export default function Topbar({ onOpenSidebar }) {
     </div>
   );
 }
-

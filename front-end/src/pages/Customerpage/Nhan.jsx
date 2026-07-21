@@ -28,7 +28,8 @@ export default function RingPage() {
   const formatCurrency = useMemo(
     () => (value) => {
       if (value === null || value === undefined || value === "") return "";
-      const num = typeof value === "number" ? value : Number(String(value).replace(/[^0-9.-]+/g, ""));
+      const num =
+        typeof value === "number" ? value : Number(String(value).replace(/[^0-9.-]+/g, ""));
       if (Number.isNaN(num)) return "";
       return `${num.toLocaleString("vi-VN")} VND`;
     },
@@ -41,7 +42,7 @@ export default function RingPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await instance.get("/api/jewelry", { params: { category: "Nhẫn" } }); 
+        const res = await instance.get("/api/jewelry", { params: { category: "Nhẫn" } });
         if (ignore) return;
         const items = Array.isArray(res.data) ? res.data : [];
         setRings(items);
@@ -71,7 +72,8 @@ export default function RingPage() {
 
     const sorted = [...list];
     if (sortBy === "price-asc") sorted.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
-    else if (sortBy === "price-desc") sorted.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
+    else if (sortBy === "price-desc")
+      sorted.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
     else sorted.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
     return sorted;
@@ -84,12 +86,16 @@ export default function RingPage() {
         <section className="relative isolate overflow-hidden bg-[#ece8e1]">
           <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-6 py-14 sm:flex-row sm:items-center sm:justify-between sm:py-16 lg:px-10">
             <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.36em] text-[#8a6f58]">Bộ sưu tập Nhẫn</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.36em] text-[#8a6f58]">
+                Bộ sưu tập Nhẫn
+              </p>
               <h1 className="text-3xl font-bold leading-tight text-[#2f241a] sm:text-4xl">
                 Tinh xảo cho riêng phong cách của bạn
               </h1>
               <p className="max-w-xl text-sm text-[#5f4a38] sm:text-base">
-                Những mẫu nhẫn thủ công từ chất liệu chọn lọc, kết hợp thiết kế hiện đại và tinh tế, được tạo ra để tôn vinh dấu ấn cá nhân của bạn.              </p>
+                Những mẫu nhẫn thủ công từ chất liệu chọn lọc, kết hợp thiết kế hiện đại và tinh tế,
+                được tạo ra để tôn vinh dấu ấn cá nhân của bạn.{" "}
+              </p>
               <div className="flex flex-wrap gap-3">
                 <span className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-[#9a785d] ring-1 ring-[#e8d9c7]">
                   Chất liệu vàng, bạc, đá quý
@@ -100,11 +106,7 @@ export default function RingPage() {
               </div>
             </div>
             <div className="relative isolate aspect-[4/3] w-full max-w-md overflow-hidden rounded-3xl bg-white/60 shadow-lg ring-1 ring-[#e8d9c7]">
-              <img
-                src="/nhẫn.jpg"
-                alt="Ring collection"
-                className="h-full w-full object-cover"
-              />
+              <img src="/nhẫn.jpg" alt="Ring collection" className="h-full w-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/15 via-transparent to-transparent" />
             </div>
           </div>
@@ -165,9 +167,7 @@ export default function RingPage() {
             ))}
           </div>
 
-          {error ? (
-            <p className="mt-6 text-sm text-red-600">{error}</p>
-          ) : null}
+          {error ? <p className="mt-6 text-sm text-red-600">{error}</p> : null}
 
           {loading ? (
             <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -189,7 +189,9 @@ export default function RingPage() {
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f2e6d7] text-[#9c7c61]">
                 ◻
               </div>
-              <p className="mt-4 text-sm font-semibold text-[#2f241a]">Chưa có sản phẩm trong tầm giá này.</p>
+              <p className="mt-4 text-sm font-semibold text-[#2f241a]">
+                Chưa có sản phẩm trong tầm giá này.
+              </p>
               <p className="mt-1 text-xs text-[#7b6654]">Thay đổi bộ lọc để xem thêm gợi ý khác.</p>
             </div>
           ) : null}
@@ -210,7 +212,11 @@ export default function RingPage() {
                     >
                       <div className="aspect-square w-full">
                         {item.image ? (
-                          <img src={item.image} alt={name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                          <img
+                            src={item.image}
+                            alt={name}
+                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                          />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center text-xs text-[#7b6654]">
                             Chưa có ảnh
@@ -234,7 +240,10 @@ export default function RingPage() {
                         <div className="rounded-full bg-[#f8f1e7] px-3 py-1 text-[11px] font-semibold text-[#9c7c61]">
                           {item.material || "Alloy / Gold"}
                         </div>
-                        <Link to={`/detail/${item._id || item.id}`} className="rounded-full border border-[#2f241a] px-4 py-2 text-[11px] font-semibold text-[#2f241a] transition hover:bg-[#2f241a] hover:text-white">
+                        <Link
+                          to={`/detail/${item._id || item.id}`}
+                          className="rounded-full border border-[#2f241a] px-4 py-2 text-[11px] font-semibold text-[#2f241a] transition hover:bg-[#2f241a] hover:text-white"
+                        >
                           Xem chi tiết
                         </Link>
                       </div>
@@ -250,6 +259,3 @@ export default function RingPage() {
     </>
   );
 }
-
-
-

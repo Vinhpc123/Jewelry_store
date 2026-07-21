@@ -76,7 +76,10 @@ export default function Products() {
     return `Tìm thấy ${totalItems} sản phẩm phù hợp.`;
   }, [searchActive, listLoading, listError, totalItems]);
 
-  const handleSearchChange = React.useCallback((event) => setSearchTerm(event.target.value), [setSearchTerm]);
+  const handleSearchChange = React.useCallback(
+    (event) => setSearchTerm(event.target.value),
+    [setSearchTerm]
+  );
 
   const refreshWithSearch = React.useCallback(async () => {
     await refresh();
@@ -116,7 +119,8 @@ export default function Products() {
     }
     try {
       let productPayload = { ...newProduct };
-      productPayload.quantity = productPayload.quantity === "" ? 0 : Number(productPayload.quantity);
+      productPayload.quantity =
+        productPayload.quantity === "" ? 0 : Number(productPayload.quantity);
 
       if (imageFile) {
         const uploadedUrl = await uploadFileToServer(imageFile);
@@ -156,7 +160,7 @@ export default function Products() {
       if (!product?._id) return;
       const confirmed = await confirm({
         title: "Xác nhận",
-        description: "Bạn chắc chắn muốn xóa \"" + (product.title || "sản phẩm") + "\"?",
+        description: 'Bạn chắc chắn muốn xóa "' + (product.title || "sản phẩm") + '"?',
         confirmText: "Xóa",
         cancelText: "Hủy bỏ",
         tone: "danger",
@@ -185,11 +189,17 @@ export default function Products() {
       setEditingId(product._id);
       setNewProduct({
         title: product.title || "",
-        category: typeof product.category === "object" ? product.category?.name || "" : product.category || "",
+        category:
+          typeof product.category === "object"
+            ? product.category?.name || ""
+            : product.category || "",
         description: product.description || "",
         price: product.price === null || product.price === undefined ? "" : String(product.price),
         image: product.image || "",
-        quantity: product.quantity === null || product.quantity === undefined ? "" : String(product.quantity),
+        quantity:
+          product.quantity === null || product.quantity === undefined
+            ? ""
+            : String(product.quantity),
       });
 
       if (imagePreview) URL.revokeObjectURL(imagePreview);
@@ -231,10 +241,23 @@ export default function Products() {
       <AdminLayout>
         <div className="space-y-6">
           <div className="space-y-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
-            <ProductHeader onAdd={openAddModal} onRefresh={refreshWithSearch} refreshing={loading} canEdit={isAdmin} />
+            <ProductHeader
+              onAdd={openAddModal}
+              onRefresh={refreshWithSearch}
+              refreshing={loading}
+              canEdit={isAdmin}
+            />
             <ProductToolbar
               totalProducts={totalProducts}
-              paginationProps={{ page, setPage, pageSize, setPageSize, totalPages, totalItems, offset }}
+              paginationProps={{
+                page,
+                setPage,
+                pageSize,
+                setPageSize,
+                totalPages,
+                totalItems,
+                offset,
+              }}
               searchTerm={searchTerm}
               onSearchChange={handleSearchChange}
               searchStatus={searchStatusText}
@@ -305,7 +328,14 @@ function ProductHeader({ onAdd, onRefresh, refreshing, canEdit }) {
   );
 }
 
-function ProductToolbar({ totalProducts, paginationProps, searchTerm, onSearchChange, searchStatus, searchActive }) {
+function ProductToolbar({
+  totalProducts,
+  paginationProps,
+  searchTerm,
+  onSearchChange,
+  searchStatus,
+  searchActive,
+}) {
   const { page, setPage, pageSize, setPageSize, totalPages, totalItems, offset } = paginationProps;
 
   return (
@@ -321,7 +351,9 @@ function ProductToolbar({ totalProducts, paginationProps, searchTerm, onSearchCh
             placeholder="Tìm sản phẩm..."
             className="w-full sm:w-64 rounded border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none focus:ring-0"
           />
-          {searchActive && searchStatus ? <span className="text-xs text-zinc-500">{searchStatus}</span> : null}
+          {searchActive && searchStatus ? (
+            <span className="text-xs text-zinc-500">{searchStatus}</span>
+          ) : null}
         </div>
         <Pagination
           page={page}
@@ -337,16 +369,25 @@ function ProductToolbar({ totalProducts, paginationProps, searchTerm, onSearchCh
   );
 }
 
-function ProductTable({ items, startIndex, onEdit, onDelete, deletingId, loading, error, searchActive, totalItems, canEdit }) {
+function ProductTable({
+  items,
+  startIndex,
+  onEdit,
+  onDelete,
+  deletingId,
+  loading,
+  error,
+  searchActive,
+  totalItems,
+  canEdit,
+}) {
   if (loading) {
     return <div>Đang tải danh sách sản phẩm...</div>;
   }
 
   if (error) {
     return (
-      <div className="rounded border border-red-200 bg-red-50 p-4 text-red-700">
-        Lỗi: {error}
-      </div>
+      <div className="rounded border border-red-200 bg-red-50 p-4 text-red-700">Lỗi: {error}</div>
     );
   }
 
@@ -362,87 +403,123 @@ function ProductTable({ items, startIndex, onEdit, onDelete, deletingId, loading
     <div className="rounded border border-zinc-200 bg-white shadow-sm">
       <div className="w-full overflow-x-auto">
         <table className="min-w-full table-fixed divide-y divide-zinc-200 text-sm">
-        <thead className="bg-zinc-100 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
-          <tr>
-            <th className="w-12 text-center px-2 py-3">STT</th>
-            <th className="w-20 text-center px-2 py-3">Ảnh</th>
-            <th className="w-36 text-center px-2 py-3">Sản phẩm</th>
-            <th className="w-36 text-center px-2 py-3">Danh mục</th>
-            <th className="w-28 text-center px-2 py-3">Đơn giá</th>
-            <th className="w-20 text-center px-2 py-3">Tồn kho</th>
-            <th className="w-[300px] text-center px-2 py-3">Mô tả</th>
-            <th className="w-44 text-center px-2 py-3">Ngày tạo</th>
-            <th className="w-24 text-center px-2 py-3">Thao tác</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-zinc-200">
-          {items.map((product, idx) => (
-            <tr key={product._id || idx} className="hover:bg-zinc-50">
-              <td className="px-4 py-3 text-center">{startIndex + idx + 1}</td>
-              <td className="px-4 py-3 text-center">
-                {product.image ? (
-                  <img src={product.image} alt={product.title || "Ảnh sản phẩm"} className="mx-auto h-12 w-12 rounded border border-zinc-200 object-cover" />
-                ) : (
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded bg-zinc-100 text-xs text-zinc-400">Trống</div>
-                )}
-              </td>
-              <td className="px-4 py-3 text-center font-medium text-zinc-900">{product.title || "Không tên"}</td>
-              <td className="px-4 py-3 text-center text-zinc-600">{product.category?.name || product.category || "-"}</td>
-              <td className="px-4 py-3 text-center text-zinc-600">
-                <CurrencyDisplay value={product.price} />
-              </td>
-              <td className="px-4 py-3 text-center text-zinc-600">{product.quantity ?? 0}</td>
-              <td className="max-w-[300px] px-4 py-3 text-center text-zinc-600 truncate">{product.description || "-"}</td>
-              <td className="px-4 py-3 text-center text-zinc-600">{formatDateTime(product.createdAt)}</td>
-              <td className="px-2 py-3 text-center">
-                {canEdit ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => onEdit(product)}
-                      className="rounded border border-blue-500 px-2 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50"
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onDelete(product)}
-                      disabled={deletingId === product._id}
-                      className="rounded border border-red-500 px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
-                    >
-                      {deletingId === product._id ? "Đang xóa..." : "Xóa"}
-                    </button>
-                  </div>
-                ) : (
-                  <span className="text-xs text-zinc-500">Chỉ xem</span>
-                )}
-              </td>
+          <thead className="bg-zinc-100 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
+            <tr>
+              <th className="w-12 text-center px-2 py-3">STT</th>
+              <th className="w-20 text-center px-2 py-3">Ảnh</th>
+              <th className="w-36 text-center px-2 py-3">Sản phẩm</th>
+              <th className="w-36 text-center px-2 py-3">Danh mục</th>
+              <th className="w-28 text-center px-2 py-3">Đơn giá</th>
+              <th className="w-20 text-center px-2 py-3">Tồn kho</th>
+              <th className="w-[300px] text-center px-2 py-3">Mô tả</th>
+              <th className="w-44 text-center px-2 py-3">Ngày tạo</th>
+              <th className="w-24 text-center px-2 py-3">Thao tác</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-zinc-200">
+            {items.map((product, idx) => (
+              <tr key={product._id || idx} className="hover:bg-zinc-50">
+                <td className="px-4 py-3 text-center">{startIndex + idx + 1}</td>
+                <td className="px-4 py-3 text-center">
+                  {product.image ? (
+                    <img
+                      src={product.image}
+                      alt={product.title || "Ảnh sản phẩm"}
+                      className="mx-auto h-12 w-12 rounded border border-zinc-200 object-cover"
+                    />
+                  ) : (
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded bg-zinc-100 text-xs text-zinc-400">
+                      Trống
+                    </div>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-center font-medium text-zinc-900">
+                  {product.title || "Không tên"}
+                </td>
+                <td className="px-4 py-3 text-center text-zinc-600">
+                  {product.category?.name || product.category || "-"}
+                </td>
+                <td className="px-4 py-3 text-center text-zinc-600">
+                  <CurrencyDisplay value={product.price} />
+                </td>
+                <td className="px-4 py-3 text-center text-zinc-600">{product.quantity ?? 0}</td>
+                <td className="max-w-[300px] px-4 py-3 text-center text-zinc-600 truncate">
+                  {product.description || "-"}
+                </td>
+                <td className="px-4 py-3 text-center text-zinc-600">
+                  {formatDateTime(product.createdAt)}
+                </td>
+                <td className="px-2 py-3 text-center">
+                  {canEdit ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onEdit(product)}
+                        className="rounded border border-blue-500 px-2 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50"
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onDelete(product)}
+                        disabled={deletingId === product._id}
+                        className="rounded border border-red-500 px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                      >
+                        {deletingId === product._id ? "Đang xóa..." : "Xóa"}
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-zinc-500">Chỉ xem</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 }
 
-function ProductModal({ visible, formMode, newProduct, setNewProduct, imagePreview, onFileChange, onClearImage, onClose, onSubmit, submitting }) {
+function ProductModal({
+  visible,
+  formMode,
+  newProduct,
+  setNewProduct,
+  imagePreview,
+  onFileChange,
+  onClearImage,
+  onClose,
+  onSubmit,
+  submitting,
+}) {
   if (!visible) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-        <h2 className="mb-4 text-xl font-semibold">{formMode === "create" ? "Thêm sản phẩm mới" : "Cập nhật sản phẩm"}</h2>
+        <h2 className="mb-4 text-xl font-semibold">
+          {formMode === "create" ? "Thêm sản phẩm mới" : "Cập nhật sản phẩm"}
+        </h2>
 
         <div className="space-y-3">
           <div>
             <label className="block text-sm font-medium">Tên sản phẩm</label>
-            <input type="text" value={newProduct.title} onChange={(e) => setNewProduct({ ...newProduct, title: e.target.value })} className="w-full rounded border border-zinc-300 p-2" />
+            <input
+              type="text"
+              value={newProduct.title}
+              onChange={(e) => setNewProduct({ ...newProduct, title: e.target.value })}
+              className="w-full rounded border border-zinc-300 p-2"
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium">Danh mục</label>
-            <select value={newProduct.category} onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })} className="w-full rounded border border-zinc-300 bg-white p-2">
+            <select
+              value={newProduct.category}
+              onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+              className="w-full rounded border border-zinc-300 bg-white p-2"
+            >
               <option value="">-- Chọn danh mục --</option>
               <option value="Nhẫn">Nhẫn</option>
               <option value="Vòng tay">Vòng tay</option>
@@ -453,31 +530,67 @@ function ProductModal({ visible, formMode, newProduct, setNewProduct, imagePrevi
 
           <div>
             <label className="block text-sm font-medium">Giá (VND)</label>
-            <input type="number" inputMode="numeric" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} className="w-full rounded border border-zinc-300 p-2" />
+            <input
+              type="number"
+              inputMode="numeric"
+              value={newProduct.price}
+              onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+              className="w-full rounded border border-zinc-300 p-2"
+            />
             <p className="mt-1 text-xs text-zinc-500">
               Hiển thị: <CurrencyDisplay value={newProduct.price} />
             </p>
           </div>
           <div>
             <label className="block text-sm font-medium">Số lượng tồn kho</label>
-            <input type="number" inputMode="numeric" min="0" value={newProduct.quantity} onChange={(e) => setNewProduct({ ...newProduct, quantity: e.target.value })} className="w-full rounded border border-zinc-300 p-2" placeholder="Nhập số lượng (VD: 10)" />
+            <input
+              type="number"
+              inputMode="numeric"
+              min="0"
+              value={newProduct.quantity}
+              onChange={(e) => setNewProduct({ ...newProduct, quantity: e.target.value })}
+              className="w-full rounded border border-zinc-300 p-2"
+              placeholder="Nhập số lượng (VD: 10)"
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium">Ảnh sản phẩm</label>
-            <input type="file" accept="image/*" onChange={onFileChange} className="hidden" id="file-upload" />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={onFileChange}
+              className="hidden"
+              id="file-upload"
+            />
             <div className="mt-2 flex items-center gap-2">
               {imagePreview ? (
                 <>
-                  <img src={imagePreview} alt="preview" className="h-16 w-16 rounded border border-zinc-200 object-cover" />
-                  <button type="button" onClick={onClearImage} className="text-xs text-zinc-600 underline">
+                  <img
+                    src={imagePreview}
+                    alt="preview"
+                    className="h-16 w-16 rounded border border-zinc-200 object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={onClearImage}
+                    className="text-xs text-zinc-600 underline"
+                  >
                     Hủy
                   </button>
                 </>
               ) : newProduct.image ? (
                 <>
-                  <img src={newProduct.image} alt="preview" className="h-16 w-16 rounded border border-zinc-200 object-cover" />
-                  <button type="button" onClick={onClearImage} className="text-xs text-zinc-600 underline">
+                  <img
+                    src={newProduct.image}
+                    alt="preview"
+                    className="h-16 w-16 rounded border border-zinc-200 object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={onClearImage}
+                    className="text-xs text-zinc-600 underline"
+                  >
                     Xóa ảnh
                   </button>
                 </>
@@ -486,7 +599,14 @@ function ProductModal({ visible, formMode, newProduct, setNewProduct, imagePrevi
                   htmlFor="file-upload"
                   className="flex h-16 w-16 cursor-pointer items-center justify-center rounded border border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6 text-zinc-400">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="h-6 w-6 text-zinc-400"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -500,15 +620,29 @@ function ProductModal({ visible, formMode, newProduct, setNewProduct, imagePrevi
 
           <div>
             <label className="block text-sm font-medium">Mô tả</label>
-            <textarea value={newProduct.description} onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} className="w-full rounded border border-zinc-300 p-2" rows={3} placeholder="Mô tả ngắn về sản phẩm." />
+            <textarea
+              value={newProduct.description}
+              onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+              className="w-full rounded border border-zinc-300 p-2"
+              rows={3}
+              placeholder="Mô tả ngắn về sản phẩm."
+            />
           </div>
         </div>
 
         <div className="mt-6 flex justify-end gap-2">
-          <button onClick={onClose} disabled={submitting} className="rounded border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-100 disabled:opacity-50">
+          <button
+            onClick={onClose}
+            disabled={submitting}
+            className="rounded border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-100 disabled:opacity-50"
+          >
             Hủy
           </button>
-          <button onClick={onSubmit} disabled={submitting} className="rounded bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50">
+          <button
+            onClick={onSubmit}
+            disabled={submitting}
+            className="rounded bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+          >
             {submitting ? "Đang lưu..." : formMode === "create" ? "Tạo mới" : "Cập nhật"}
           </button>
         </div>
@@ -516,13 +650,3 @@ function ProductModal({ visible, formMode, newProduct, setNewProduct, imagePrevi
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-

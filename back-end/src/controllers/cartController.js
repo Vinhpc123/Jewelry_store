@@ -24,7 +24,8 @@ export const addOrUpdateItem = async (req, res) => {
     const { productId, quantity = 1 } = req.body;
     if (!productId) return res.status(400).json({ message: "Thiếu productId" });
     const qty = Number(quantity);
-    if (!Number.isInteger(qty) || qty <= 0) return res.status(400).json({ message: "Số lượng không hợp lệ" });
+    if (!Number.isInteger(qty) || qty <= 0)
+      return res.status(400).json({ message: "Số lượng không hợp lệ" });
 
     const product = await Jewelry.findById(productId);
     if (!product) return res.status(404).json({ message: "Sản phẩm không tồn tại" });

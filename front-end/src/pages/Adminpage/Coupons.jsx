@@ -45,7 +45,17 @@ const toEndOfDay = (value) => {
 };
 
 export default function Coupons() {
-  const { coupons, loading, error, saving, deletingId, refresh, createCoupon, updateCoupon, deleteCoupon } = useCoupons();
+  const {
+    coupons,
+    loading,
+    error,
+    saving,
+    deletingId,
+    refresh,
+    createCoupon,
+    updateCoupon,
+    deleteCoupon,
+  } = useCoupons();
   const { toast } = useToast();
   const { confirm } = useConfirm();
   const [search, setSearch] = React.useState("");
@@ -136,7 +146,9 @@ export default function Coupons() {
             <div>
               <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Mã giảm giá</p>
               <h1 className="text-2xl font-bold text-zinc-900">Quản lý phiếu giảm giá</h1>
-              <p className="text-sm text-zinc-500">Tạo, chỉnh sửa và theo dõi trạng thái mã khuyến mãi.</p>
+              <p className="text-sm text-zinc-500">
+                Tạo, chỉnh sửa và theo dõi trạng thái mã khuyến mãi.
+              </p>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -209,22 +221,38 @@ export default function Coupons() {
                       <tr key={c._id || c.code} className="hover:bg-zinc-50">
                         <td className="px-3 py-2 text-zinc-600">{offset + idx + 1}</td>
                         <td className="px-3 py-2 font-semibold text-zinc-900">{c.code}</td>
-                        <td className="px-3 py-2 text-zinc-700">{c.type === "percent" ? "Phần trăm" : "Cố định"}</td>
                         <td className="px-3 py-2 text-zinc-700">
-                          {c.type === "percent" ? `${c.value || 0}%` : <CurrencyDisplay value={c.value || 0} />}
+                          {c.type === "percent" ? "Phần trăm" : "Cố định"}
+                        </td>
+                        <td className="px-3 py-2 text-zinc-700">
+                          {c.type === "percent" ? (
+                            `${c.value || 0}%`
+                          ) : (
+                            <CurrencyDisplay value={c.value || 0} />
+                          )}
                         </td>
                         <td className="px-3 py-2 text-zinc-700">
                           <div className="flex flex-col">
-                            <span>Lượt dùng: {c.usedCount ?? 0}/{c.usageLimit ? c.usageLimit : "8"}</span>
-                            <span>Giá tối thiểu: <CurrencyDisplay value={c.minOrder || 0} /></span>
-                            {c.maxDiscount ? <span>Giảm tối đa: <CurrencyDisplay value={c.maxDiscount} /></span> : null}
+                            <span>
+                              Lượt dùng: {c.usedCount ?? 0}/{c.usageLimit ? c.usageLimit : "8"}
+                            </span>
+                            <span>
+                              Giá tối thiểu: <CurrencyDisplay value={c.minOrder || 0} />
+                            </span>
+                            {c.maxDiscount ? (
+                              <span>
+                                Giảm tối đa: <CurrencyDisplay value={c.maxDiscount} />
+                              </span>
+                            ) : null}
                           </div>
                         </td>
                         <td className="px-3 py-2 text-zinc-700">
                           <div className="flex flex-col">
                             <span>Từ: {c.startDate ? toDateInput(c.startDate) : "-"}</span>
                             <span>Đến: {c.endDate ? toDateInput(c.endDate) : "-"}</span>
-                            <span className="text-xs text-zinc-500">Tạo: {formatDateTime(c.createdAt)}</span>
+                            <span className="text-xs text-zinc-500">
+                              Tạo: {formatDateTime(c.createdAt)}
+                            </span>
                           </div>
                         </td>
                         <td className="px-3 py-2">
@@ -235,14 +263,22 @@ export default function Coupons() {
                             const isExpired = Boolean(endDate && endDate < now);
                             const isNotStarted = Boolean(startDate && startDate > now);
                             const isActive = Boolean(c.active && !isExpired && !isNotStarted);
-                            const label = isExpired ? "Hết hạn" : isNotStarted ? "Chưa bắt đầu" : isActive ? "Đang hoạt động" : "Ngừng";
+                            const label = isExpired
+                              ? "Hết hạn"
+                              : isNotStarted
+                                ? "Chưa bắt đầu"
+                                : isActive
+                                  ? "Đang hoạt động"
+                                  : "Ngừng";
                             const statusClass = isActive
                               ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
                               : isExpired
-                              ? "bg-amber-50 text-amber-700 border border-amber-100"
-                              : "bg-zinc-100 text-zinc-600 border border-zinc-200";
+                                ? "bg-amber-50 text-amber-700 border border-amber-100"
+                                : "bg-zinc-100 text-zinc-600 border border-zinc-200";
                             return (
-                              <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusClass}`}>
+                              <span
+                                className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusClass}`}
+                              >
                                 {label}
                               </span>
                             );
@@ -299,8 +335,12 @@ function CouponModal({ visible, form, setForm, formMode, onClose, onSubmit, subm
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
       <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-lg">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-zinc-900">{formMode === "create" ? "Thêm mã giảm giá" : "Cập nhật mã giảm giá"}</h2>
-          <button onClick={onClose} className="text-sm text-zinc-500 hover:text-zinc-700">Đóng</button>
+          <h2 className="text-xl font-semibold text-zinc-900">
+            {formMode === "create" ? "Thêm mã giảm giá" : "Cập nhật mã giảm giá"}
+          </h2>
+          <button onClick={onClose} className="text-sm text-zinc-500 hover:text-zinc-700">
+            Đóng
+          </button>
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -424,4 +464,3 @@ function CouponModal({ visible, form, setForm, formMode, onClose, onSubmit, subm
     </div>
   );
 }
-

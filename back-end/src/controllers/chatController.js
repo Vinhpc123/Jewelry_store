@@ -10,7 +10,7 @@ export const sendMessageInternal = async (user, payload) => {
     throw new Error("Nội dung tin nhắn không hợp lệ ");
   }
 
-  let conversation = null;
+  let conversation;
 
   if (conversationId) {
     conversation = await Conversation.findById(conversationId);
@@ -112,10 +112,7 @@ export const getMessagesByConversation = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy cuộc trò chuyện" });
     }
 
-    if (
-      req.user.role === "customer" &&
-      String(conversation.userId) !== String(req.user._id)
-    ) {
+    if (req.user.role === "customer" && String(conversation.userId) !== String(req.user._id)) {
       return res.status(403).json({ message: "Không có quyền xem cuộc trò chuyện này" });
     }
 

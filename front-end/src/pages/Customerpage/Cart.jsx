@@ -187,7 +187,7 @@ export default function CartPage() {
       await clearCart();
 
       if (paymentMethod === "online") {
-      toast.info("Đang chuyển đến trang thanh toán VNPAY...");
+        toast.info("Đang chuyển đến trang thanh toán VNPAY...");
         const payRes = await instance.post("/api/payments/vnpay/create", { orderId });
         const payUrl = payRes?.data?.paymentUrl;
         if (!payUrl) {
@@ -225,7 +225,9 @@ export default function CartPage() {
               <div className="border-b border-[#eadfce] px-5 py-4">
                 <h2 className="text-lg font-semibold">Sản phẩm ({itemCount})</h2>
               </div>
-              {quantityNotice ? <p className="px-5 pt-3 text-sm text-red-600">{quantityNotice}</p> : null}
+              {quantityNotice ? (
+                <p className="px-5 pt-3 text-sm text-red-600">{quantityNotice}</p>
+              ) : null}
               {items.length === 0 ? (
                 <div className="p-6 text-sm text-[#7b6654]">Giỏ hàng trống.</div>
               ) : (
@@ -234,7 +236,11 @@ export default function CartPage() {
                     <li key={item.productId} className="flex gap-3 px-5 py-3">
                       <div className="h-16 w-16 overflow-hidden rounded-2xl bg-[#f8f1e7]">
                         {item.image ? (
-                          <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="h-full w-full object-cover"
+                          />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center text-[11px] text-[#7b6654]">
                             Không có ảnh
@@ -243,7 +249,9 @@ export default function CartPage() {
                       </div>
                       <div className="flex flex-1 flex-col gap-1">
                         <p className="text-sm font-semibold">{item.name}</p>
-                        <p className="text-xs text-[#7b6654]">{item.material || "Chat lieu: cap nhat sau"}</p>
+                        <p className="text-xs text-[#7b6654]">
+                          {item.material || "Chat lieu: cap nhat sau"}
+                        </p>
                         <div className="flex flex-wrap items-center gap-2">
                           <label className="text-xs text-[#7b6654]">SL:</label>
                           <div className="flex items-center rounded-full border border-[#eadfce] bg-white px-1 py-0.5">
@@ -259,7 +267,8 @@ export default function CartPage() {
                               type="number"
                               min="1"
                               max={
-                                Number.isFinite(stockMap[item.productId]) && stockMap[item.productId] > 0
+                                Number.isFinite(stockMap[item.productId]) &&
+                                stockMap[item.productId] > 0
                                   ? stockMap[item.productId]
                                   : undefined
                               }
@@ -358,7 +367,9 @@ export default function CartPage() {
               </div>
 
               <div className="rounded-xl border border-dashed border-[#eadfce] bg-[#f9f3ea] p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#7b6654]">Mã giảm giá</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#7b6654]">
+                  Mã giảm giá
+                </p>
                 <div className="mt-2 flex items-center gap-2">
                   <input
                     value={couponCode}
@@ -376,13 +387,17 @@ export default function CartPage() {
                   </button>
                 </div>
                 {couponError ? <p className="mt-1 text-xs text-red-600">{couponError}</p> : null}
-                {couponApplied && !couponError ? <p className="mt-1 text-xs text-emerald-700">Đã áp dụng mã.</p> : null}
+                {couponApplied && !couponError ? (
+                  <p className="mt-1 text-xs text-emerald-700">Đã áp dụng mã.</p>
+                ) : null}
               </div>
 
               <div className="space-y-2 rounded-2xl bg-[#fdf7ef] px-4 py-3 text-sm text-[#4b3d30]">
                 <div className="flex justify-between">
                   <span>Thành tiền</span>
-                  <span className="font-semibold text-[#9a785d]">{subtotal.toLocaleString("vi-VN")} VND</span>
+                  <span className="font-semibold text-[#9a785d]">
+                    {subtotal.toLocaleString("vi-VN")} VND
+                  </span>
                 </div>
                 {couponApplied ? (
                   <div className="flex justify-between text-emerald-700">
@@ -392,7 +407,9 @@ export default function CartPage() {
                 ) : null}
                 <div className="flex justify-between">
                   <span>Phí vận chuyển</span>
-                  <span className="font-semibold text-[#9a785d]">{shippingFee.toLocaleString("vi-VN")} VND</span>
+                  <span className="font-semibold text-[#9a785d]">
+                    {shippingFee.toLocaleString("vi-VN")} VND
+                  </span>
                 </div>
                 <div className="flex justify-between text-base font-semibold text-[#2f241a]">
                   <span>Tổng cộng</span>
@@ -417,5 +434,3 @@ export default function CartPage() {
     </>
   );
 }
-
-

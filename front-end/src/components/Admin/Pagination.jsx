@@ -9,11 +9,9 @@ export default function Pagination({
   onPageChange,
   onPageSizeChange,
 }) {
-  const windowSize = 3; 
+  const windowSize = 3;
 
-    
-  const normalizedPageSize =
-    Number.isFinite(pageSize) && pageSize > 0 ? pageSize : 5;
+  const normalizedPageSize = Number.isFinite(pageSize) && pageSize > 0 ? pageSize : 5;
   const normalizedTotalPages = Math.max(
     1,
     Number.isFinite(totalPages) && totalPages > 0 ? totalPages : 1
@@ -42,7 +40,6 @@ export default function Pagination({
     setPage?.(1);
     if (typeof onPageSizeChange === "function") onPageSizeChange(size);
   };
-
 
   return (
     <div className="flex items-center justify-between gap-4">

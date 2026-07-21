@@ -31,7 +31,9 @@ export default function useCoupons() {
       setCoupons(res.data || []);
       setError(null);
     } catch (err) {
-      setError(err?.response?.data?.message || err.message || "Khong the tai danh sach ma giam gia");
+      setError(
+        err?.response?.data?.message || err.message || "Khong the tai danh sach ma giam gia"
+      );
     } finally {
       setLoading(false);
     }

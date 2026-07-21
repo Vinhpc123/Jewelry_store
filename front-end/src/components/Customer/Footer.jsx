@@ -24,7 +24,8 @@ export default function Footer() {
               <span className="text-lg font-semibold tracking-wide">JEWELUX</span>
             </div>
             <p className="text-sm text-zinc-600">
-              Trang sức tinh xảo cho những khoảnh khắc đáng nhớ. Cam kết chất lượng và dịch vụ tận tâm.
+              Trang sức tinh xảo cho những khoảnh khắc đáng nhớ. Cam kết chất lượng và dịch vụ tận
+              tâm.
             </p>
           </div>
 
@@ -71,10 +72,18 @@ export default function Footer() {
               >
                 <Instagram className="h-5 w-5" />
               </a>
-              <a aria-label="Email" className="rounded-full p-2 transition hover:bg-zinc-100" href="mailto:support@jewelux.com">
+              <a
+                aria-label="Email"
+                className="rounded-full p-2 transition hover:bg-zinc-100"
+                href="mailto:support@jewelux.com"
+              >
                 <Mail className="h-5 w-5" />
               </a>
-              <a aria-label="Hotline" className="rounded-full p-2 transition hover:bg-zinc-100" href="tel:19006868">
+              <a
+                aria-label="Hotline"
+                className="rounded-full p-2 transition hover:bg-zinc-100"
+                href="tel:19006868"
+              >
                 <Phone className="h-5 w-5" />
               </a>
             </div>

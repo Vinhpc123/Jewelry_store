@@ -21,4 +21,3 @@ export default function Checkbox({ checked, onCheckedChange, label }) {
     </label>
   );
 }
-

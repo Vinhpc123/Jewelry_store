@@ -156,102 +156,111 @@ export default function OrdersAdminPage() {
           <div className="rounded-lg border border-zinc-200 bg-white shadow-sm">
             <div className="w-full overflow-x-auto">
               <table className="min-w-full divide-y divide-zinc-200 text-sm">
-              <thead className="bg-zinc-100 text-xs font-semibold uppercase tracking-wide text-zinc-600">
-                <tr>
-                  <th className="px-3 py-3 text-left">Mã đơn</th>
-                  <th className="px-3 py-3 text-left">Khách</th>
-                  <th className="px-3 py-3 text-left">Ngày</th>
-                  <th className="px-3 py-3 text-left">Số SP</th>
-                  <th className="px-3 py-3 text-left">Tổng</th>
-                  <th className="px-3 py-3 text-left">Trạng thái</th>
-                  <th className="px-3 py-3 text-left">Chi tiết</th>
-                  <th className="px-3 py-3 text-left">Kênh</th>
-                  <th className="px-3 py-3 text-left">Thanh toán</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-200">
-                {loading ? (
+                <thead className="bg-zinc-100 text-xs font-semibold uppercase tracking-wide text-zinc-600">
                   <tr>
-                    <td colSpan={9} className="px-4 py-6 text-center text-zinc-500">
-                      Đang tải...
-                    </td>
+                    <th className="px-3 py-3 text-left">Mã đơn</th>
+                    <th className="px-3 py-3 text-left">Khách</th>
+                    <th className="px-3 py-3 text-left">Ngày</th>
+                    <th className="px-3 py-3 text-left">Số SP</th>
+                    <th className="px-3 py-3 text-left">Tổng</th>
+                    <th className="px-3 py-3 text-left">Trạng thái</th>
+                    <th className="px-3 py-3 text-left">Chi tiết</th>
+                    <th className="px-3 py-3 text-left">Kênh</th>
+                    <th className="px-3 py-3 text-left">Thanh toán</th>
                   </tr>
-                ) : null}
-                {!loading && error ? (
-                  <tr>
-                    <td colSpan={9} className="px-4 py-4 text-center text-red-600">
-                      {error}
-                    </td>
-                  </tr>
-                ) : null}
-                {!loading && !error && filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="px-4 py-4 text-center text-zinc-500">
-                      Không có đơn hàng nào.
-                    </td>
-                  </tr>
-                ) : null}
-                {!loading &&
-                  !error &&
-                  filtered.map((order) => (
-                    <tr key={order._id} className="hover:bg-zinc-50">
-                      <td className="px-3 py-3 font-semibold text-zinc-900">{order._id}</td>
-                      <td className="px-3 py-3">
-                        {(() => {
-                          const isPos = order.source === "pos";
-                          const displayName = isPos ? order.shipping?.fullName || "Khách POS" : order.user?.name || "Khách";
-                          const subText = isPos
-                            ? order.shipping?.phone || order.shipping?.address || ""
-                            : order.user?.email || "";
-                          return (
-                            <>
-                              <div className="text-zinc-900">{displayName}</div>
-                              <div className="text-xs text-zinc-500">{subText}</div>
-                            </>
-                          );
-                        })()}
+                </thead>
+                <tbody className="divide-y divide-zinc-200">
+                  {loading ? (
+                    <tr>
+                      <td colSpan={9} className="px-4 py-6 text-center text-zinc-500">
+                        Đang tải...
                       </td>
-                      <td className="px-3 py-3 text-zinc-600">
-                        {order.createdAt ? formatDateTime(order.createdAt) : "Chưa cập nhật"}
-                      </td>
-                      <td className="px-3 py-3 text-zinc-600">{order.items?.length || 0}</td>
-                      <td className="px-3 py-3 text-zinc-900 font-semibold">
-                        {(Number(order.total) || 0).toLocaleString("vi-VN")} VND
-                      </td>
-                      <td className="px-3 py-3 text-zinc-600">
-                        <select
-                          value={(order.status === "pending" ? "processing" : order.status) || "processing"}
-                          onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                          disabled={updatingId === order._id}
-                          className={`w-36 rounded px-2 py-1 text-sm font-semibold transition ${
-                            STATUS_STYLES[(order.status === "pending" ? "processing" : order.status) || "processing"] ||
-                            "bg-zinc-50 text-zinc-700 border border-zinc-200"
-                          }`}
-                        >
-                          {STATUS_OPTIONS.filter((o) => o.value).map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-3 py-3 text-zinc-600">
-                        <button
-                          type="button"
-                          onClick={() => handleViewDetail(order._id)}
-                          className="text-sm font-semibold text-amber-700 hover:text-amber-800"
-                        >
-                          Xem
-                        </button>
-                      </td>
-                      <td className="px-3 py-3 text-zinc-600">
-                        {SOURCE_LABELS[order.source] || "Online"}
-                      </td>
-                      <td className="px-3 py-3 text-zinc-600">{order.paymentMethod === "online" ? "Online" : "COD"}</td>
                     </tr>
-                  ))}
-              </tbody>
-            </table>
+                  ) : null}
+                  {!loading && error ? (
+                    <tr>
+                      <td colSpan={9} className="px-4 py-4 text-center text-red-600">
+                        {error}
+                      </td>
+                    </tr>
+                  ) : null}
+                  {!loading && !error && filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="px-4 py-4 text-center text-zinc-500">
+                        Không có đơn hàng nào.
+                      </td>
+                    </tr>
+                  ) : null}
+                  {!loading &&
+                    !error &&
+                    filtered.map((order) => (
+                      <tr key={order._id} className="hover:bg-zinc-50">
+                        <td className="px-3 py-3 font-semibold text-zinc-900">{order._id}</td>
+                        <td className="px-3 py-3">
+                          {(() => {
+                            const isPos = order.source === "pos";
+                            const displayName = isPos
+                              ? order.shipping?.fullName || "Khách POS"
+                              : order.user?.name || "Khách";
+                            const subText = isPos
+                              ? order.shipping?.phone || order.shipping?.address || ""
+                              : order.user?.email || "";
+                            return (
+                              <>
+                                <div className="text-zinc-900">{displayName}</div>
+                                <div className="text-xs text-zinc-500">{subText}</div>
+                              </>
+                            );
+                          })()}
+                        </td>
+                        <td className="px-3 py-3 text-zinc-600">
+                          {order.createdAt ? formatDateTime(order.createdAt) : "Chưa cập nhật"}
+                        </td>
+                        <td className="px-3 py-3 text-zinc-600">{order.items?.length || 0}</td>
+                        <td className="px-3 py-3 text-zinc-900 font-semibold">
+                          {(Number(order.total) || 0).toLocaleString("vi-VN")} VND
+                        </td>
+                        <td className="px-3 py-3 text-zinc-600">
+                          <select
+                            value={
+                              (order.status === "pending" ? "processing" : order.status) ||
+                              "processing"
+                            }
+                            onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                            disabled={updatingId === order._id}
+                            className={`w-36 rounded px-2 py-1 text-sm font-semibold transition ${
+                              STATUS_STYLES[
+                                (order.status === "pending" ? "processing" : order.status) ||
+                                  "processing"
+                              ] || "bg-zinc-50 text-zinc-700 border border-zinc-200"
+                            }`}
+                          >
+                            {STATUS_OPTIONS.filter((o) => o.value).map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="px-3 py-3 text-zinc-600">
+                          <button
+                            type="button"
+                            onClick={() => handleViewDetail(order._id)}
+                            className="text-sm font-semibold text-amber-700 hover:text-amber-800"
+                          >
+                            Xem
+                          </button>
+                        </td>
+                        <td className="px-3 py-3 text-zinc-600">
+                          {SOURCE_LABELS[order.source] || "Online"}
+                        </td>
+                        <td className="px-3 py-3 text-zinc-600">
+                          {order.paymentMethod === "online" ? "Online" : "COD"}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -263,7 +272,9 @@ export default function OrdersAdminPage() {
                 <div>
                   <h2 className="text-lg font-semibold text-zinc-900">Chi tiết đơn</h2>
                   {detail?.createdAt ? (
-                    <p className="text-xs text-zinc-500">Ngày: {new Date(detail.createdAt).toLocaleString()}</p>
+                    <p className="text-xs text-zinc-500">
+                      Ngày: {new Date(detail.createdAt).toLocaleString()}
+                    </p>
                   ) : null}
                 </div>
                 <button
@@ -275,7 +286,9 @@ export default function OrdersAdminPage() {
                 </button>
               </div>
 
-              {detailLoading ? <p className="mt-4 text-sm text-zinc-600">Đang tải chi tiết...</p> : null}
+              {detailLoading ? (
+                <p className="mt-4 text-sm text-zinc-600">Đang tải chi tiết...</p>
+              ) : null}
               {detailError ? <p className="mt-4 text-sm text-red-600">{detailError}</p> : null}
 
               {!detailLoading && detail && !detailError ? (
@@ -288,20 +301,28 @@ export default function OrdersAdminPage() {
                     <div>
                       <p className="text-xs uppercase text-zinc-500">Khách</p>
                       <p className="font-semibold text-zinc-900">
-                        {detail.source === "pos" ? detail.shipping?.fullName || "Khách POS" : detail.user?.name || "Khách"}
+                        {detail.source === "pos"
+                          ? detail.shipping?.fullName || "Khách POS"
+                          : detail.user?.name || "Khách"}
                       </p>
                       <p className="text-xs text-zinc-500">
-                        {detail.source === "pos" ? detail.shipping?.phone || detail.shipping?.address || "" : detail.user?.email || ""}
+                        {detail.source === "pos"
+                          ? detail.shipping?.phone || detail.shipping?.address || ""
+                          : detail.user?.email || ""}
                       </p>
                     </div>
                     <div>
                       <p className="text-xs uppercase text-zinc-500">Kênh</p>
-                      <p className="font-semibold text-zinc-900">{SOURCE_LABELS[detail.source] || "Online"}</p>
+                      <p className="font-semibold text-zinc-900">
+                        {SOURCE_LABELS[detail.source] || "Online"}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs uppercase text-zinc-500">Trạng thái</p>
                       <p className="font-semibold text-zinc-900">
-                        {STATUS_LABELS[detail.status === "pending" ? "processing" : detail.status] || detail.status}
+                        {STATUS_LABELS[
+                          detail.status === "pending" ? "processing" : detail.status
+                        ] || detail.status}
                       </p>
                     </div>
                     <div>
@@ -318,13 +339,17 @@ export default function OrdersAdminPage() {
                     </div>
                     <ul className="divide-y divide-zinc-200">
                       {detail.items?.map((it, idx) => (
-                        <li key={`${it.productId || idx}-${idx}`} className="flex items-center justify-between px-3 py-2">
+                        <li
+                          key={`${it.productId || idx}-${idx}`}
+                          className="flex items-center justify-between px-3 py-2"
+                        >
                           <div>
                             <p className="font-semibold text-zinc-900">{it.name}</p>
                             <p className="text-xs text-zinc-500">SL: {it.quantity}</p>
                           </div>
                           <div className="text-sm font-semibold text-amber-700">
-                            {(Number(it.price) * Number(it.quantity) || 0).toLocaleString("vi-VN")} VND
+                            {(Number(it.price) * Number(it.quantity) || 0).toLocaleString("vi-VN")}{" "}
+                            VND
                           </div>
                         </li>
                       ))}
@@ -336,10 +361,14 @@ export default function OrdersAdminPage() {
                       Giao hàng
                     </div>
                     <div className="space-y-1 px-3 py-2">
-                      <p className="font-semibold text-zinc-900">{detail.shipping?.fullName || "Chưa có tên"}</p>
+                      <p className="font-semibold text-zinc-900">
+                        {detail.shipping?.fullName || "Chưa có tên"}
+                      </p>
                       <p>{detail.shipping?.phone || "Chưa có số điện thoại"}</p>
                       <p>{detail.shipping?.address || "Chưa có địa chỉ"}</p>
-                      {detail.shipping?.note ? <p className="text-xs text-zinc-500">Ghi chú: {detail.shipping.note}</p> : null}
+                      {detail.shipping?.note ? (
+                        <p className="text-xs text-zinc-500">Ghi chú: {detail.shipping.note}</p>
+                      ) : null}
                     </div>
                   </div>
                 </div>
@@ -351,6 +380,3 @@ export default function OrdersAdminPage() {
     </AdminRoute>
   );
 }
-
-
-

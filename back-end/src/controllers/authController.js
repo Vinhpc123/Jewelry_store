@@ -23,7 +23,8 @@ const getFirebaseAuth = async () => {
     return firebaseAuthInstance;
   } catch (err) {
     throw new Error(
-      "Google login chua duoc cau hinh (thieu firebase-admin hoac bien moi truong GOOGLE_CREDENTIALS_JSON)"
+      "Google login chua duoc cau hinh (thieu firebase-admin hoac bien moi truong GOOGLE_CREDENTIALS_JSON)",
+      { cause: err }
     );
   }
 };
@@ -41,10 +42,20 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "Email đã tồn tại" });
     }
     if (phone && !phoneRegex.test(String(phone).trim())) {
-      return res.status(400).json({ message: "Số điện thoại không hợp lệ (10 số, bắt đầu bằng 03,05,07,08,09)." });
+      return res
+        .status(400)
+        .json({ message: "Số điện thoại không hợp lệ (10 số, bắt đầu bằng 03,05,07,08,09)." });
     }
 
-    const newUser = await User.create({ name, email, password, role: safeRole, phone, address, avatar });
+    const newUser = await User.create({
+      name,
+      email,
+      password,
+      role: safeRole,
+      phone,
+      address,
+      avatar,
+    });
     res.status(201).json({
       _id: newUser._id,
       name: newUser.name,
@@ -70,10 +81,20 @@ export const registerPublic = async (req, res) => {
       return res.status(400).json({ message: "Email đã tồn tại" });
     }
     if (phone && !phoneRegex.test(String(phone).trim())) {
-      return res.status(400).json({ message: "Số điện thoại không hợp lệ (10 số, bắt đầu bằng 03,05,07,08,09)." });
+      return res
+        .status(400)
+        .json({ message: "Số điện thoại không hợp lệ (10 số, bắt đầu bằng 03,05,07,08,09)." });
     }
 
-    const newUser = await User.create({ name, email, password, role: "customer", phone, address, avatar });
+    const newUser = await User.create({
+      name,
+      email,
+      password,
+      role: "customer",
+      phone,
+      address,
+      avatar,
+    });
     const token = generateToken({ userId: newUser._id, role: newUser.role });
     res.status(201).json({
       token,
@@ -110,7 +131,9 @@ export const login = async (req, res) => {
     }
 
     if (!user.isActive) {
-      return res.status(403).json({ message: "Tài khoản đã bị khóa! Liên hệ với admin để được hỗ trợ." });
+      return res
+        .status(403)
+        .json({ message: "Tài khoản đã bị khóa! Liên hệ với admin để được hỗ trợ." });
     }
 
     const passwordOk = await user.matchPassword(password);
@@ -152,11 +175,12 @@ export const login = async (req, res) => {
   }
 };
 
-
 // Quen mat khau - gui email dat lai mat khau
 export const forgotPassword = async (req, res) => {
   try {
-    const email = String(req.body?.email || "").trim().toLowerCase();
+    const email = String(req.body?.email || "")
+      .trim()
+      .toLowerCase();
     if (!email) return res.status(400).json({ message: "Vui lòng nhập email" });
 
     const user = await User.findOne({ email });
@@ -172,7 +196,11 @@ export const forgotPassword = async (req, res) => {
     user.resetPasswordExpires = expires;
     await user.save();
 
-    const appUrl = (process.env.APP_URL || process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/$/, "");
+    const appUrl = (
+      process.env.APP_URL ||
+      process.env.FRONTEND_URL ||
+      "http://localhost:5173"
+    ).replace(/\/$/, "");
     const resetLink = `${appUrl}/reset-password?token=${rawToken}`;
 
     try {
@@ -195,7 +223,8 @@ export const forgotPassword = async (req, res) => {
 export const resetPassword = async (req, res) => {
   try {
     const { token, password } = req.body || {};
-    if (!token || !password) return res.status(400).json({ message: "Thiếu token hoặc mật khẩu mới" });
+    if (!token || !password)
+      return res.status(400).json({ message: "Thiếu token hoặc mật khẩu mới" });
 
     const tokenHash = crypto.createHash("sha256").update(String(token)).digest("hex");
     const user = await User.findOne({
@@ -247,7 +276,9 @@ export const updateProfile = async (req, res) => {
     if (phone !== undefined) {
       const phoneStr = String(phone).trim();
       if (phoneStr && !phoneRegex.test(phoneStr)) {
-        return res.status(400).json({ message: "Số điện thoại không hợp lệ (10 số, bắt đầu bằng 03,05,07,08,09)." });
+        return res
+          .status(400)
+          .json({ message: "Số điện thoại không hợp lệ (10 số, bắt đầu bằng 03,05,07,08,09)." });
       }
       user.phone = phoneStr;
     }
@@ -329,5 +360,3 @@ export const googleLogin = async (req, res) => {
     });
   }
 };
-
-

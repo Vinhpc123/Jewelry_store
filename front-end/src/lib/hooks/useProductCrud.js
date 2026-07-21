@@ -7,9 +7,7 @@ import instance from "../api";
 // Chuẩn hóa dữ liệu sản phẩm trước khi gửi lên server
 const normalizeProductPayload = (product) => {
   const rawPrice =
-    typeof product?.price === "string"
-      ? product.price.trim()
-      : product?.price ?? "";
+    typeof product?.price === "string" ? product.price.trim() : (product?.price ?? "");
   const priceValue = Number(rawPrice);
 
   return {

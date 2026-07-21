@@ -7,7 +7,9 @@ const normalizePayload = (body = {}) => {
   };
 
   return {
-    code: String(body.code || "").trim().toUpperCase(),
+    code: String(body.code || "")
+      .trim()
+      .toUpperCase(),
     type: ["percent", "fixed"].includes(body.type) ? body.type : "percent",
     value: toNumber(body.value, 0),
     startDate: body.startDate ? new Date(body.startDate) : undefined,
@@ -25,13 +27,16 @@ const computeDiscount = (coupon, subtotal) => {
     coupon.type === "fixed"
       ? Number(coupon.value) || 0
       : ((Number(coupon.value) || 0) / 100) * subtotal;
-  const capped = coupon.maxDiscount && coupon.maxDiscount > 0 ? Math.min(base, coupon.maxDiscount) : base;
+  const capped =
+    coupon.maxDiscount && coupon.maxDiscount > 0 ? Math.min(base, coupon.maxDiscount) : base;
   return Math.max(0, Math.min(capped, subtotal));
 };
 
 export const validateCoupon = async (req, res) => {
   try {
-    const code = String(req.body.code || "").trim().toUpperCase();
+    const code = String(req.body.code || "")
+      .trim()
+      .toUpperCase();
     const subtotal = Number(req.body.subtotal) || 0;
     if (!code) {
       return res.status(400).json({ message: "Vui long nhap ma giam gia" });
@@ -42,13 +47,17 @@ export const validateCoupon = async (req, res) => {
     }
     const now = new Date();
     if (!coupon.active) return res.status(400).json({ message: "Ma da bi khoa" });
-    if (coupon.startDate && now < coupon.startDate) return res.status(400).json({ message: "Ma chua den ngay ap dung" });
-    if (coupon.endDate && now > coupon.endDate) return res.status(400).json({ message: "Ma da het han" });
+    if (coupon.startDate && now < coupon.startDate)
+      return res.status(400).json({ message: "Ma chua den ngay ap dung" });
+    if (coupon.endDate && now > coupon.endDate)
+      return res.status(400).json({ message: "Ma da het han" });
     if (coupon.usageLimit > 0 && coupon.usedCount >= coupon.usageLimit) {
       return res.status(400).json({ message: "Ma da het luot su dung" });
     }
     if (subtotal < (coupon.minOrder || 0)) {
-      return res.status(400).json({ message: `Don hang can toi thieu ${(coupon.minOrder || 0)} VND` });
+      return res
+        .status(400)
+        .json({ message: `Don hang can toi thieu ${coupon.minOrder || 0} VND` });
     }
 
     const discount = computeDiscount(coupon, subtotal);

@@ -25,13 +25,19 @@ export default function AboutPage() {
                 Tinh hoa trang sức, tạo ra cho những khoảnh khắc đáng giá
               </h1>
               <p className="max-w-2xl text-sm text-[#5f4a38] sm:text-base">
-                Từ xưởng chế tác nhỏ, chúng tôi kết hợp kỹ nghệ thủ công và công nghệ hiện đại
-                để tạo ra những thiết kế thanh lịch, bền bỉ và riêng biệt cho từng khách hàng.
+                Từ xưởng chế tác nhỏ, chúng tôi kết hợp kỹ nghệ thủ công và công nghệ hiện đại để
+                tạo ra những thiết kế thanh lịch, bền bỉ và riêng biệt cho từng khách hàng.
               </p>
               <div className="flex flex-wrap gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#9a785d]">
-                <span className="rounded-full bg-white px-4 py-2 ring-1 ring-[#e4d2c0]">Thủ công</span>
-                <span className="rounded-full bg-white px-4 py-2 ring-1 ring-[#e4d2c0]">Vàng bền vững</span>
-                <span className="rounded-full bg-white px-4 py-2 ring-1 ring-[#e4d2c0]">Thiết kế riêng</span>
+                <span className="rounded-full bg-white px-4 py-2 ring-1 ring-[#e4d2c0]">
+                  Thủ công
+                </span>
+                <span className="rounded-full bg-white px-4 py-2 ring-1 ring-[#e4d2c0]">
+                  Vàng bền vững
+                </span>
+                <span className="rounded-full bg-white px-4 py-2 ring-1 ring-[#e4d2c0]">
+                  Thiết kế riêng
+                </span>
               </div>
             </div>
             <div className="relative isolate w-full max-w-md overflow-hidden rounded-3xl bg-white/80 shadow-lg ring-1 ring-[#e5d6c7]">
@@ -90,7 +96,10 @@ export default function AboutPage() {
                 { title: "Chất liệu chân chính", desc: "Nguồn gốc rõ ràng, kiểm định đầy đủ" },
                 { title: "Dịch vụ chu đáo", desc: "Bảo hành làm sạch, điều chỉnh miễn phí" },
               ].map((item) => (
-                <div key={item.title} className="flex gap-3 rounded-2xl bg-white px-4 py-3 ring-1 ring-[#e6d8c9]">
+                <div
+                  key={item.title}
+                  className="flex gap-3 rounded-2xl bg-white px-4 py-3 ring-1 ring-[#e6d8c9]"
+                >
                   <div className="mt-1 h-2 w-2 rounded-full bg-[#c49d79]" />
                   <div>
                     <p className="text-sm font-semibold text-[#2f241a]">{item.title}</p>
@@ -110,7 +119,9 @@ export default function AboutPage() {
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#9c7c61]">
                   Đội ngũ của chúng tôi
                 </p>
-                <h3 className="text-xl font-semibold text-[#2f241a]">Những người làm nên sự khác biệt</h3>
+                <h3 className="text-xl font-semibold text-[#2f241a]">
+                  Những người làm nên sự khác biệt
+                </h3>
               </div>
               <div className="rounded-full bg-[#f7efe6] px-4 py-2 text-xs font-semibold text-[#9c7c61] ring-1 ring-[#e3d2c2]">
                 24 nghệ nhân và nhà thiết kế
@@ -118,9 +129,21 @@ export default function AboutPage() {
             </div>
             <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {[
-                { name: "Lan Anh", role: "Trưởng nhóm thiết kế", quote: "Mỗi đường nét đều cần có ý nghĩa." },
-                { name: "Quang Minh", role: "Thợ kim hoàn trưởng", quote: "Tinh xảo là kết quả của kỷ luật và đam mê." },
-                { name: "Gia Han", role: "Chuyên gia đá quý", quote: "Lựa chọn đá quý phù hợp là sự cá nhân hóa tốt nhất." },
+                {
+                  name: "Lan Anh",
+                  role: "Trưởng nhóm thiết kế",
+                  quote: "Mỗi đường nét đều cần có ý nghĩa.",
+                },
+                {
+                  name: "Quang Minh",
+                  role: "Thợ kim hoàn trưởng",
+                  quote: "Tinh xảo là kết quả của kỷ luật và đam mê.",
+                },
+                {
+                  name: "Gia Han",
+                  role: "Chuyên gia đá quý",
+                  quote: "Lựa chọn đá quý phù hợp là sự cá nhân hóa tốt nhất.",
+                },
               ].map((member) => (
                 <div
                   key={member.name}
@@ -154,7 +177,9 @@ export default function AboutPage() {
             <div className="absolute right-10 top-8 h-24 w-24 rounded-full bg-white/10 blur-3xl" />
             <div className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/80">Liên hệ</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/80">
+                  Liên hệ
+                </p>
                 <h3 className="text-2xl font-semibold">Cần một thiết kế riêng?</h3>
                 <p className="text-sm text-white/80">
                   Đặt lịch tư vấn để chúng tôi giúp bạn tạo nên mẫu trang sức theo phong cách riêng.
@@ -176,4 +201,3 @@ export default function AboutPage() {
     </>
   );
 }
-

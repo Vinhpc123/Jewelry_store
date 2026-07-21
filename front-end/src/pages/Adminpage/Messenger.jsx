@@ -247,9 +247,7 @@ export default function Messenger() {
                               {(name || "?").charAt(0).toUpperCase()}
                             </div>
                             <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-zinc-900">
-                                {name}
-                              </p>
+                              <p className="truncate text-sm font-semibold text-zinc-900">{name}</p>
                               <p className="truncate text-xs text-zinc-500">
                                 {userInfo?.email || c._id}
                               </p>

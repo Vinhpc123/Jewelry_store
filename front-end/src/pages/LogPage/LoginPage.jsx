@@ -15,13 +15,12 @@ export default function LoginPage() {
       {/* Hero Content */}
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-4">
         <AuthLayout>
-        <IllustrationPanel />
-        <LoginCard />
+          <IllustrationPanel />
+          <LoginCard />
         </AuthLayout>
       </div>
 
       {/* Auth layout overlay */}
-      
     </div>
   );
 }

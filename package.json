@@ -1,13 +1,34 @@
 {
+  "name": "jewelry-project",
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "@eslint/js": "^10.0.1",
+    "concurrently": "^9.2.1",
+    "eslint": "^10.7.0",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
+    "prettier": "3.5.3"
   },
   "scripts": {
     "start": "concurrently \"npm --prefix front-end run dev\" \"npm --prefix back-end run dev\"",
-    "test": "npm --prefix back-end run test"
+    "test": "npm --prefix back-end run test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "npm --prefix back-end run lint && npm --prefix front-end run lint",
+    "lint:fix": "npm --prefix back-end run lint:fix && npm --prefix front-end run lint:fix",
+    "prepare": "husky"
   },
   "dependencies": {
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1"
+  },
+  "lint-staged": {
+    "*.{js,jsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{json,css,md,html}": [
+      "prettier --write"
+    ]
   }
 }

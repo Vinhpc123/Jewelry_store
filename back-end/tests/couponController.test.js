@@ -1,4 +1,4 @@
-import { jest } from '@jest/globals';
+import { jest } from "@jest/globals";
 import { computeCouponDiscount } from "../src/controllers/couponController.js";
 
 // Mock the Coupon model to prevent mongoose errors/connections during testing

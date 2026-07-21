@@ -1,0 +1,14 @@
+# Folder phụ thuộc & build
+node_modules
+dist
+build
+.vercel
+uploads
+
+# File khóa & log
+package-lock.json
+*.log
+
+# Folder hệ thống
+.git
+.vscode

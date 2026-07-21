@@ -46,13 +46,18 @@ export default function EarringsPage() {
         if (ignore) return;
         const items = Array.isArray(res.data) ? res.data : [];
         const filtered = items.filter((item) => {
-          const cat = (item?.category?.name || item?.category || "").toString().toLowerCase().trim();
+          const cat = (item?.category?.name || item?.category || "")
+            .toString()
+            .toLowerCase()
+            .trim();
           return cat === "bong tai" || cat === "bông tai";
         });
         setEarrings(filtered);
       } catch (err) {
         if (ignore) return;
-        setError(err?.response?.data?.message || err.message || "Không thể tải danh sách bông tai.");
+        setError(
+          err?.response?.data?.message || err.message || "Không thể tải danh sách bông tai."
+        );
       } finally {
         if (!ignore) setLoading(false);
       }
@@ -93,7 +98,8 @@ export default function EarringsPage() {
                 Chạm nhẹ, sáng bừng thần thái
               </h1>
               <p className="max-w-xl text-sm text-[#5f4a38] sm:text-base">
-                Mỗi chiếc bông tai là một chấm sáng nhỏ, nhưng đủ để thay đổi cảm xúc và khí chất, giúp bạn tự tin hơn trong mọi cuộc hẹn.
+                Mỗi chiếc bông tai là một chấm sáng nhỏ, nhưng đủ để thay đổi cảm xúc và khí chất,
+                giúp bạn tự tin hơn trong mọi cuộc hẹn.
               </p>
               <div className="flex flex-wrap gap-3">
                 <span className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-[#9a785d] ring-1 ring-[#e8d9c7]">
@@ -105,7 +111,11 @@ export default function EarringsPage() {
               </div>
             </div>
             <div className="relative isolate aspect-[4/3] w-full max-w-md overflow-hidden rounded-3xl bg-white/70 shadow-lg ring-1 ring-[#e8d9c7]">
-              <img src="/bongtai.webp" alt="Earrings collection" className="h-full w-full object-cover" />
+              <img
+                src="/bongtai.webp"
+                alt="Earrings collection"
+                className="h-full w-full object-cover"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-black/18 via-transparent to-transparent" />
             </div>
           </div>
@@ -191,7 +201,9 @@ export default function EarringsPage() {
               <p className="mt-4 text-sm font-semibold text-[#2f241a]">
                 Chưa có sản phẩm trong tầm giá này.
               </p>
-              <p className="mt-1 text-xs text-[#7b6654]">Thử thay đổi bộ lọc để xem thêm gợi ý khác.</p>
+              <p className="mt-1 text-xs text-[#7b6654]">
+                Thử thay đổi bộ lọc để xem thêm gợi ý khác.
+              </p>
             </div>
           ) : null}
 
@@ -211,7 +223,11 @@ export default function EarringsPage() {
                     >
                       <div className="aspect-square w-full">
                         {item.image ? (
-                          <img src={item.image} alt={name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                          <img
+                            src={item.image}
+                            alt={name}
+                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                          />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center text-xs text-[#7b6654]">
                             Chưa có ảnh
@@ -225,7 +241,9 @@ export default function EarringsPage() {
                       <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#2f241a]">
                         {name}
                       </p>
-                      {priceText ? <p className="text-base font-semibold text-[#9a785d]">{priceText}</p> : null}
+                      {priceText ? (
+                        <p className="text-base font-semibold text-[#9a785d]">{priceText}</p>
+                      ) : null}
                       <p className="text-xs text-[#7b6654] line-clamp-2">
                         {item.description || "Thiết kế tinh xảo, phù hợp nhiều phong cách."}
                       </p>
@@ -233,7 +251,10 @@ export default function EarringsPage() {
                         <div className="rounded-full bg-[#f8f1e7] px-3 py-1 text-[11px] font-semibold text-[#9c7c61]">
                           {item.material || "Alloy / Gold"}
                         </div>
-                        <Link to={`/detail/${item._id || item.id}`} className="rounded-full border border-[#2f241a] px-4 py-2 text-[11px] font-semibold text-[#2f241a] transition hover:bg-[#2f241a] hover:text-white">
+                        <Link
+                          to={`/detail/${item._id || item.id}`}
+                          className="rounded-full border border-[#2f241a] px-4 py-2 text-[11px] font-semibold text-[#2f241a] transition hover:bg-[#2f241a] hover:text-white"
+                        >
                           Xem chi tiết
                         </Link>
                       </div>
@@ -249,4 +270,3 @@ export default function EarringsPage() {
     </>
   );
 }
-

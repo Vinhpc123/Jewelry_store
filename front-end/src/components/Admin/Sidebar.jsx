@@ -31,7 +31,9 @@ export default function Sidebar({ onNavigate }) {
 
       <nav className="space-y-1">
         <div onClick={onNavigate}>
-          <LinkItem to="/admin" end>Trang chủ</LinkItem>
+          <LinkItem to="/admin" end>
+            Trang chủ
+          </LinkItem>
         </div>
         <div onClick={onNavigate}>
           <LinkItem to="/admin/users">Quản lý người dùng</LinkItem>

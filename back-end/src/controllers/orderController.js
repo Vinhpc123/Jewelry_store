@@ -82,21 +82,24 @@ export const createOrder = async (req, res) => {
     let couponCode = "";
 
     if (rawCouponCode) {
-      const code = String(rawCouponCode || "").trim().toUpperCase();
+      const code = String(rawCouponCode || "")
+        .trim()
+        .toUpperCase();
       const coupon = await Coupon.findOne({ code });
       if (!coupon) return res.status(400).json({ message: "Mã giảm giá không tồn tại" });
       const now = new Date();
       if (!coupon.active) return res.status(400).json({ message: "Mã giảm giá đã bị khóa" });
       if (coupon.startDate && now < coupon.startDate)
         return res.status(400).json({ message: "Mã giảm giá chưa đến ngày áp dụng" });
-      if (coupon.endDate && now > coupon.endDate) return res.status(400).json({ message: "Mã giảm giá đã hết hạn" });
+      if (coupon.endDate && now > coupon.endDate)
+        return res.status(400).json({ message: "Mã giảm giá đã hết hạn" });
       if (coupon.usageLimit > 0 && coupon.usedCount >= coupon.usageLimit) {
         return res.status(400).json({ message: "Mã giảm giá đã hết lượt sử dụng" });
       }
       if (subtotal < (coupon.minOrder || 0)) {
-        return res
-          .status(400)
-          .json({ message: `Đơn hàng cần tối thiểu ${(coupon.minOrder || 0).toLocaleString("vi-VN")} VND` });
+        return res.status(400).json({
+          message: `Đơn hàng cần tối thiểu ${(coupon.minOrder || 0).toLocaleString("vi-VN")} VND`,
+        });
       }
 
       discount = computeCouponDiscount(coupon, subtotal);
@@ -175,7 +178,10 @@ export const getOrderById = async (req, res) => {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
     // chi chu don, admin, hoac staff
-    if (String(order.user) !== String(req.user._id) && !(["admin", "staff"].includes(req.user.role))) {
+    if (
+      String(order.user) !== String(req.user._id) &&
+      !["admin", "staff"].includes(req.user.role)
+    ) {
       return res.status(403).json({ message: "Không có quyền xem đơn này" });
     }
     res.status(200).json(order);
@@ -192,7 +198,8 @@ export const cancelOrder = async (req, res) => {
 
     const isOwner = String(order.user) === String(req.user._id);
     const isAdmin = req.user.role === "admin";
-    if (!isOwner && !isAdmin) return res.status(403).json({ message: "Không có quyền hủy đơn này" });
+    if (!isOwner && !isAdmin)
+      return res.status(403).json({ message: "Không có quyền hủy đơn này" });
     const cancellableStatuses = ["processing", "pending"];
     if (!cancellableStatuses.includes(order.status)) {
       return res.status(400).json({ message: "Chỉ hủy được đơn đang xử lý" });
@@ -220,7 +227,8 @@ export const updateStatus = async (req, res) => {
     const { status } = req.body;
     const normalizedStatus = status === "pending" ? "processing" : status;
     const allowed = ["processing", "pending", "paid", "shipped", "completed", "cancelled"];
-    if (!allowed.includes(normalizedStatus)) return res.status(400).json({ message: "Trạng thái không hợp lệ" });
+    if (!allowed.includes(normalizedStatus))
+      return res.status(400).json({ message: "Trạng thái không hợp lệ" });
 
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: "Không tìm thấy đơn hàng" });

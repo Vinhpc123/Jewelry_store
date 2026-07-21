@@ -1,10 +1,9 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 export const connectDB = async () => {
   try {
-    await mongoose.connect(
-      process.env.mongodb_connection_string,
-    );
+    const mongoUri = process.env.MONGODB_URI || process.env.mongodb_connection_string;
+    await mongoose.connect(mongoUri);
 
     console.log("liên kết cơ sở dữ liệu thành công");
   } catch (error) {

@@ -60,7 +60,9 @@ export default function Users() {
   // ?n ch�nh m�nh kh?i danh sách
   const filteredSource = React.useMemo(() => {
     if (!currentUser) return rawSource;
-    return rawSource.filter((user) => user._id !== currentUser._id && (isAdmin || user.role !== "admin"));
+    return rawSource.filter(
+      (user) => user._id !== currentUser._id && (isAdmin || user.role !== "admin")
+    );
   }, [rawSource, currentUser, isAdmin]);
 
   const dataSource = React.useMemo(() => {
@@ -148,7 +150,10 @@ export default function Users() {
     return `Tìm thấy ${totalItems} người dùng phù hợp.`;
   }, [searchActive, listLoading, listError, totalItems]);
 
-  const handleSearchChange = React.useCallback((event) => setSearchTerm(event.target.value), [setSearchTerm]);
+  const handleSearchChange = React.useCallback(
+    (event) => setSearchTerm(event.target.value),
+    [setSearchTerm]
+  );
 
   const refreshWithSearch = React.useCallback(async () => {
     await refresh();
@@ -293,7 +298,7 @@ export default function Users() {
             canLock={isAdmin}
             canDeleteUser={canDeleteUser}
             canEditUser={canEditUser}
-            />
+          />
           <EditUserModal
             open={editModalOpen}
             onClose={closeEditModal}
@@ -311,13 +316,23 @@ export default function Users() {
   );
 }
 
-function UserHeader({ total, adminCount, staffCount, customerCount, activeCount, onRefresh, refreshing }) {
+function UserHeader({
+  total,
+  adminCount,
+  staffCount,
+  customerCount,
+  activeCount,
+  onRefresh,
+  refreshing,
+}) {
   return (
     <div className="space-y-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">Quản lý người dùng</h1>
-          <p className="text-sm text-zinc-500">Theo dõi danh sách tài khoản, trạng thái hoạt động và vai trò.</p>
+          <p className="text-sm text-zinc-500">
+            Theo dõi danh sách tài khoản, trạng thái hoạt động và vai trò.
+          </p>
         </div>
         <button
           type="button"
@@ -369,7 +384,9 @@ function UserToolbar({
     <div className="space-y-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Chọn lọc xem</label>
+          <label className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            Chọn lọc xem
+          </label>
           <select
             value={roleFilter}
             onChange={(e) => onRoleFilterChange(e.target.value)}
@@ -390,7 +407,9 @@ function UserToolbar({
             placeholder="Tìm tên hoặc email..."
             className="w-full rounded border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none focus:ring-0 sm:w-64"
           />
-          {searchActive && searchStatus ? <span className="text-xs text-zinc-500">{searchStatus}</span> : null}
+          {searchActive && searchStatus ? (
+            <span className="text-xs text-zinc-500">{searchStatus}</span>
+          ) : null}
         </div>
 
         <Pagination
@@ -427,9 +446,7 @@ function UserTable({
   }
   if (error) {
     return (
-      <div className="rounded border border-red-200 bg-red-50 p-4 text-red-700">
-        L?i: {error}
-      </div>
+      <div className="rounded border border-red-200 bg-red-50 p-4 text-red-700">L?i: {error}</div>
     );
   }
   if (totalItems === 0) {
@@ -458,11 +475,15 @@ function UserTable({
 
             <div className="mt-3 grid gap-2 text-xs text-zinc-700 sm:grid-cols-2">
               <div className="rounded-md bg-zinc-50 p-2">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Vai trò</p>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                  Vai trò
+                </p>
                 <p className="mt-0.5 capitalize">{getRoleLabel(user.role)}</p>
               </div>
               <div className="rounded-md bg-zinc-50 p-2">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Ngày tạo</p>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                  Ngày tạo
+                </p>
                 <p className="mt-0.5">{formatDateTime(user.createdAt)}</p>
               </div>
             </div>
@@ -518,11 +539,15 @@ function UserTable({
                   <p className="text-xs text-zinc-500">ID: {user._id || "-"}</p>
                 </td>
                 <td className="px-3 py-2 text-sm text-zinc-700">{user.email}</td>
-                <td className="px-3 py-2 text-center capitalize text-zinc-700">{getRoleLabel(user.role)}</td>
+                <td className="px-3 py-2 text-center capitalize text-zinc-700">
+                  {getRoleLabel(user.role)}
+                </td>
                 <td className="px-3 py-2 text-center">
                   <UserStatusBadge active={user.isActive} />
                 </td>
-                <td className="px-3 py-2 text-center text-zinc-600">{formatDateTime(user.createdAt)}</td>
+                <td className="px-3 py-2 text-center text-zinc-600">
+                  {formatDateTime(user.createdAt)}
+                </td>
                 <td className="px-2 py-3 text-center">
                   <div className="flex items-center justify-center gap-2">
                     <button
@@ -572,9 +597,20 @@ function UserStatusBadge({ active }) {
   );
 }
 
-function EditUserModal({ open, onClose, formValues, onFieldChange, onSubmit, loading, error, saving, meta = {} }) {
+function EditUserModal({
+  open,
+  onClose,
+  formValues,
+  onFieldChange,
+  onSubmit,
+  loading,
+  error,
+  saving,
+  meta = {},
+}) {
   if (!open) return null;
-  const statusBadge = typeof meta.isActive === "boolean" ? <UserStatusBadge active={meta.isActive} /> : null;
+  const statusBadge =
+    typeof meta.isActive === "boolean" ? <UserStatusBadge active={meta.isActive} /> : null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
@@ -606,7 +642,9 @@ function EditUserModal({ open, onClose, formValues, onFieldChange, onSubmit, loa
         ) : (
           <form onSubmit={onSubmit} className="mt-6 space-y-4">
             {error ? (
-              <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
+              <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                {error}
+              </div>
             ) : null}
             <div className="grid gap-4 md:grid-cols-2">
               <label className="space-y-1 text-sm text-zinc-600">
@@ -708,9 +746,3 @@ function EditUserModal({ open, onClose, formValues, onFieldChange, onSubmit, loa
     </div>
   );
 }
-
-
-
-
-
-

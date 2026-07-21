@@ -25,9 +25,11 @@ export const protect = async (req, res, next) => {
 };
 
 // Middleware kiem tra vai tro nguoi dung
-export const authorize = (...allowedRoles) => (req, res, next) => {
-  if (!allowedRoles.includes(req.user.role)) {
-    return res.status(403).json({ message: "Không có quyền truy cập" });
-  }
-  next();
-};
+export const authorize =
+  (...allowedRoles) =>
+  (req, res, next) => {
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ message: "Không có quyền truy cập" });
+    }
+    next();
+  };

@@ -80,12 +80,28 @@ export default function RegisterForm() {
         leftIcon={<KeyRound className="h-4 w-4" />}
       />
 
-      <Checkbox checked={agree} onCheckedChange={setAgree} label={
-        <span> Đồng ý với các <a href="#" className="text-indigo-600 hover:text-indigo-700">Điều khoản</a> và <a href="#" className="text-indigo-600 hover:text-indigo-700">Chính sách bảo mật</a>.</span>
-      } />
+      <Checkbox
+        checked={agree}
+        onCheckedChange={setAgree}
+        label={
+          <span>
+            {" "}
+            Đồng ý với các{" "}
+            <a href="#" className="text-indigo-600 hover:text-indigo-700">
+              Điều khoản
+            </a>{" "}
+            và{" "}
+            <a href="#" className="text-indigo-600 hover:text-indigo-700">
+              Chính sách bảo mật
+            </a>
+            .
+          </span>
+        }
+      />
 
-      <PrimaryButton type="submit" onClick={handleSubmit} className="w-full">Tạo tài khoản</PrimaryButton>
+      <PrimaryButton type="submit" onClick={handleSubmit} className="w-full">
+        Tạo tài khoản
+      </PrimaryButton>
     </form>
   );
 }
-

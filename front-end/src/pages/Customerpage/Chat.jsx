@@ -195,10 +195,7 @@ export default function Chat() {
             </div>
           </div>
 
-          <div
-            ref={messagesRef}
-            className="h-[65vh] space-y-3 overflow-y-auto bg-white px-4 py-4"
-          >
+          <div ref={messagesRef} className="h-[65vh] space-y-3 overflow-y-auto bg-white px-4 py-4">
             {loading && !messages.length ? (
               <div className="text-sm text-zinc-500">Đang tải tin nhắn...</div>
             ) : null}
@@ -226,7 +223,9 @@ export default function Chat() {
                         }`}
                       >
                         <p className="whitespace-pre-wrap break-words">{m.content}</p>
-                        <div className={`mt-1 text-[11px] ${isMe ? "text-indigo-100/90" : "text-zinc-500"}`}>
+                        <div
+                          className={`mt-1 text-[11px] ${isMe ? "text-indigo-100/90" : "text-zinc-500"}`}
+                        >
                           {new Date(m.createdAt).toLocaleTimeString()}
                         </div>
                       </div>
@@ -236,7 +235,9 @@ export default function Chat() {
               });
             })()}
             {!messages.length && !loading ? (
-              <div className="text-center text-sm text-zinc-500">Bắt đầu trò chuyện với chúng tôi.</div>
+              <div className="text-center text-sm text-zinc-500">
+                Bắt đầu trò chuyện với chúng tôi.
+              </div>
             ) : null}
           </div>
 
@@ -272,4 +273,3 @@ export default function Chat() {
     </>
   );
 }
-

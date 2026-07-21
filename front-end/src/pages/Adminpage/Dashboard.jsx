@@ -99,7 +99,8 @@ const fillSeries = (range, rawSeries, mode = "day") => {
 };
 
 export default function Dashboard() {
-  const { loading, error, users, products, usersCount, productsCount, systemStatus, trends } = useAdminData();
+  const { loading, error, users, products, usersCount, productsCount, systemStatus, trends } =
+    useAdminData();
   const [revLoading, setRevLoading] = React.useState(true);
   const [revError, setRevError] = React.useState(null);
   const [revenue, setRevenue] = React.useState({
@@ -110,7 +111,12 @@ export default function Dashboard() {
   });
   const [rangeMode, setRangeMode] = React.useState("day");
   const [showAddUser, setShowAddUser] = React.useState(false);
-  const [newUser, setNewUser] = React.useState({ name: "", email: "", password: "", role: "customer" });
+  const [newUser, setNewUser] = React.useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "customer",
+  });
   const [addUserError, setAddUserError] = React.useState("");
   const [addingUser, setAddingUser] = React.useState(false);
 
@@ -185,7 +191,9 @@ export default function Dashboard() {
             <div className="space-y-1">
               <p className="text-[11px] uppercase tracking-[0.2em] text-zinc-500">Dashboard</p>
               <h1 className="text-2xl font-bold">Tổng quan</h1>
-              <p className="text-sm text-zinc-500">Theo dõi nhanh hiệu suất hệ thống và hoạt động gần đây.</p>
+              <p className="text-sm text-zinc-500">
+                Theo dõi nhanh hiệu suất hệ thống và hoạt động gần đây.
+              </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <button
@@ -196,7 +204,10 @@ export default function Dashboard() {
                   const formatDate = (d) => new Date(d).toLocaleDateString("vi-VN");
                   const headerTitle = "MẪU BÁO CÁO DOANH THU (QUY MÔ NHỎ)";
                   const tableRows = series
-                    .map((s) => `<tr><td>${formatDate(s.date)}</td><td style="text-align:right;">${formatMoney(s.total)}</td></tr>`)
+                    .map(
+                      (s) =>
+                        `<tr><td>${formatDate(s.date)}</td><td style="text-align:right;">${formatMoney(s.total)}</td></tr>`
+                    )
                     .join("");
                   const win = window.open("", "_blank");
                   win.document.write(`
@@ -268,12 +279,17 @@ export default function Dashboard() {
               <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-lg">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-zinc-900">Đăng ký tài khoản mới</h3>
-                  <button onClick={() => setShowAddUser(false)} className="text-sm text-zinc-500 hover:text-zinc-700">
+                  <button
+                    onClick={() => setShowAddUser(false)}
+                    className="text-sm text-zinc-500 hover:text-zinc-700"
+                  >
                     Đóng
                   </button>
                 </div>
                 {addUserError ? (
-                  <div className="mt-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{addUserError}</div>
+                  <div className="mt-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                    {addUserError}
+                  </div>
                 ) : null}
                 <div className="mt-4 space-y-3">
                   <input
@@ -325,7 +341,9 @@ export default function Dashboard() {
                         setShowAddUser(false);
                         setNewUser({ name: "", email: "", password: "", role: "customer" });
                       } catch (err) {
-                        setAddUserError(err?.response?.data?.message || err.message || "Không thể tạo tài khoản");
+                        setAddUserError(
+                          err?.response?.data?.message || err.message || "Không thể tạo tài khoản"
+                        );
                       } finally {
                         setAddingUser(false);
                       }
@@ -341,20 +359,32 @@ export default function Dashboard() {
           ) : null}
 
           {loading ? (
-            <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">Đang tải...</div>
+            <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+              Đang tải...
+            </div>
           ) : error ? (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 shadow-sm">Lỗi: {error}</div>
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 shadow-sm">
+              Lỗi: {error}
+            </div>
           ) : (
             <>
               <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
                 <StatCard label="Tổng người dùng" value={usersCount} trend={trends.users?.pct} />
-                <StatCard label="Tổng sản phẩm" value={productsCount} trend={trends.products?.pct} />
+                <StatCard
+                  label="Tổng sản phẩm"
+                  value={productsCount}
+                  trend={trends.products?.pct}
+                />
                 <StatCard
                   label="Người dùng mới (7d)"
                   value={trends.newUsers7d?.current ?? recentUsers.length}
                   trend={trends.newUsers7d?.pct}
                 />
-                <StatCard label="Trạng thái hệ thống" value={systemStatus?.toUpperCase?.() || "OK"} customBadge={statusBadge} />
+                <StatCard
+                  label="Trạng thái hệ thống"
+                  value={systemStatus?.toUpperCase?.() || "OK"}
+                  customBadge={statusBadge}
+                />
               </section>
 
               <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -366,12 +396,14 @@ export default function Dashboard() {
                         {rangeMode === "week"
                           ? "Doanh thu theo tuần (Thứ 2 - Chủ nhật)."
                           : rangeMode === "month"
-                          ? "Doanh thu 12 tháng trong năm."
-                          : "Doanh thu 7 ngày gần nhất."}
+                            ? "Doanh thu 12 tháng trong năm."
+                            : "Doanh thu 7 ngày gần nhất."}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-600">Real-time</span>
+                      <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-600">
+                        Real-time
+                      </span>
                       <div className="flex overflow-hidden rounded-full border border-zinc-200 bg-white text-xs font-semibold text-zinc-600 shadow-sm">
                         {[
                           { key: "day", label: "Ngày" },
@@ -382,7 +414,9 @@ export default function Dashboard() {
                             key={opt.key}
                             onClick={() => setRangeMode(opt.key)}
                             className={`px-3 py-1 transition ${
-                              rangeMode === opt.key ? "bg-indigo-600 text-white" : "hover:bg-zinc-50"
+                              rangeMode === opt.key
+                                ? "bg-indigo-600 text-white"
+                                : "hover:bg-zinc-50"
                             }`}
                           >
                             {opt.label}
@@ -394,29 +428,43 @@ export default function Dashboard() {
                   <div className="mt-4 grid gap-3 rounded-lg border border-zinc-100 bg-zinc-50 p-3 text-sm text-zinc-700 sm:grid-cols-3">
                     {(() => {
                       const totals = revenue.totals || {};
-                      const sumSeries = (revenue.series || []).reduce((a, b) => a + (b.total || 0), 0);
+                      const sumSeries = (revenue.series || []).reduce(
+                        (a, b) => a + (b.total || 0),
+                        0
+                      );
                       const cards =
                         rangeMode === "week"
                           ? [
                               { label: "Tuần này", value: totals.sum ?? sumSeries },
-                              { label: "7 ngày gần nhất", value: totals.last7 ?? totals.sum ?? sumSeries },
-                              { label: "30 ngày gần nhất", value: totals.last30 ?? totals.sum ?? sumSeries },
+                              {
+                                label: "7 ngày gần nhất",
+                                value: totals.last7 ?? totals.sum ?? sumSeries,
+                              },
+                              {
+                                label: "30 ngày gần nhất",
+                                value: totals.last30 ?? totals.sum ?? sumSeries,
+                              },
                             ]
                           : rangeMode === "month"
-                          ? [
-                              { label: "Tháng này", value: totals.sum ?? sumSeries },
-                              { label: "6 tháng gần nhất", value: totals.last30 ?? totals.sum ?? sumSeries },
-                              { label: "12 tháng", value: sumSeries },
-                            ]
-                          : [
-                              { label: "Hôm nay", value: totals.today || 0 },
-                              { label: "7 ngày", value: totals.last7 || 0 },
-                              { label: "30 ngày", value: totals.last30 || 0 },
-                            ];
+                            ? [
+                                { label: "Tháng này", value: totals.sum ?? sumSeries },
+                                {
+                                  label: "6 tháng gần nhất",
+                                  value: totals.last30 ?? totals.sum ?? sumSeries,
+                                },
+                                { label: "12 tháng", value: sumSeries },
+                              ]
+                            : [
+                                { label: "Hôm nay", value: totals.today || 0 },
+                                { label: "7 ngày", value: totals.last7 || 0 },
+                                { label: "30 ngày", value: totals.last30 || 0 },
+                              ];
                       return cards.map((c) => (
                         <div key={c.label}>
                           <p className="text-xs text-zinc-500">{c.label}</p>
-                          <p className="text-base font-semibold text-indigo-700">{formatMoney(c.value)}</p>
+                          <p className="text-base font-semibold text-indigo-700">
+                            {formatMoney(c.value)}
+                          </p>
                         </div>
                       ));
                     })()}
@@ -425,7 +473,9 @@ export default function Dashboard() {
                     {revLoading ? (
                       <div className="h-full rounded-xl bg-gradient-to-r from-indigo-200 via-sky-100 to-white animate-pulse" />
                     ) : revError ? (
-                      <div className="flex h-full items-center justify-center text-sm text-red-600">{revError}</div>
+                      <div className="flex h-full items-center justify-center text-sm text-red-600">
+                        {revError}
+                      </div>
                     ) : (
                       <RevenueChart series={revenue.series || []} mode={rangeMode} />
                     )}
@@ -484,7 +534,9 @@ export default function Dashboard() {
                     title: p.title,
                     subtitle: new Date(p.createdAt).toLocaleString(),
                     badge: productStatusLabel[p.status] || "Không rõ",
-                    badgeClass: productStatusStyle[p.status] || "bg-zinc-100 text-zinc-700 border border-zinc-200",
+                    badgeClass:
+                      productStatusStyle[p.status] ||
+                      "bg-zinc-100 text-zinc-700 border border-zinc-200",
                     icon: getInitial(p.title),
                     accent: "bg-zinc-100 text-zinc-700",
                   })}
@@ -519,7 +571,9 @@ function StatCard({ label, value, trend, customBadge }) {
 function ActivityItem({ title, subtitle, time, icon, accent }) {
   return (
     <div className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2">
-      <span className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${accent}`}>
+      <span
+        className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${accent}`}
+      >
         {icon}
       </span>
       <div className="min-w-0 flex-1">
@@ -539,7 +593,11 @@ function RevenueChart({ series, mode = "day" }) {
   const labelGutter = 12;
 
   if (!series || series.length === 0) {
-    return <div className="flex h-full items-center justify-center text-sm text-zinc-500">Chưa có dữ liệu doanh thu</div>;
+    return (
+      <div className="flex h-full items-center justify-center text-sm text-zinc-500">
+        Chưa có dữ liệu doanh thu
+      </div>
+    );
   }
 
   const buildSmoothPath = (points, tension = 0.22) => {
@@ -591,9 +649,7 @@ function RevenueChart({ series, mode = "day" }) {
 
   const hoveredPoint = hoveredIndex !== null ? pts[hoveredIndex] : null;
   const hoveredData = hoveredIndex !== null ? safeSeries[hoveredIndex] : null;
-  const hoverLeft = hoveredPoint
-    ? `${(hoveredPoint.x / (chartWidth + labelGutter)) * 100}%`
-    : "0%";
+  const hoverLeft = hoveredPoint ? `${(hoveredPoint.x / (chartWidth + labelGutter)) * 100}%` : "0%";
   const hoverTop = hoveredPoint ? `${(hoveredPoint.y / chartHeight) * 100}%` : "0%";
 
   return (
@@ -619,20 +675,59 @@ function RevenueChart({ series, mode = "day" }) {
             <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
           </linearGradient>
           <filter id="lineShadow" x="-10" y="-10" width="140" height="130">
-            <feDropShadow dx="0" dy="1.2" stdDeviation="1.6" floodColor="#4f46e5" floodOpacity="0.35" />
+            <feDropShadow
+              dx="0"
+              dy="1.2"
+              stdDeviation="1.6"
+              floodColor="#4f46e5"
+              floodOpacity="0.35"
+            />
           </filter>
         </defs>
         {ticksY.map((t) => {
           const y = chartBottom - (t / max) * 50;
-          return <line key={t} x1="0" y1={y} x2={chartWidth} y2={y} stroke="#e5e7eb" strokeWidth="0.4" strokeDasharray="2 2" />;
+          return (
+            <line
+              key={t}
+              x1="0"
+              y1={y}
+              x2={chartWidth}
+              y2={y}
+              stroke="#e5e7eb"
+              strokeWidth="0.4"
+              strokeDasharray="2 2"
+            />
+          );
         })}
         <path d={areaPath} fill="url(#revFill)" stroke="none" />
-        <path d={linePath} fill="none" stroke="#a5b4fc" strokeWidth="4" strokeLinejoin="round" strokeLinecap="round" opacity="0.6" />
-        <path d={linePath} fill="none" stroke="#4f46e5" strokeWidth="2.6" strokeLinejoin="round" strokeLinecap="round" filter="url(#lineShadow)" />
+        <path
+          d={linePath}
+          fill="none"
+          stroke="#a5b4fc"
+          strokeWidth="4"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          opacity="0.6"
+        />
+        <path
+          d={linePath}
+          fill="none"
+          stroke="#4f46e5"
+          strokeWidth="2.6"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          filter="url(#lineShadow)"
+        />
         {pts.map((p, idx) =>
           idx % dotStep === 0 || idx === pts.length - 1 ? (
             <g key={idx}>
-              <circle cx={p.x} cy={p.y} r="4.2" fill="transparent" onMouseEnter={() => setHoveredIndex(idx)} />
+              <circle
+                cx={p.x}
+                cy={p.y}
+                r="4.2"
+                fill="transparent"
+                onMouseEnter={() => setHoveredIndex(idx)}
+              />
               <circle cx={p.x} cy={p.y} r="1.6" fill="#4f46e5" filter="url(#lineShadow)" />
             </g>
           ) : null
@@ -683,7 +778,9 @@ function ListCard({ title, items, renderItem }) {
                 className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-3 hover:bg-white"
               >
                 <div className="flex min-w-0 flex-1 items-start gap-3">
-                  <span className={`mt-1 flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${data.accent}`}>
+                  <span
+                    className={`mt-1 flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${data.accent}`}
+                  >
                     {data.icon}
                   </span>
                   <div className="min-w-0 flex-1">
@@ -693,7 +790,11 @@ function ListCard({ title, items, renderItem }) {
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1 text-right">
                   {data.badge ? (
-                    <span className={`rounded-full px-3 py-1 text-[11px] font-semibold ${data.badgeClass}`}>{data.badge}</span>
+                    <span
+                      className={`rounded-full px-3 py-1 text-[11px] font-semibold ${data.badgeClass}`}
+                    >
+                      {data.badge}
+                    </span>
                   ) : null}
                   <span className="text-[11px] text-zinc-500">{data.time}</span>
                 </div>

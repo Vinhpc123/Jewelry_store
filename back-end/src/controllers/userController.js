@@ -31,15 +31,20 @@ export const updateUserStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { isActive } = req.body;
-    if (typeof isActive !== "boolean") return res.status(400).json({ message: "Trang thai khong hop le" });
-    if (String(req.user._id) === id) return res.status(400).json({ message: "Khong the tu thay doi trang thai" });
+    if (typeof isActive !== "boolean")
+      return res.status(400).json({ message: "Trang thai khong hop le" });
+    if (String(req.user._id) === id)
+      return res.status(400).json({ message: "Khong the tu thay doi trang thai" });
 
     const updatePayload = { isActive };
     if (isActive === true) {
       updatePayload.loginAttempts = 0;
       updatePayload.lockUntil = null;
     }
-    const updatedUser = await User.findByIdAndUpdate(id, updatePayload, { new: true, runValidators: true }).select("-password");
+    const updatedUser = await User.findByIdAndUpdate(id, updatePayload, {
+      new: true,
+      runValidators: true,
+    }).select("-password");
     if (!updatedUser) return res.status(404).json({ message: "Khong tim thay nguoi dung" });
     res.status(200).json(updatedUser);
   } catch (error) {
@@ -54,12 +59,16 @@ export const updateUser = async (req, res) => {
     const phoneRegex = /^(03|05|07|08|09)\d{8}$/;
     const allowedRoles = ["admin", "staff", "customer"];
 
-    if (role && !allowedRoles.includes(role)) return res.status(400).json({ message: "Vai tro khong hop le" });
-    if (typeof name === "string" && name.trim().length === 0) return res.status(400).json({ message: "Ten khong hop le" });
+    if (role && !allowedRoles.includes(role))
+      return res.status(400).json({ message: "Vai tro khong hop le" });
+    if (typeof name === "string" && name.trim().length === 0)
+      return res.status(400).json({ message: "Ten khong hop le" });
     if (phone !== undefined) {
       const phoneStr = String(phone).trim();
       if (phoneStr && !phoneRegex.test(phoneStr)) {
-        return res.status(400).json({ message: "So dien thoai khong hop le (10 so, bat dau bang 03,05,07,08,09)." });
+        return res
+          .status(400)
+          .json({ message: "So dien thoai khong hop le (10 so, bat dau bang 03,05,07,08,09)." });
       }
     }
 
@@ -79,7 +88,8 @@ export const updateUser = async (req, res) => {
     if (phone !== undefined) user.phone = String(phone).trim();
     if (address !== undefined) user.address = address;
     if (newPassword) {
-      if (String(newPassword).length < 6) return res.status(400).json({ message: "Mat khau phai tu 6 ky tu" });
+      if (String(newPassword).length < 6)
+        return res.status(400).json({ message: "Mat khau phai tu 6 ky tu" });
       user.password = newPassword;
     }
 
@@ -88,14 +98,17 @@ export const updateUser = async (req, res) => {
     delete sanitized.password;
     res.status(200).json(sanitized);
   } catch (error) {
-    res.status(500).json({ message: "Khong the cap nhat thong tin nguoi dung", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Khong the cap nhat thong tin nguoi dung", error: error.message });
   }
 };
 
 export const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
-    if (String(req.user._id) === id) return res.status(400).json({ message: "Khong the tu xoa tai khoan" });
+    if (String(req.user._id) === id)
+      return res.status(400).json({ message: "Khong the tu xoa tai khoan" });
 
     const deletedUser = await User.findByIdAndDelete(id);
     if (!deletedUser) return res.status(404).json({ message: "Khong tim thay nguoi dung" });
