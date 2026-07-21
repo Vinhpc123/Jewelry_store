@@ -59,7 +59,7 @@ app.use(
         "http://localhost:5173",
         "http://localhost:3000",
       ].filter(Boolean);
-      if (allowedOrigins.some((o) => origin.startsWith(o))) {
+      if (allowedOrigins.some((o) => origin.startsWith(o)) || origin.endsWith(".vercel.app")) {
         return callback(null, true);
       }
       // In development, allow all origins
