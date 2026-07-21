@@ -30,3 +30,6 @@ Thumbs.db
 # Runtime data
 back-end/uploads/
 
+# Local Docs
+PROJECT_DOCUMENTATION.md
+
