@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Backend URL - production: Render.com, development: localhost
-const RENDER_BACKEND = "https://jewelry-store-wgnr.onrender.com";
+const RENDER_BACKEND = "https://jewelry-store-r4uj.onrender.com";
 const apiBaseURL = import.meta.env.VITE_API_BASE_URL || RENDER_BACKEND;
 
 const instance = axios.create({
