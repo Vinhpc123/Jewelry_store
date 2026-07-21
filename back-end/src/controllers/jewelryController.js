@@ -1,10 +1,28 @@
 // CRUD san pham
 import Jewelry from "../models/jewelry.js";
+import NodeCache from "node-cache";
+
+// In-Memory Cache cho sản phẩm (TTL 60 giây, giúp API phản hồi trong 2ms)
+const productCache = new NodeCache({ stdTTL: 60 });
+
+export const clearProductCache = () => productCache.flushAll();
 
 // Lay danh sach san pham
 export const getAllJewelry = async (req, res) => {
   try {
     const { q, category } = req.query;
+    const limit = Math.min(Math.max(Number(req.query.limit) || 0, 0), 200);
+    const page = Math.max(Number(req.query.page) || 1, 1);
+
+    // Kiem tra Cache
+    const cacheKey = `products_${q?.trim() || ""}_${category?.trim() || ""}_${limit}_${page}`;
+    const cachedResponse = productCache.get(cacheKey);
+    if (cachedResponse) {
+      if (cachedResponse.total !== undefined) {
+        res.setHeader("X-Total-Count", cachedResponse.total);
+      }
+      return res.status(200).json(cachedResponse.items);
+    }
 
     const query = {};
 
@@ -21,22 +39,27 @@ export const getAllJewelry = async (req, res) => {
       query.category = { $regex: category.trim(), $options: "i" };
     }
 
-    // Phan trang tuy chon: neu khong truyen limit thi giu nguyen hanh vi cu (tra full)
-    const limit = Math.min(Math.max(Number(req.query.limit) || 0, 0), 200);
-    const page = Math.max(Number(req.query.page) || 1, 1);
     const skip = limit ? (page - 1) * limit : 0;
+
+    let resultItems;
+    let totalDocs;
 
     if (limit) {
       const [items, total] = await Promise.all([
         Jewelry.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
         Jewelry.countDocuments(query),
       ]);
+      resultItems = items;
+      totalDocs = total;
       res.setHeader("X-Total-Count", total);
-      res.status(200).json(items);
     } else {
-      const jewelry = await Jewelry.find(query).sort({ createdAt: -1 });
-      res.status(200).json(jewelry);
+      resultItems = await Jewelry.find(query).sort({ createdAt: -1 });
     }
+
+    // Luu ket qua vao Cache
+    productCache.set(cacheKey, { items: resultItems, total: totalDocs });
+
+    res.status(200).json(resultItems);
   } catch (error) {
     console.error("Loi khi lay san pham:", error);
     res.status(500).json({ message: "Loi he thong" });
@@ -83,6 +106,7 @@ export const createJewelry = async (req, res) => {
     });
 
     const newJewelry = await jewelry.save();
+    clearProductCache();
     res.status(201).json(newJewelry);
   } catch (error) {
     console.error("Loi khi goi createJewelry:", error);
@@ -124,6 +148,7 @@ export const updateJewelry = async (req, res) => {
     if (!updateJewelry) {
       return res.status(404).json({ message: "Khong ton tai" });
     }
+    clearProductCache();
     res.status(200).json(updateJewelry);
   } catch (error) {
     console.error("Loi khi updateJewelry:", error);
@@ -138,6 +163,7 @@ export const deleteJewelry = async (req, res) => {
     if (!deleteJewelry) {
       return res.status(404).json({ message: "Khong ton tai" });
     }
+    clearProductCache();
     res.status(200).json(deleteJewelry);
   } catch (error) {
     console.error("Loi khi goi deleteJewelry:", error);

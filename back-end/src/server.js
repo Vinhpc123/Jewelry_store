@@ -20,6 +20,10 @@ import { connectDB } from "./config/db.js";
 import dotenv from "dotenv";
 import { initSocket } from "./socket/index.js";
 
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import mongoSanitize from "express-mongo-sanitize";
+
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -45,7 +49,34 @@ const port = process.env.PORT || 5000;
 const app = express();
 const server = http.createServer(app);
 
+// Security Headers (allow cross-origin images for uploaded files)
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
+
+// Protection against NoSQL Injection
+app.use(mongoSanitize());
+
 app.use(express.json());
+
+// Rate Limiter: General API Limiter (200 requests per 15 mins)
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  message: { message: "Quá nhiều yêu cầu từ IP của bạn, vui lòng thử lại sau 15 phút" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use("/api/", apiLimiter);
+
+// Rate Limiter: Auth Limiter (15 requests per 15 mins to prevent Brute-Force attacks)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  message: { message: "Thao tác quá nhiều lần, vui lòng thử lại sau 15 phút" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use("/api/auth/login", authLimiter);
+app.use("/api/auth/signup", authLimiter);
 
 // Allow frontend dev/prod domains; `origin: true` reflects the request origin to avoid CORS blocks in dev
 app.use(
